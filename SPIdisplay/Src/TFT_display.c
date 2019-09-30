@@ -103,25 +103,6 @@ void setAddrWindow(uint16_t x, uint16_t y, uint16_t w,
 	temp[2] = ((y+h-1) & (0xFF00)) >> 8;
 	temp[3] = (y+h-1) & (0x00FF);
 	sendCommand(ST77XX_RASET, temp, 4, hspi);
-
-	HAL_Delay(500);
-
-	//writeCommand(ST77XX_RAMWR); // write to RAM
-//	uint16_t colors[8] = {
-//		ST77XX_BLACK,
-//		ST77XX_BLUE,
-//		ST77XX_GREEN,
-//		ST77XX_BLACK,
-//		ST77XX_RED,
-//		ST77XX_YELLOW,
-//		ST77XX_ORANGE,
-//		ST77XX_MAGENTA
-//	};
-	uint16_t colors[10000];
-	for (int i = 0; i < 10000; i++) {
-		colors[i] = 0xF0;
-	}
-	sendCommand(ST77XX_RAMWR, colors, 20000, hspi);
 }
 // if writing only 1 pixel, send 16-bit color spi messages
 // if writing the whole screen, use DMA
@@ -168,18 +149,6 @@ void sendCommand(uint8_t cmd, uint8_t *args, uint16_t numArgs, SPI_HandleTypeDef
 	SPI_CS_HIGH();	// chip select disable
 }
 
-//void sendCommand16(uint8_t cmd, uint16_t *args, uint8_t numArgs, SPI_HandleTypeDef *hspi) {
-//	SPI_CS_LOW();	// chip select
-//
-//	SPI_DC_LOW();	// command mode
-//	HAL_SPI_Transmit(hspi, &cmd, 1, 1000);
-//
-//	SPI_DC_HIGH();	// data mode
-//	HAL_SPI_Transmit(hspi, &args, numArgs, 1000);
-//
-//	SPI_CS_HIGH();	// chip select disable
-//}
-
 void SPI_CS_LOW() {
 	HAL_GPIO_WritePin(CS_GPIO, CS_PIN, GPIO_PIN_RESET);
 }
@@ -200,7 +169,118 @@ void TFT_startup(SPI_HandleTypeDef *hspi) {
 	displayInit(Rcmd1, hspi);
 	displayInit(Rcmd2red, hspi);
 	displayInit(Rcmd3, hspi);
-	setAddrWindow(0, 0, 120, 120, hspi);
+	setAddrWindow(0, 0, 128, 160, hspi);
 //	setAddrWindow(0, 0, 8, 8, hspi);
 //	sendCommand16(0xAA, 0xAA, 1, &hspi1);
+}
+
+void fillScreen(SPI_HandleTypeDef *hspi) {
+	setAddrWindow(0, 0, WIDTH, HEIGHT/2, hspi);
+
+	// cant do in 1 push for size reasons? too many elements in array for size
+	uint16_t arr[WIDTH*HEIGHT/2];
+	for (int i = 0; i < (WIDTH*HEIGHT/2); i++) {
+		arr[i] = ST77XX_BLACK;
+	}
+	sendCommand(ST77XX_RAMWR, arr, WIDTH*HEIGHT, hspi);
+	setAddrWindow(0, HEIGHT/2, WIDTH, HEIGHT/2, hspi);
+	sendCommand(ST77XX_RAMWR, arr, WIDTH*HEIGHT, hspi);
+
+//	uint16_t arr[10240];
+//	// cant do in 1 push for size reasons?
+//	// too many elements in array for size
+//	for (int i = 0; i < (10240); i++) {
+//		arr[i] = ST77XX_CYAN;
+//	}
+//	sendCommand(ST77XX_RAMWR, arr, 20480, hspi);
+//
+//	setAddrWindow(0, height/2, width, height/2, hspi);
+//	sendCommand(ST77XX_RAMWR, arr, 20480, hspi);
+}
+
+void fillScreen_color(uint16_t color, SPI_HandleTypeDef *hspi) {
+	setAddrWindow(0, 0, WIDTH, HEIGHT, hspi);
+	uint16_t arr[WIDTH*HEIGHT];
+	for (int i = 0; i < WIDTH*HEIGHT; i++) {
+		arr[i] = color;
+	}
+	sendCommand(ST77XX_RAMWR, arr, WIDTH*HEIGHT*2, hspi);
+}
+
+void drawPixel(uint8_t x, uint8_t y, SPI_HandleTypeDef *hspi) {
+	setAddrWindow(x, y, 1, 1, hspi);
+	uint16_t color = ST77XX_BLACK;
+	sendCommand(ST77XX_RAMWR, &color, 2, hspi);
+}
+
+void drawPixel_color(uint8_t x, uint8_t y, uint16_t color, SPI_HandleTypeDef *hspi) {
+	setAddrWindow(x, y, 1, 1, hspi);
+	uint16_t tempColor = color;		// else we're using address of something passed by value (problems?)
+	sendCommand(ST77XX_RAMWR, &tempColor, 2, hspi);
+}
+
+void drawHLine(uint8_t x, uint8_t y, uint8_t size, SPI_HandleTypeDef *hspi) {
+	setAddrWindow(x, y, size, 1, hspi);
+	uint16_t color[size];
+	for (int i = 0; i < size; i++) {		// better way to make array of 1 color; SPI without moving address of sent?
+		color[i] = ST77XX_BLACK;
+	}
+
+	sendCommand(ST77XX_RAMWR, color, size*2, hspi);
+}
+
+void drawHLine_color(uint8_t x, uint8_t y, uint8_t size, uint16_t color, SPI_HandleTypeDef *hspi) {
+	setAddrWindow(x, y, size, 1, hspi);
+	uint16_t colors[size];
+	for (int i = 0; i < size; i++) {		// better way to make array of 1 color; SPI without moving address of sent?
+		colors[i] = color;
+	}
+
+	sendCommand(ST77XX_RAMWR, colors, size*2, hspi);
+}
+
+void drawVLine(uint8_t x, uint8_t y, uint8_t size, SPI_HandleTypeDef *hspi) {
+	setAddrWindow(x, y, 1, size, hspi);
+	uint16_t color[size];
+	for (int i = 0; i < size; i++) {		// better way to make array of 1 color; SPI without moving address of sent?
+		color[i] = ST77XX_BLACK;
+	}
+
+	sendCommand(ST77XX_RAMWR, color, size*2, hspi);
+}
+
+void drawVLine_color(uint8_t x, uint8_t y, uint8_t size, uint16_t color, SPI_HandleTypeDef *hspi) {
+	setAddrWindow(x, y, 1, size, hspi);
+	uint16_t colors[size];
+	for (int i = 0; i < size; i++) {		// there has to be a better way to make array of 1 color
+											// SPI without moving address of sent buffer?
+		colors[i] = color;
+	}
+
+	sendCommand(ST77XX_RAMWR, colors, size*2, hspi);
+}
+
+void drawRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, SPI_HandleTypeDef *hspi) {
+	for (int i = 0; i < h; i++) {
+		drawHLine_color(x, y, w, colorFixer(ST77XX_BLACK), hspi);
+	}
+}
+
+void drawRect_color(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t color, SPI_HandleTypeDef *hspi) {
+	for (int i = 0; i < h; i++) {
+		drawHLine_color(x, y, w, colorFixer(color), hspi);
+	}
+}
+
+// 8-bit spi bus wants msb first; in array, lowest index is sent first
+// because L4 is little-endian
+//   for 16-bit value, it sends lower byte before upper byte
+//   resulting in device thinking lower byte is upper byte
+// this switches byte order around
+uint16_t colorFixer(uint16_t color) {
+	uint8_t a = color & 0xFF;
+	uint8_t b = (color & 0xFF00) >> 8;
+	uint16_t ret = (a << 8) | b;
+
+	return ret;
 }

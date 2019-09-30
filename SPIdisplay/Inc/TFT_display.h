@@ -85,14 +85,24 @@
 #define _xstart		0
 #define _ystart 	0
 
+#define HEIGHT 		160
+#define WIDTH 		128
+
 void displayInit(uint8_t*, SPI_HandleTypeDef*);
 void sendCommand(uint8_t, uint8_t*, uint16_t, SPI_HandleTypeDef*);
-//void sendCommand16(uint8_t, uint16_t*, uint8_t, SPI_HandleTypeDef*);
 void TFT_startup(SPI_HandleTypeDef*);
 void SPI_CS_LOW();
 void SPI_CS_HIGH();
 void SPI_DC_LOW();
 void SPI_DC_HIGH();
 
-//uint8_t *Rcmd1, *Rcmd2green, *Rcmd2red, *Rcmd2green144, *Rcmd2green160x80, *Rcmd3;
+void fillScreen(SPI_HandleTypeDef*);
+void fillScreen_color(uint16_t, SPI_HandleTypeDef*);
+void drawPixel(uint8_t, uint8_t, SPI_HandleTypeDef*);
+void drawPixel_color(uint8_t, uint8_t, uint16_t, SPI_HandleTypeDef*);
+void drawHLine(uint8_t, uint8_t, uint8_t, SPI_HandleTypeDef*);
+void drawHLine_color(uint8_t, uint8_t, uint8_t, uint16_t, SPI_HandleTypeDef*);
+void drawVLine(uint8_t, uint8_t, uint8_t, SPI_HandleTypeDef*);
+void drawVLine_color(uint8_t, uint8_t, uint8_t, uint16_t, SPI_HandleTypeDef*);
 
+uint16_t colorFixer(uint16_t);
