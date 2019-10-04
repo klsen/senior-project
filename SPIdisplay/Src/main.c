@@ -131,6 +131,7 @@ int main(void)
 //  HAL_SPI_Transmit(&hspi1, &a, 1, 1000);
   HAL_Delay(2000);
   TFT_startup(&hspi1);
+  fillScreen(&hspi1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -143,6 +144,15 @@ int main(void)
     /* USER CODE BEGIN 3 */
 	HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_2);
     HAL_Delay(500);
+    drawPixel_color(0, 0, colorFixer(ST77XX_BLUE), &hspi1);
+    HAL_Delay(250);
+    drawHLine_color(0, 159, 128, colorFixer(ST77XX_RED), &hspi1);
+    HAL_Delay(250);
+    drawVLine_color(127, 0, 160, colorFixer(ST77XX_GREEN), &hspi1);
+    HAL_Delay(500);
+    drawPixel(0, 0, &hspi1);
+    drawHLine(0, 159, 128, &hspi1);
+    drawVLine(127, 0, 160, &hspi1);
 //    sendCommand(ST77XX_RAMWR, colors2, 8*2, &hspi1);
   }
   /* USER CODE END 3 */
