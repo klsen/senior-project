@@ -88,21 +88,23 @@
 #define HEIGHT 		160
 #define WIDTH 		128
 
-void displayInit(uint8_t*, SPI_HandleTypeDef*);
-void sendCommand(uint8_t, uint8_t*, uint16_t, SPI_HandleTypeDef*);
-void TFT_startup(SPI_HandleTypeDef*);
+#define swap_ints(x,y) x=x+y; y=x-y; x=x-y
+#define abs(x) ((x) > 0 ? (x) : -(x))
+
 void SPI_CS_LOW();
 void SPI_CS_HIGH();
 void SPI_DC_LOW();
 void SPI_DC_HIGH();
-
-void fillScreen(SPI_HandleTypeDef*);
-void fillScreen_color(uint16_t, SPI_HandleTypeDef*);
-void drawPixel(uint8_t, uint8_t, SPI_HandleTypeDef*);
-void drawPixel_color(uint8_t, uint8_t, uint16_t, SPI_HandleTypeDef*);
-void drawHLine(uint8_t, uint8_t, uint8_t, SPI_HandleTypeDef*);
-void drawHLine_color(uint8_t, uint8_t, uint8_t, uint16_t, SPI_HandleTypeDef*);
-void drawVLine(uint8_t, uint8_t, uint8_t, SPI_HandleTypeDef*);
-void drawVLine_color(uint8_t, uint8_t, uint8_t, uint16_t, SPI_HandleTypeDef*);
+void sendCommand(uint8_t, uint8_t*, uint16_t, SPI_HandleTypeDef*);
+void displayInit(uint8_t*, SPI_HandleTypeDef*);
+//uint32_t toBigEndian_32(uint32_t);
+void TFT_startup(SPI_HandleTypeDef*);
+void setAddrWindow(uint16_t x, uint16_t y, uint16_t w, uint16_t h, SPI_HandleTypeDef *hspi);
 
 uint16_t colorFixer(uint16_t);
+void drawPixel(uint8_t x, uint8_t y, uint16_t color, SPI_HandleTypeDef* hspi);
+void drawHLine(uint8_t x, uint8_t y, uint8_t size, uint16_t color, SPI_HandleTypeDef* hspi);
+void drawVLine(uint8_t x, uint8_t y, uint8_t size, uint16_t color, SPI_HandleTypeDef* hspi);
+void drawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint16_t color, SPI_HandleTypeDef* hspi);
+void drawRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t color, SPI_HandleTypeDef* hspi);
+void fillScreen(uint16_t color, SPI_HandleTypeDef* hspi);
