@@ -80,6 +80,8 @@ void MX_USB_HOST_Process(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+uint16_t bg = ST77XX_BLACK;
+
 void lineTest() {
 	int x = WIDTH/2;
 	int y = HEIGHT/2;
@@ -123,6 +125,16 @@ void lineTest() {
 	HAL_Delay(500);
 	drawRect(x, y-HEIGHT/4, WIDTH/2, HEIGHT/4, ST77XX_WHITE, &hspi1);
 	HAL_Delay(1000);
+}
+
+void charTest() {
+	uint16_t color = ST77XX_WHITE;
+	for (unsigned char ch = 0; ch < 127; ch++) {
+		drawChar(x+(6*ch), y+(8*(ch/20)), ch, color, bg, 1, 1, hspi);
+	}
+	for (unsigned char ch = 0; ch < 127; ch++) {
+		drawChar(x+(6*ch), y+6+(8*(ch/20)), ch, color, bg, 2, 2, hspi);
+	}
 }
 /* USER CODE END 0 */
 
@@ -178,7 +190,6 @@ int main(void)
 //  HAL_SPI_Transmit(&hspi1, &a, 1, 1000);
   HAL_Delay(2000);
   TFT_startup(&hspi1);
-  uint16_t bg = ST77XX_BLACK;
   fillScreen(bg, &hspi1);
   /* USER CODE END 2 */
 

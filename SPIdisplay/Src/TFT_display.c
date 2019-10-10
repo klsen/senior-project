@@ -126,13 +126,6 @@ void setAddrWindow(uint16_t x, uint16_t y, uint16_t w, uint16_t h, SPI_HandleTyp
 	x += _xstart;
 	y += _ystart;
 
-//	uint32_t xa = ((uint32_t)x << 16) | (x+w-1);
-//	uint32_t ya = ((uint32_t)y << 16) | (y+h-1);
-//	xa = toBigEndian_32(xa);
-//	sendCommand(ST77XX_CASET, xa, 4, hspi);
-//	ya = toBigEndian_32(ya);
-//	sendCommand(ST77XX_RASET, ya, 4, hspi);
-
 	uint8_t temp[4];
 	temp[0] = (x & (0xFF00)) >> 8;
 	temp[1] = x & (0xFF);
@@ -146,23 +139,6 @@ void setAddrWindow(uint16_t x, uint16_t y, uint16_t w, uint16_t h, SPI_HandleTyp
 	temp[3] = (y+h-1) & (0x00FF);
 	sendCommand(ST77XX_RASET, temp, 4, hspi);
 }
-
-//uint32_t toBigEndian_32(uint32_t x) {
-//	uint8_t temp;
-//	// grab bottom 8 for temp
-//	// set bottom 8 from top 8
-//	// set top 8 with temp
-//	for (int i = 0; i < 2; i++) {
-//		temp = x & (0xFF << (i*8));
-//
-//		x &= ~(0xFF << (i*8));						// clear bottom 8
-//		x |= (x & (0xFF << ((3-i)*8))) >> ((3-i)*8);	// set bottom 8 from top 8
-//
-//		x &= ~(0xFF << (3-i)*8);		// clear top 8
-//		x |= temp << (3-i)*8;			// set top 8 with temp;
-//	}
-//	return x;
-//}
 
 // 8-bit spi bus wants msb first; in array, lowest index is sent first
 // because L4 is little-endian
@@ -178,13 +154,23 @@ uint16_t colorFixer(uint16_t color) {
 }
 
 void drawPixel(uint8_t x, uint8_t y, uint16_t color, SPI_HandleTypeDef *hspi) {
+	// bounds checking
+	// just don't draw if pixel is out of bounds
+	if ((x > WIDTH) || (x < 0) || (y > HEIGHT) || (y < 0)) return;
+
 	setAddrWindow(x, y, 1, 1, hspi);
 	uint16_t tempColor = colorFixer(color);		// else we're using address of something passed by value
-//	tempColor = color;
 	sendCommand(ST77XX_RAMWR, &tempColor, 2, hspi);
 }
 
 void drawHLine(uint8_t x, uint8_t y, uint8_t size, uint16_t color, SPI_HandleTypeDef *hspi) {
+	// bounds checking
+	if (x < 0) x = 0;						// don't set x out of bounds
+	if (x > WIDTH) x = WIDTH;
+	if (x+size > WIDTH) size = WIDTH-x;		// don't set size so line draws out of bounds
+	if (x+size < 0) size = 0-x;
+	if ((y > HEIGHT) || (y < 0)) return;	// don't draw if y is out of bounds
+
 	setAddrWindow(x, y, size, 1, hspi);
 	uint16_t colors[size];
 	for (int i = 0; i < size; i++) {		// better way to make array of 1 color; SPI without moving address of sent?
@@ -196,41 +182,25 @@ void drawHLine(uint8_t x, uint8_t y, uint8_t size, uint16_t color, SPI_HandleTyp
 }
 
 void drawVLine(uint8_t x, uint8_t y, uint8_t size, uint16_t color, SPI_HandleTypeDef *hspi) {
+	// bounds checking
+	if (y < 0) x = 0;						// don't set x out of bounds
+	if (y > HEIGHT) x = HEIGHT;
+	if (y+size > HEIGHT) size = HEIGHT-y;	// don't set size so line draws out of bounds
+	if (y+size < 0) size = 0-y;
+	if ((x > WIDTH) || (x < 0)) return;		// don't draw if y is out of bounds
+
 	setAddrWindow(x, y, 1, size, hspi);
 	uint16_t colors[size];
 	for (int i = 0; i < size; i++) {		// there has to be a better way to make array of 1 color
 											// SPI without moving address of sent buffer?
 		colors[i] = colorFixer(color);
-//		colors[i] = color;
 	}
 
 	sendCommand(ST77XX_RAMWR, colors, size*2, hspi);
 }
 
-void drawRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t color, SPI_HandleTypeDef *hspi) {
-	for (int i = 0; i < h; i++) {
-		drawHLine(x, y+i, w, color, hspi);
-	}
-
-//	// oh my god this version is really slow
-//	for (int i = 0; i < h; i++) {
-//		for (int j = 0; j < w; j++) {
-//			drawPixel(x+j, y+i, color, hspi);
-//		}
-//	}
-}
-
-//void swap_ints2(int *x, int *y) {
-//	*x = *x + *y;
-//	*y = *x - *y;
-//	*x = *x - *y;
-//}
-
-//uint8_t abs(int x) {
-//	return x > 0 ? x : -x;
-//}
-
 void drawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint16_t color, SPI_HandleTypeDef *hspi) {
+	// based on Bresenham's line drawing algorithm (thx Adafruit and Wikipedia)
 	if (x0 == x1) {
 		drawVLine(x0, y0, abs(y0-y1), color, hspi);
 		return;
@@ -239,15 +209,6 @@ void drawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint16_t color, SP
 		drawHLine(x0, y0, abs(x0-y1), color, hspi);
 		return;
 	}
-
-	if (x0 > WIDTH) 	x0 = WIDTH;
-	if (x0 < 0) 		x0 = 0;
-	if (x1 > WIDTH) 	x1 = WIDTH;
-	if (x1 < 0) 		x1 = 0;
-	if (y0 > HEIGHT) 	y0 = HEIGHT;
-	if (y0 < 0) 		y0 = 0;
-	if (y1 > HEIGHT)	y1 = HEIGHT;
-	if (y1 < 0) 		y1 = 0;
 
 	// standard ints vs 8-bit ints? memory cost, convenience
 	int isSteep = abs(y1-y0) > abs(x1-x0);
@@ -281,10 +242,53 @@ void drawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint16_t color, SP
 	}
 }
 
+void drawRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t color, SPI_HandleTypeDef *hspi) {
+	drawHLine(x, y, w, color, hspi);
+	drawHLine(x, y+h-1, w, color, hspi);
+	drawVLine(x, y, h, color, hspi);
+	drawVLine(x+w-1, y, h, color, hspi);
+}
+
+void fillRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t color, SPI_HandleTypeDef *hspi) {
+	for (int i = 0; i < h; i++) {
+		drawHLine(x, y+i, w, color, hspi);
+	}
+}
+
 void fillScreen(uint16_t color, SPI_HandleTypeDef *hspi) {
-//	color = colorFixer(color);
-//	for (int i = 0; i < HEIGHT; i++) {
-//		drawHLine(0, i, WIDTH, color, hspi);
-//	}
-	drawRect(0, 0, WIDTH, HEIGHT, color, hspi);
+	fillRect(0, 0, WIDTH, HEIGHT, color, hspi);
+}
+
+void drawChar(uint8_t x, uint8_t y, uint8_t ch, uint16_t color, uint16_t bg, uint8_t size_x, uint8_t size_y, SPI_HandleTypeDef *hspi) {
+	// very much ripped from Adafruit
+	// saves me a lot of time from making my own fonts
+
+//	if((x >= _width)            || // Clip right
+//	   (y >= _height)           || // Clip bottom
+//	   ((x + 6 * size_x - 1) < 0) || // Clip left
+//	   ((y + 8 * size_y - 1) < 0))   // Clip top
+//		return;
+
+//	if(!_cp437 && (c >= 176)) c++; // Handle 'classic' charset behavior
+
+	for(int8_t i=0; i<5; i++ ) { // Char bitmap = 5 columns
+		uint8_t line = font[ch*5+i];
+		for(int8_t j=0; j<8; j++, line >>= 1) {
+			if(line & 1) {
+				if(size_x == 1 && size_y == 1)
+					drawPixel(x+i, y+j, color, hspi);
+				else
+					fillRect(x+i*size_x, y+j*size_y, size_x, size_y, color, hspi);
+			} else if(bg != color) {
+				if(size_x == 1 && size_y == 1)
+					drawPixel(x+i, y+j, bg, hspi);
+				else
+					fillRect(x+i*size_x, y+j*size_y, size_x, size_y, bg, hspi);
+			}
+		}
+	}
+	if(bg != color) { // If opaque, draw vertical line for last column
+		if(size_x == 1 && size_y == 1) drawVLine(x+5, y, 8, bg, hspi);
+		else          fillRect(x+5*size_x, y, size_x, 8*size_y, bg, hspi);
+	}
 }
