@@ -114,16 +114,45 @@ void drawHLine(uint8_t x, uint8_t y, uint8_t size, uint16_t color, SPI_HandleTyp
 void drawVLine(uint8_t x, uint8_t y, uint8_t size, uint16_t color, SPI_HandleTypeDef* hspi);
 
 // these functions are based completely on above functions
+// should I split this file between graphics functions and those specific to the display?
 void drawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint16_t color, SPI_HandleTypeDef* hspi);
 void drawRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t color, SPI_HandleTypeDef* hspi);
 void fillRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t color, SPI_HandleTypeDef* hspi);
 void fillScreen(uint16_t color, SPI_HandleTypeDef* hspi);
+
+void drawChar(uint8_t x, uint8_t y, uint8_t ch, uint16_t color, uint16_t bg, uint8_t size_x, uint8_t size_y, SPI_HandleTypeDef *hspi);
+void drawText(uint8_t x, uint8_t y, uint8_t size, uint16_t color, char *str, SPI_HandleTypeDef *hspi);
+
+/* some more ideas for graphics:
+ *   canvas system: a data structure or array representing the layout of the screen
+ *     not sure if the L0 can hold the whole screen with 16-bit pixels because the L4 didn't show promising results
+ *     declare as static so it can go into flash? might make things slower but might not really
+ *       if we can do this, we can use DMA to do the whole screen transfer, and we'd need to do no work on it
+ *     can use palette system so each pixel can be represented with much less bits (2, 4, or 8)
+ *     rewrite graphics functions to work with this system
+ *   draw bitmaps: import a file and read, or whatever
+ *   draw other shapes: circles, triangles, polygons, rounded rectangles, etc.
+ *     some are already in Adafruit library and would be easy to write in
+ *     is it really necessary
+ *   draw gradients: you know, maybe it'd be pretty
+ *   display rotation: sometimes we might want display rotated to be horizontal instead of vertical
+ *   invert display: quick and easy way to alter the whole screen for some sort of spooky effect
+ */
+
+/* comments:
+ *   character and text functions are slow and you can easily see characters scroll by
+ *   due to a lot of checks and a lot of calls for each pixel in the character. character
+ *   info needs very little memory, but how can we make this faster?
+ *     retranslate 1-bit data structure into 16-bit data structure and pass as one call to SPI?
+ *
+ */
 // ---- End of graphics functions ----
 
 // ---- Character font ----
 // ripped from Adafruit's graphics library
 // follows ASCII table. first 32 characters are replaced with
 // other symbols since they're non-printing commands in ASCII
+// refer to font.txt for printout of symbols
 static const unsigned char font[] = {
 	0x00, 0x00, 0x00, 0x00, 0x00,
 	0x3E, 0x5B, 0x4F, 0x5B, 0x3E,

@@ -80,9 +80,9 @@ void MX_USB_HOST_Process(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-uint16_t bg = ST77XX_BLACK;
 
-void lineTest() {
+
+void lineTest(uint16_t bg) {
 	int x = WIDTH/2;
 	int y = HEIGHT/2;
 
@@ -125,16 +125,58 @@ void lineTest() {
 	HAL_Delay(500);
 	drawRect(x, y-HEIGHT/4, WIDTH/2, HEIGHT/4, ST77XX_WHITE, &hspi1);
 	HAL_Delay(1000);
+
+	fillScreen(bg, &hspi1);
 }
 
-void charTest() {
+void charTest(uint16_t bg) {
 	uint16_t color = ST77XX_WHITE;
-	for (unsigned char ch = 0; ch < 127; ch++) {
-		drawChar(x+(6*ch), y+(8*(ch/20)), ch, color, bg, 1, 1, hspi);
+	uint8_t x, y;
+
+	uint16_t rainbowColors[] = {
+		ST77XX_RED,
+		ST77XX_ORANGE,
+		ST77XX_YELLOW,
+		ST77XX_GREEN,
+		ST77XX_CYAN,
+		ST77XX_BLUE,
+		ST77XX_MAGENTA
+	};
+
+	// print the standard 127 6x8 characters in different sizes
+	for (int ch_size = 1; ch_size < 6; ch_size++) {
+		for (unsigned char ch = 0; ch < 255; ch++) {
+			// move to right enough for next char
+			x = (ch*ch_size*6) % (WIDTH/(ch_size*6)*(ch_size*6));
+			// line break when x gets near WIDTH
+			y = ((8*ch_size) * ((ch*ch_size*6) / (WIDTH/(ch_size*6)*(ch_size*6)))) % (HEIGHT/(ch_size*8)*(ch_size*8));
+
+			drawChar(x, y, ch, rainbowColors[ch%7], bg, ch_size, ch_size, &hspi1);
+//			HAL_Delay(250);
+		}
+		HAL_Delay(1000);
+		fillScreen(bg, &hspi1);
 	}
-	for (unsigned char ch = 0; ch < 127; ch++) {
-		drawChar(x+(6*ch), y+6+(8*(ch/20)), ch, color, bg, 2, 2, hspi);
-	}
+}
+
+void textTest(uint16_t bg) {
+	char *str = "Hello";
+	drawText(0, 0, 1, ST77XX_WHITE, str, &hspi1);
+	HAL_Delay(1000);
+
+	str = "Help me, I am trapped here!";
+	drawText(0, 16, 1, ST77XX_WHITE, str, &hspi1);
+	HAL_Delay(1000);
+
+	str = "Before they take me away, I have to tell you";
+	drawText(0, 40, 1, ST77XX_WHITE, str, &hspi1);
+	HAL_Delay(1000);
+
+	str = "Obama's last name is";
+	drawText(0, 64, 1, ST77XX_WHITE, str, &hspi1);
+	HAL_Delay(500);
+
+	fillScreen(bg, &hspi1);
 }
 /* USER CODE END 0 */
 
@@ -188,6 +230,7 @@ int main(void)
 //  HAL_SPI_Transmit(&hspi1, temp, 4, 1000);
 //  uint16_t a = 0xAAAA;
 //  HAL_SPI_Transmit(&hspi1, &a, 1, 1000);
+  uint16_t bg = ST77XX_BLACK;
   HAL_Delay(2000);
   TFT_startup(&hspi1);
   fillScreen(bg, &hspi1);
@@ -211,10 +254,12 @@ int main(void)
 //    drawVLine(127, 0, 160, ST77XX_GREEN, &hspi1);
 //    drawRect(50, 50, 50, 50, ST77XX_CYAN, &hspi1);
 
-    lineTest();
+//    lineTest(bg);
+    charTest(bg);
+//    textTest(bg);
     HAL_Delay(500);
 
-    fillScreen(bg, &hspi1);
+//    fillScreen(bg, &hspi1);
 //    drawPixel(0, 0, bg, &hspi1);
 //    drawHLine(0, 159, 128, bg, &hspi1);
 //    drawVLine(127, 0, 160, bg, &hspi1);

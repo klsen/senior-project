@@ -262,6 +262,7 @@ void fillScreen(uint16_t color, SPI_HandleTypeDef *hspi) {
 void drawChar(uint8_t x, uint8_t y, uint8_t ch, uint16_t color, uint16_t bg, uint8_t size_x, uint8_t size_y, SPI_HandleTypeDef *hspi) {
 	// very much ripped from Adafruit
 	// saves me a lot of time from making my own fonts
+	// thinking of only using 1 parameter for size?
 
 //	if((x >= _width)            || // Clip right
 //	   (y >= _height)           || // Clip bottom
@@ -290,5 +291,15 @@ void drawChar(uint8_t x, uint8_t y, uint8_t ch, uint16_t color, uint16_t bg, uin
 	if(bg != color) { // If opaque, draw vertical line for last column
 		if(size_x == 1 && size_y == 1) drawVLine(x+5, y, 8, bg, hspi);
 		else          fillRect(x+5*size_x, y, size_x, 8*size_y, bg, hspi);
+	}
+}
+
+// this function is slow, and you can definitely see a scrolling speed thing going on
+// how to remove this so it prints near instantly?
+// maybe not needed if all we're doing is printing time (very few characters)
+void drawText(uint8_t x, uint8_t y, uint8_t size, uint16_t color, char *str, SPI_HandleTypeDef *hspi) {
+	// add text wrap
+	for (int i = 0; str[i] != '\0'; i++) {
+		drawChar(x+i*6*size, y, str[i], color, ST77XX_BLACK, size, size, hspi);
 	}
 }
