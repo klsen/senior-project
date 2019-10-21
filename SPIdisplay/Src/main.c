@@ -49,6 +49,8 @@ I2C_HandleTypeDef hi2c2;
 
 LCD_HandleTypeDef hlcd;
 
+RTC_HandleTypeDef hrtc;
+
 SAI_HandleTypeDef hsai_BlockA1;
 SAI_HandleTypeDef hsai_BlockB1;
 
@@ -69,6 +71,7 @@ static void MX_LCD_Init(void);
 static void MX_SAI1_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_SPI1_Init(void);
+static void MX_RTC_Init(void);
 void MX_USB_HOST_Process(void);
 
 /* USER CODE BEGIN PFP */
@@ -78,6 +81,103 @@ void MX_USB_HOST_Process(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+
+void lineTest(uint16_t bg) {
+	int x = WIDTH/2;
+	int y = HEIGHT/2;
+
+	drawLine(x, y, x+WIDTH/2, y+HEIGHT/4, ST77XX_RED, &hspi1);
+	HAL_Delay(500);
+	drawRect(x, y, WIDTH/2, HEIGHT/4, ST77XX_RED, &hspi1);
+	HAL_Delay(1000);
+
+	drawLine(x, y, x+WIDTH/4, y+HEIGHT/2, ST77XX_BLUE, &hspi1);
+	HAL_Delay(500);
+	drawRect(x, y, WIDTH/4, HEIGHT/2, ST77XX_BLUE, &hspi1);
+	HAL_Delay(1000);
+
+	drawLine(x, y, x-WIDTH/4, y+HEIGHT/2, ST77XX_YELLOW, &hspi1);
+	HAL_Delay(500);
+	drawRect(x-WIDTH/4, y, WIDTH/4, HEIGHT/2, ST77XX_YELLOW, &hspi1);
+	HAL_Delay(1000);
+
+	drawLine(x, y, x-WIDTH/2, y+HEIGHT/4, ST77XX_GREEN, &hspi1);
+	HAL_Delay(500);
+	drawRect(x-WIDTH/2, y, WIDTH/2, HEIGHT/4, ST77XX_GREEN, &hspi1);
+	HAL_Delay(1000);
+
+	drawLine(x, y, x-WIDTH/2, y-HEIGHT/4, ST77XX_ORANGE, &hspi1);
+	HAL_Delay(500);
+	drawRect(x-WIDTH/2, y-HEIGHT/4, WIDTH/2, HEIGHT/4, ST77XX_ORANGE, &hspi1);
+	HAL_Delay(1000);
+
+	drawLine(x, y, x-WIDTH/4, y-HEIGHT/2, ST77XX_MAGENTA, &hspi1);
+	HAL_Delay(500);
+	drawRect(x-WIDTH/4, y-HEIGHT/2, WIDTH/4, HEIGHT/2, ST77XX_MAGENTA, &hspi1);
+	HAL_Delay(1000);
+
+	drawLine(x, y, x+WIDTH/4, y-HEIGHT/2, ST77XX_CYAN, &hspi1);
+	HAL_Delay(500);
+	drawRect(x, y-HEIGHT/2, WIDTH/4, HEIGHT/2, ST77XX_CYAN, &hspi1);
+	HAL_Delay(1000);
+
+	drawLine(x, y, x+WIDTH/2, y-HEIGHT/4, ST77XX_WHITE, &hspi1);
+	HAL_Delay(500);
+	drawRect(x, y-HEIGHT/4, WIDTH/2, HEIGHT/4, ST77XX_WHITE, &hspi1);
+	HAL_Delay(1000);
+
+	fillScreen(bg, &hspi1);
+}
+
+void charTest(uint16_t bg) {
+	uint16_t color = ST77XX_WHITE;
+	uint8_t x, y;
+
+	uint16_t rainbowColors[] = {
+		ST77XX_RED,
+		ST77XX_ORANGE,
+		ST77XX_YELLOW,
+		ST77XX_GREEN,
+		ST77XX_CYAN,
+		ST77XX_BLUE,
+		ST77XX_MAGENTA
+	};
+
+	// print the standard 127 6x8 characters in different sizes
+	for (int ch_size = 1; ch_size < 6; ch_size++) {
+		for (unsigned char ch = 0; ch < 255; ch++) {
+			// move to right enough for next char
+			x = (ch*ch_size*6) % (WIDTH/(ch_size*6)*(ch_size*6));
+			// line break when x gets near WIDTH
+			y = ((8*ch_size) * ((ch*ch_size*6) / (WIDTH/(ch_size*6)*(ch_size*6)))) % (HEIGHT/(ch_size*8)*(ch_size*8));
+
+			drawChar(x, y, ch, rainbowColors[ch%7], bg, ch_size, ch_size, &hspi1);
+//			HAL_Delay(250);
+		}
+		HAL_Delay(1000);
+		fillScreen(bg, &hspi1);
+	}
+}
+
+void textTest(uint16_t bg) {
+	char *str = "Hello";
+	drawText(0, 0, 1, ST77XX_WHITE, str, &hspi1);
+	HAL_Delay(1000);
+
+	str = "Help me, I am trapped here!";
+	drawText(0, 16, 1, ST77XX_WHITE, str, &hspi1);
+	HAL_Delay(1000);
+
+	str = "Before they take me away, I have to tell you";
+	drawText(0, 40, 1, ST77XX_WHITE, str, &hspi1);
+	HAL_Delay(1000);
+
+	str = "Obama's last name is";
+	drawText(0, 64, 1, ST77XX_WHITE, str, &hspi1);
+	HAL_Delay(500);
+
+	fillScreen(bg, &hspi1);
+}
 /* USER CODE END 0 */
 
 /**
@@ -87,10 +187,10 @@ void MX_USB_HOST_Process(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-	uint8_t colors2[16];
-	for (int i = 0; i < 16; i++) {
-		colors2[i] = 0xF0;
-	}
+//	uint8_t colors2[16];
+//	for (int i = 0; i < 16; i++) {
+//		colors2[i] = 0xF0;
+//	}
   /* USER CODE END 1 */
   
 
@@ -119,6 +219,7 @@ int main(void)
   MX_USART2_UART_Init();
   MX_USB_HOST_Init();
   MX_SPI1_Init();
+  MX_RTC_Init();
   /* USER CODE BEGIN 2 */
 //  displayInit(Rcmd1, &hspi1);
 //  displayInit(Rcmd2red, &hspi1);
@@ -129,9 +230,10 @@ int main(void)
 //  HAL_SPI_Transmit(&hspi1, temp, 4, 1000);
 //  uint16_t a = 0xAAAA;
 //  HAL_SPI_Transmit(&hspi1, &a, 1, 1000);
+  uint16_t bg = ST77XX_BLACK;
   HAL_Delay(2000);
   TFT_startup(&hspi1);
-  fillScreen(&hspi1);
+  fillScreen(bg, &hspi1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -144,16 +246,24 @@ int main(void)
     /* USER CODE BEGIN 3 */
 	HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_2);
     HAL_Delay(500);
-    drawPixel_color(0, 0, colorFixer(ST77XX_BLUE), &hspi1);
-    HAL_Delay(250);
-    drawHLine_color(0, 159, 128, colorFixer(ST77XX_RED), &hspi1);
-    HAL_Delay(250);
-    drawVLine_color(127, 0, 160, colorFixer(ST77XX_GREEN), &hspi1);
+
+//    drawPixel(0, 0, ST77XX_BLUE, &hspi1);
+//    HAL_Delay(250);
+//    drawHLine(0, 159, 128, ST77XX_RED, &hspi1);
+//    HAL_Delay(250);
+//    drawVLine(127, 0, 160, ST77XX_GREEN, &hspi1);
+//    drawRect(50, 50, 50, 50, ST77XX_CYAN, &hspi1);
+
+//    lineTest(bg);
+    charTest(bg);
+//    textTest(bg);
     HAL_Delay(500);
-    drawPixel(0, 0, &hspi1);
-    drawHLine(0, 159, 128, &hspi1);
-    drawVLine(127, 0, 160, &hspi1);
-//    sendCommand(ST77XX_RAMWR, colors2, 8*2, &hspi1);
+
+//    fillScreen(bg, &hspi1);
+//    drawPixel(0, 0, bg, &hspi1);
+//    drawHLine(0, 159, 128, bg, &hspi1);
+//    drawVLine(127, 0, 160, bg, &hspi1);
+//    drawRect(50, 50, 50, 50, bg, &hspi1);
   }
   /* USER CODE END 3 */
 }
@@ -367,6 +477,69 @@ static void MX_LCD_Init(void)
 }
 
 /**
+  * @brief RTC Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_RTC_Init(void)
+{
+
+  /* USER CODE BEGIN RTC_Init 0 */
+
+  /* USER CODE END RTC_Init 0 */
+
+  RTC_TimeTypeDef sTime = {0};
+  RTC_DateTypeDef sDate = {0};
+
+  /* USER CODE BEGIN RTC_Init 1 */
+
+  /* USER CODE END RTC_Init 1 */
+  /** Initialize RTC Only 
+  */
+  hrtc.Instance = RTC;
+  hrtc.Init.HourFormat = RTC_HOURFORMAT_24;
+  hrtc.Init.AsynchPrediv = 127;
+  hrtc.Init.SynchPrediv = 255;
+  hrtc.Init.OutPut = RTC_OUTPUT_DISABLE;
+  hrtc.Init.OutPutRemap = RTC_OUTPUT_REMAP_NONE;
+  hrtc.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
+  hrtc.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
+  if (HAL_RTC_Init(&hrtc) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /* USER CODE BEGIN Check_RTC_BKUP */
+    
+  /* USER CODE END Check_RTC_BKUP */
+
+  /** Initialize RTC and set the Time and Date 
+  */
+  sTime.Hours = 0x0;
+  sTime.Minutes = 0x0;
+  sTime.Seconds = 0x0;
+  sTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
+  sTime.StoreOperation = RTC_STOREOPERATION_RESET;
+  if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BCD) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sDate.WeekDay = RTC_WEEKDAY_MONDAY;
+  sDate.Month = RTC_MONTH_JANUARY;
+  sDate.Date = 0x1;
+  sDate.Year = 0x0;
+
+  if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BCD) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN RTC_Init 2 */
+
+  /* USER CODE END RTC_Init 2 */
+
+}
+
+/**
   * @brief SAI1 Initialization Function
   * @param None
   * @retval None
@@ -464,7 +637,7 @@ static void MX_SPI1_Init(void)
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
