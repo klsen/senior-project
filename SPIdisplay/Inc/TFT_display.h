@@ -1,3 +1,6 @@
+#ifndef TFT_DISPLAY_H
+#define TFT_DISPLAY_H
+
 #include "stm32l4xx_hal.h"
 
 // ---- Start of library constants ----
@@ -114,7 +117,6 @@ void drawHLine(uint8_t x, uint8_t y, uint8_t size, uint16_t color, SPI_HandleTyp
 void drawVLine(uint8_t x, uint8_t y, uint8_t size, uint16_t color, SPI_HandleTypeDef* hspi);
 
 // these functions are based completely on above functions
-// should I split this file between graphics functions and those specific to the display?
 void drawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint16_t color, SPI_HandleTypeDef* hspi);
 void drawRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t color, SPI_HandleTypeDef* hspi);
 void fillRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t color, SPI_HandleTypeDef* hspi);
@@ -412,3 +414,5 @@ static const unsigned char font[] = {
 	0x00, 0x00, 0x00, 0x00, 0x00  // #255 NBSP
 };
 // ---- End of character font array ----
+
+#endif

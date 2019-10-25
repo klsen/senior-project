@@ -358,6 +358,9 @@ void HAL_RTC_MspInit(RTC_HandleTypeDef* hrtc)
   /* USER CODE END RTC_MspInit 0 */
     /* Peripheral clock enable */
     __HAL_RCC_RTC_ENABLE();
+    /* RTC interrupt Init */
+    HAL_NVIC_SetPriority(RTC_Alarm_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(RTC_Alarm_IRQn);
   /* USER CODE BEGIN RTC_MspInit 1 */
 
   /* USER CODE END RTC_MspInit 1 */
@@ -380,6 +383,9 @@ void HAL_RTC_MspDeInit(RTC_HandleTypeDef* hrtc)
   /* USER CODE END RTC_MspDeInit 0 */
     /* Peripheral clock disable */
     __HAL_RCC_RTC_DISABLE();
+
+    /* RTC interrupt DeInit */
+    HAL_NVIC_DisableIRQ(RTC_Alarm_IRQn);
   /* USER CODE BEGIN RTC_MspDeInit 1 */
 
   /* USER CODE END RTC_MspDeInit 1 */
@@ -417,6 +423,9 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
     GPIO_InitStruct.Alternate = GPIO_AF5_SPI1;
     HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
+    /* SPI1 interrupt Init */
+    HAL_NVIC_SetPriority(SPI1_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(SPI1_IRQn);
   /* USER CODE BEGIN SPI1_MspInit 1 */
 
   /* USER CODE END SPI1_MspInit 1 */
@@ -447,6 +456,8 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi)
     */
     HAL_GPIO_DeInit(GPIOE, GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15);
 
+    /* SPI1 interrupt DeInit */
+    HAL_NVIC_DisableIRQ(SPI1_IRQn);
   /* USER CODE BEGIN SPI1_MspDeInit 1 */
 
   /* USER CODE END SPI1_MspDeInit 1 */

@@ -178,6 +178,20 @@ void textTest(uint16_t bg) {
 
 	fillScreen(bg, &hspi1);
 }
+
+//void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+//	static int state = 0;
+////	HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_8);
+//
+//	if (state == 0) {
+//		fillScreen(ST77XX_WHITE, &hspi1);
+//		state = 1;
+//	}
+//	else if (state == 1) {
+//		fillScreen(ST77XX_BLACK, &hspi1);
+//		state = 0;
+//	}
+//}
 /* USER CODE END 0 */
 
 /**
@@ -187,10 +201,6 @@ void textTest(uint16_t bg) {
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-//	uint8_t colors2[16];
-//	for (int i = 0; i < 16; i++) {
-//		colors2[i] = 0xF0;
-//	}
   /* USER CODE END 1 */
   
 
@@ -255,9 +265,9 @@ int main(void)
 //    drawRect(50, 50, 50, 50, ST77XX_CYAN, &hspi1);
 
 //    lineTest(bg);
-    charTest(bg);
+//    charTest(bg);
 //    textTest(bg);
-    HAL_Delay(500);
+//    HAL_Delay(500);
 
 //    fillScreen(bg, &hspi1);
 //    drawPixel(0, 0, bg, &hspi1);
@@ -490,6 +500,7 @@ static void MX_RTC_Init(void)
 
   RTC_TimeTypeDef sTime = {0};
   RTC_DateTypeDef sDate = {0};
+  RTC_AlarmTypeDef sAlarm = {0};
 
   /* USER CODE BEGIN RTC_Init 1 */
 
@@ -510,7 +521,7 @@ static void MX_RTC_Init(void)
   }
 
   /* USER CODE BEGIN Check_RTC_BKUP */
-    
+
   /* USER CODE END Check_RTC_BKUP */
 
   /** Initialize RTC and set the Time and Date 
@@ -530,6 +541,31 @@ static void MX_RTC_Init(void)
   sDate.Year = 0x0;
 
   if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BCD) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Enable the Alarm A 
+  */
+  sAlarm.AlarmTime.Hours = 0x0;
+  sAlarm.AlarmTime.Minutes = 0x0;
+  sAlarm.AlarmTime.Seconds = 0x0;
+  sAlarm.AlarmTime.SubSeconds = 0x0;
+  sAlarm.AlarmTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
+  sAlarm.AlarmTime.StoreOperation = RTC_STOREOPERATION_RESET;
+  sAlarm.AlarmMask = RTC_ALARMMASK_NONE;
+  sAlarm.AlarmSubSecondMask = RTC_ALARMSUBSECONDMASK_ALL;
+  sAlarm.AlarmDateWeekDaySel = RTC_ALARMDATEWEEKDAYSEL_DATE;
+  sAlarm.AlarmDateWeekDay = 0x1;
+  sAlarm.Alarm = RTC_ALARM_A;
+  if (HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BCD) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Enable the Alarm B 
+  */
+  sAlarm.AlarmDateWeekDay = 0x1;
+  sAlarm.Alarm = RTC_ALARM_B;
+  if (HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BCD) != HAL_OK)
   {
     Error_Handler();
   }
@@ -595,7 +631,7 @@ static void MX_SAI1_Init(void)
   hsai_BlockB1.Init.MonoStereoMode = SAI_STEREOMODE;
   hsai_BlockB1.Init.CompandingMode = SAI_NOCOMPANDING;
   hsai_BlockB1.Init.TriState = SAI_OUTPUT_NOTRELEASED;
-  hsai_BlockB1.FrameInit.FrameLength = 8;
+  hsai_BlockB1.FrameInit.FrameLength = 24;
   hsai_BlockB1.FrameInit.ActiveFrameLength = 1;
   hsai_BlockB1.FrameInit.FSDefinition = SAI_FS_STARTFRAME;
   hsai_BlockB1.FrameInit.FSPolarity = SAI_FS_ACTIVE_LOW;
@@ -740,10 +776,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PA0 PA1 PA2 PA3 
-                           PA5 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3 
-                          |GPIO_PIN_5;
+  /*Configure GPIO pins : PA1 PA2 PA3 PA5 */
+  GPIO_InitStruct.Pin = GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3|GPIO_PIN_5;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
@@ -776,10 +810,10 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PD0 PD2 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_2;
+  /*Configure GPIO pin : PD0 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PD1 PD3 PD4 */
@@ -788,6 +822,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
   GPIO_InitStruct.Alternate = GPIO_AF5_SPI2;
+  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PD2 */
+  GPIO_InitStruct.Pin = GPIO_PIN_2;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PD7 */
@@ -808,6 +848,10 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI0_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI0_IRQn);
 
 }
 

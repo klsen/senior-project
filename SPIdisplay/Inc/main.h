@@ -58,7 +58,7 @@ void Error_Handler(void);
 
 /* Private defines -----------------------------------------------------------*/
 /* USER CODE BEGIN Private defines */
-
+SPI_HandleTypeDef hspi1;		// redefined in main.c. doesn't look like it breaks anything?
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
