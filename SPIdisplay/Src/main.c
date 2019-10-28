@@ -130,7 +130,6 @@ void lineTest(uint16_t bg) {
 }
 
 void charTest(uint16_t bg) {
-	uint16_t color = ST77XX_WHITE;
 	uint8_t x, y;
 
 	uint16_t rainbowColors[] = {
@@ -164,19 +163,36 @@ void textTest(uint16_t bg) {
 	drawText(0, 0, 1, ST77XX_WHITE, str, &hspi1);
 	HAL_Delay(1000);
 
-	str = "Help me, I am trapped here!";
+	str = "Looooooooooooooooooooooooooooooong string";
 	drawText(0, 16, 1, ST77XX_WHITE, str, &hspi1);
 	HAL_Delay(1000);
 
-	str = "Before they take me away, I have to tell you";
+	str = "more text";
 	drawText(0, 40, 1, ST77XX_WHITE, str, &hspi1);
 	HAL_Delay(1000);
 
-	str = "Obama's last name is";
+	str = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 	drawText(0, 64, 1, ST77XX_WHITE, str, &hspi1);
 	HAL_Delay(500);
 
 	fillScreen(bg, &hspi1);
+}
+
+void basicTest(uint16_t bg) {
+	drawPixel(0, 0, ST77XX_BLUE, &hspi1);
+	HAL_Delay(250);
+	drawHLine(0, 159, 128, ST77XX_RED, &hspi1);
+	HAL_Delay(250);
+	drawVLine(127, 0, 160, ST77XX_GREEN, &hspi1);
+	drawRect(50, 50, 50, 50, ST77XX_CYAN, &hspi1);
+
+	HAL_Delay(500);
+
+	fillScreen(bg, &hspi1);
+	drawPixel(0, 0, bg, &hspi1);
+	drawHLine(0, 159, 128, bg, &hspi1);
+	drawVLine(127, 0, 160, bg, &hspi1);
+	drawRect(50, 50, 50, 50, bg, &hspi1);
 }
 
 //void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
@@ -231,15 +247,6 @@ int main(void)
   MX_SPI1_Init();
   MX_RTC_Init();
   /* USER CODE BEGIN 2 */
-//  displayInit(Rcmd1, &hspi1);
-//  displayInit(Rcmd2red, &hspi1);
-//  displayInit(Rcmd3, &hspi1);
-//  setAddrWindow(0, 1, 8, 1, &hspi1);
-//  sendCommand16(0xAA, 0xAA, 1, &hspi1);
-//  uint16_t temp[4] = {0xAAAA, 0xAAAA, 0xAAAA, 0xAAAA};
-//  HAL_SPI_Transmit(&hspi1, temp, 4, 1000);
-//  uint16_t a = 0xAAAA;
-//  HAL_SPI_Transmit(&hspi1, &a, 1, 1000);
   uint16_t bg = ST77XX_BLACK;
   HAL_Delay(2000);
   TFT_startup(&hspi1);
@@ -257,23 +264,14 @@ int main(void)
 	HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_2);
     HAL_Delay(500);
 
-//    drawPixel(0, 0, ST77XX_BLUE, &hspi1);
-//    HAL_Delay(250);
-//    drawHLine(0, 159, 128, ST77XX_RED, &hspi1);
-//    HAL_Delay(250);
-//    drawVLine(127, 0, 160, ST77XX_GREEN, &hspi1);
-//    drawRect(50, 50, 50, 50, ST77XX_CYAN, &hspi1);
-
+//    lineTest(bg, &hspi1);
+//    charTest(bg, &hspi1);
+//    textTest(bg, &hspi1);
 //    lineTest(bg);
 //    charTest(bg);
 //    textTest(bg);
-//    HAL_Delay(500);
 
-//    fillScreen(bg, &hspi1);
-//    drawPixel(0, 0, bg, &hspi1);
-//    drawHLine(0, 159, 128, bg, &hspi1);
-//    drawVLine(127, 0, 160, bg, &hspi1);
-//    drawRect(50, 50, 50, 50, bg, &hspi1);
+    updateDisplay(&hspi1);
   }
   /* USER CODE END 3 */
 }
@@ -810,10 +808,10 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PD0 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0;
+  /*Configure GPIO pins : PD0 PD2 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_2;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PD1 PD3 PD4 */
@@ -822,12 +820,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
   GPIO_InitStruct.Alternate = GPIO_AF5_SPI2;
-  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : PD2 */
-  GPIO_InitStruct.Pin = GPIO_PIN_2;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PD7 */
