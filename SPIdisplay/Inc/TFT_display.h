@@ -139,6 +139,11 @@ void drawText(uint8_t x, uint8_t y, uint8_t size, uint16_t color, char *str, SPI
  *   draw gradients: you know, maybe it'd be pretty
  *   display rotation: sometimes we might want display rotated to be horizontal instead of vertical
  *   invert display: quick and easy way to alter the whole screen for some sort of spooky effect
+ *
+ *   convenience:
+ *     variables for cursor, textcolor, bg, textsize
+ *     clear line
+ *     newline/textwrap
  */
 
 /* comments:
