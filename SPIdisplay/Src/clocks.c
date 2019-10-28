@@ -1,6 +1,6 @@
 ///*
 // * file for initializing and working with the real-time clock
-// * and low-power timers for time-keeping functionality
+// * and low-power/general purpose timers for time-keeping functionality
 // *
 // * called in main(). uses global variables?
 // */
