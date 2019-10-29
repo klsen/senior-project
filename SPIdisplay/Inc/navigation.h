@@ -4,10 +4,10 @@
 #include "main.h"
 #include "TFT_display.h"
 
-#define BUTTON0 = GPIO_PIN_0
-#define BUTTON1 = GPIO_PIN_1
-#define BUTTON2 = GPIO_PIN_2
-#define BUTTON3 = GPIO_PIN_3
+#define BUTTON0 GPIO_PIN_0
+#define BUTTON1 GPIO_PIN_1
+#define BUTTON2 GPIO_PIN_2
+#define BUTTON3 GPIO_PIN_3
 
 #define NUM_FACES 4
 #define NUM_CLOCKFIELDS 5		// min, hr, year, month, day (year, month first for getting bounds of day)

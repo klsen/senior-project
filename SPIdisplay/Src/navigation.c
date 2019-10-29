@@ -3,17 +3,20 @@
  * uses global flags (concurrency problem).
  */
 
+#include "navigation.h"
+
 // update screen based on global variables
 // going in main, so it's executing in a while loop
 //   software interrupt on flag so that this doesn't run all the time?
 void updateDisplay(SPI_HandleTypeDef *hspi) {
+//	faceChange = 1;			// writes every time it enters function call (makes flag effectively always 1)
 	// update main clock face
 	// missing space for current time
 	if (face == faceMain) {
 		if (faceChange == 1) {
 			fillScreen(ST77XX_CYAN, hspi);
 			drawText(0, HEIGHT-10, 1, ST77XX_BLACK, "main     ", hspi);
-			faceChange == 0;
+			faceChange = 0;
 		}
 		if (clockSet == 0) drawText(0, 0, 1, ST77XX_BLACK, "set       ", hspi);
 		else if (clockSet == 1) {
@@ -31,9 +34,9 @@ void updateDisplay(SPI_HandleTypeDef *hspi) {
 	// update timer face
 	else if (face == faceTimer) {
 		if (faceChange == 1) {
-			fillSceren(ST77XX_GREEN, hspi);
+			fillScreen(ST77XX_GREEN, hspi);
 			drawText(0, HEIGHT-10, 1, ST77XX_BLACK, "timer    ", hspi);
-			faceChange == 0;
+			faceChange = 0;
 		}
 		if (timerSet == 0) {
 			if (timerRunning == 0) drawText(0, 0, 1, ST77XX_BLACK, "not running", hspi);
@@ -54,7 +57,7 @@ void updateDisplay(SPI_HandleTypeDef *hspi) {
 		if (faceChange == 1) {
 			fillScreen(ST77XX_MAGENTA, hspi);
 			drawText(0, HEIGHT-10, 1, ST77XX_BLACK, "alarm    ", hspi);
-			faceChange == 0;
+			faceChange = 0;
 		}
 		if (alarmSet == 0) {
 			if (alarmRunning == 0) drawText(0, 0, 1, ST77XX_BLACK, "not running", hspi);
@@ -76,7 +79,7 @@ void updateDisplay(SPI_HandleTypeDef *hspi) {
 		if (faceChange == 1) {
 			fillScreen(ST77XX_YELLOW, hspi);
 			drawText(0, HEIGHT-10, 1, ST77XX_BLACK, "stopwatch", hspi);
-			faceChange == 0;
+			faceChange = 0;
 		}
 		if (stopwatchRunning == 0) drawText(0, 0, 1, ST77XX_BLACK, "not running", hspi);
 		else if (stopwatchRunning == 1) drawText(0, 0, 1, ST77XX_BLACK, "running    ", hspi);
@@ -87,16 +90,7 @@ void updateDisplay(SPI_HandleTypeDef *hspi) {
 // need to complete
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	// do i have to initialize it here or does declaration in .h set them all to 0?
-//	face = 0;
-//	clockSet = 0;
-//	clockField = 0;
-//	timerSet = 0;
-//	timerField = 0;
-//	timerRunning = 0;
-//	alarmSet = 0;
-//	alarmField = 0;
-//	alarmRunning = 0;
-//	stopwatchRunning = 0;
+	// statics are 0 on start
 
 	/* program flow:
 	 *   check current face used
@@ -168,7 +162,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 				if (alarmField != 0) alarmSet = 1;
 				else {
 					alarmSet = 0;
-					alarmRunning == 1;
+					alarmRunning = 1;
 				}
 			}
 		}
@@ -206,6 +200,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 //void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 //	// expected behavior: blue -> green -> red if static variable is set to 0 on declaration
 //	// else red -> green -> blue
+//
+//	// is blue -> green -> red
 //	if (clockSet == 0) {
 //		fillScreen(ST77XX_BLUE, &hspi1);
 //		clockSet = 1;
