@@ -18,9 +18,12 @@ void updateDisplay(SPI_HandleTypeDef *hspi) {
 			drawText(0, HEIGHT-10, 1, ST77XX_BLACK, "main     ", hspi);
 			faceChange = 0;
 		}
-		if (clockSet == 0) drawText(0, 0, 1, ST77XX_BLACK, "set       ", hspi);
+		if (clockSet == 0) {
+			drawText(0, 0, 1, ST77XX_BLACK, "not setting", hspi);
+			drawText(0, 10, 1, ST77XX_BLACK, "     ", hspi);
+		}
 		else if (clockSet == 1) {
-			drawText(0, 0, 1, ST77XX_BLACK, "setting...", hspi);
+			drawText(0, 0, 1, ST77XX_BLACK, "setting... ", hspi);
 			switch (clockField) {
 				case 1: drawText(0, 10, 1, ST77XX_BLACK, "min  ", hspi); break;
 				case 2: drawText(0, 10, 1, ST77XX_BLACK, "hr   ", hspi); break;
@@ -39,7 +42,10 @@ void updateDisplay(SPI_HandleTypeDef *hspi) {
 			faceChange = 0;
 		}
 		if (timerSet == 0) {
-			if (timerRunning == 0) drawText(0, 0, 1, ST77XX_BLACK, "not running", hspi);
+			drawText(0, 10, 1, ST77XX_BLACK, "     ", hspi);
+			if (timerRunning == 0) {
+				drawText(0, 0, 1, ST77XX_BLACK, "not running", hspi);
+			}
 			else if (timerRunning == 1) drawText(0, 0, 1, ST77XX_BLACK, "running    ", hspi);
 		}
 		else if (timerSet == 1) {
@@ -60,6 +66,7 @@ void updateDisplay(SPI_HandleTypeDef *hspi) {
 			faceChange = 0;
 		}
 		if (alarmSet == 0) {
+			drawText(0, 10, 1, ST77XX_BLACK, "     ", hspi);
 			if (alarmRunning == 0) drawText(0, 0, 1, ST77XX_BLACK, "not running", hspi);
 			else if (alarmRunning == 1) drawText(0, 0, 1, ST77XX_BLACK, "running    ", hspi);
 		}
@@ -159,7 +166,9 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 			if (GPIO_Pin == BUTTON3) {
 				// toggle between fields
 				alarmField = (alarmField + 1) % (NUM_ALARMFIELDS + 1);
-				if (alarmField != 0) alarmSet = 1;
+				if (alarmField != 0) {
+					alarmSet = 1;
+				}
 				else {
 					alarmSet = 0;
 					alarmRunning = 1;
@@ -168,12 +177,12 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 		}
 		// not entirely in scope of buttons
 		else if (alarmRunning == 1) {
-			if (GPIO_Pin == BUTTON1) {
-				// none
-			}
-			if (GPIO_Pin == BUTTON2) {
-				// none
-			}
+//			if (GPIO_Pin == BUTTON1) {
+//				// none
+//			}
+//			if (GPIO_Pin == BUTTON2) {
+//				// none
+//			}
 			if (GPIO_Pin == BUTTON3) {
 				// stop and clear alarm hw
 				alarmRunning = 0;
