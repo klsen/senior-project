@@ -5,9 +5,9 @@
 #include "TFT_display.h"
 
 #define BUTTON0 GPIO_PIN_0
-#define BUTTON1 GPIO_PIN_3
-#define BUTTON2 GPIO_PIN_6
-#define BUTTON3 GPIO_PIN_7
+#define BUTTON1 GPIO_PIN_1
+#define BUTTON2 GPIO_PIN_2
+#define BUTTON3 GPIO_PIN_3
 
 #define NUM_FACES 4
 #define NUM_CLOCKFIELDS 5		// min, hr, year, month, day (year, month first for getting bounds of day)
@@ -21,28 +21,28 @@
 // variables to track state of apps, set in callback/interrupt
 // straight global instead of static (scope in file only)?
 // need volatile keyword?
-static int face;
-static int faceChange;		// flag set and cleared in different places, careful
+static volatile int face;
+static volatile int faceChange;		// flag set and cleared in different places, careful
 
 // for clock
-static int clockSet;
-static int clockField;
+static volatile int clockSet;
+static volatile int clockField;
 int tempClock[NUM_CLOCKFIELDS];
 
 // for timer
-static int timerSet;
-static int timerField;
-static int timerRunning;
+static volatile int timerSet;
+static volatile int timerField;
+static volatile int timerRunning;
 int tempTimer[NUM_TIMERFIELDS];
 
 // for alarm
-static int alarmSet;
-static int alarmField;
-static int alarmRunning;
+static volatile int alarmSet;
+static volatile int alarmField;
+static volatile int alarmRunning;
 int tempAlarm[NUM_ALARMFIELDS];
 
 // for stopwatch
-static int stopwatchRunning;
+static volatile int stopwatchRunning;
 int tempStopwatch[NUM_STOPWATCHFIELDS];
 
 // enum for different faces used (clock, timer, alarm, stopwatch)

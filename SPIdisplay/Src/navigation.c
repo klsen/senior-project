@@ -49,7 +49,7 @@ void updateDisplay(SPI_HandleTypeDef *hspi) {
 			else if (timerRunning == 1) drawText(0, 0, 1, ST77XX_BLACK, "running    ", hspi);
 		}
 		else if (timerSet == 1) {
-			drawText(0, 0, 1, ST77XX_BLACK, "setting...", hspi);
+			drawText(0, 0, 1, ST77XX_BLACK, "setting... ", hspi);
 			switch (timerField) {
 				case 1: drawText(0, 10, 1, ST77XX_BLACK, "sec  ", hspi); break;
 				case 2: drawText(0, 10, 1, ST77XX_BLACK, "min  ", hspi); break;
@@ -71,7 +71,7 @@ void updateDisplay(SPI_HandleTypeDef *hspi) {
 			else if (alarmRunning == 1) drawText(0, 0, 1, ST77XX_BLACK, "running    ", hspi);
 		}
 		else if (alarmSet == 1) {
-			drawText(0, 0, 1, ST77XX_BLACK, "setting...", hspi);
+			drawText(0, 0, 1, ST77XX_BLACK, "setting... ", hspi);
 			switch (alarmField) {
 				case 1: drawText(0, 10, 1, ST77XX_BLACK, "sec  ", hspi); break;
 				case 2: drawText(0, 10, 1, ST77XX_BLACK, "min  ", hspi); break;
@@ -103,6 +103,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	 *   check current face used
 	 *   check current variables and check button pressed
 	 */
+	HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_8);	// should run for any button
 	if (GPIO_Pin == BUTTON0) {
 		face = (face + 1) % NUM_FACES;
 		faceChange = 1;
@@ -126,6 +127,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	else if (face == faceTimer) {
 		if (timerRunning == 0) {
 			if (GPIO_Pin == BUTTON1) {
+				if (timerSet == 0) timerRunning = 1;
 			}
 			if (GPIO_Pin == BUTTON2) {
 			}

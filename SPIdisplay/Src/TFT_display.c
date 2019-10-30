@@ -298,8 +298,13 @@ void drawChar(uint8_t x, uint8_t y, uint8_t ch, uint16_t color, uint16_t bg, uin
 // how to remove this so it prints near instantly?
 // maybe not needed if all we're doing is printing time (very few characters)
 void drawText(uint8_t x, uint8_t y, uint8_t size, uint16_t color, char *str, SPI_HandleTypeDef *hspi) {
-	// add text wrap
+	int strsize = 0;
 	for (int i = 0; str[i] != '\0'; i++) {
+		strsize++;
+	}
+	fillRect(x, y, strsize*6, size*8, ST77XX_WHITE, hspi);
+	// add text wrap
+	for (int i = 0; i < strsize; i++) {
 		drawChar(x+i*6*size, y, str[i], color, ST77XX_BLACK, size, size, hspi);
 	}
 }
