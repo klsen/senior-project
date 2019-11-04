@@ -302,7 +302,7 @@ void drawText(uint8_t x, uint8_t y, uint8_t size, uint16_t color, char *str, SPI
 	for (int i = 0; str[i] != '\0'; i++) {
 		strsize++;
 	}
-	fillRect(x, y, strsize*6, size*8, ST77XX_WHITE, hspi);
+	fillRect(x, y, strsize*size*6, size*8, ST77XX_WHITE, hspi);
 	// add text wrap
 	for (int i = 0; i < strsize; i++) {
 		drawChar(x+i*6*size, y, str[i], color, ST77XX_BLACK, size, size, hspi);
