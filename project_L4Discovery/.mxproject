@@ -1,7 +1,7 @@
 [PreviousGenFiles]
-HeaderPath=C:/Git Repos/senior-project/SPIdisplay/Inc
+HeaderPath=C:/Git Repos/senior-project/project_L4Discovery/Inc
 HeaderFiles=usb_host.h;usbh_conf.h;usbh_platform.h;stm32l4xx_it.h;stm32l4xx_hal_conf.h;main.h;
-SourcePath=C:/Git Repos/senior-project/SPIdisplay/Src
+SourcePath=C:/Git Repos/senior-project/project_L4Discovery/Src
 SourceFiles=usb_host.c;usbh_conf.c;usbh_platform.c;stm32l4xx_it.c;stm32l4xx_hal_msp.c;main.c;
 
 [PreviousLibFiles]
