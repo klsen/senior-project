@@ -1,14 +1,20 @@
-// rename to a more appropriate name
+/*
+ * file for handling navigation between different apps/interfaces.
+ * uses global flags (concurrency problem?). Displays information
+ * using functions defined in TFT_display.c.
+ */
 
 #include "stm32l0xx_hal.h"
-#include "main.h"
 #include "TFT_display.h"
 
+// uses gpio external interrupts. interrupt handler/callback function
+// ignores ports, so only pin number is needed.
 #define BUTTON0 GPIO_PIN_2
 #define BUTTON1 GPIO_PIN_13
 #define BUTTON2 GPIO_PIN_14
 #define BUTTON3 GPIO_PIN_15
 
+// defines to help with flags
 #define NUM_FACES 4
 #define NUM_CLOCKFIELDS 5		// min, hr, year, month, day (year, month first for getting bounds of day)
 #define NUM_TIMERFIELDS 3		// sec, min, hr
@@ -19,7 +25,7 @@
 // hardware interrupt from software lmao
 
 // variables to track state of apps, set in callback/interrupt
-// straight global instead of static (scope in file only)?
+// straight global instead of static/scope in file only?
 // need volatile keyword?
 static int face;
 static int faceChange;		// flag set and cleared in different places, careful
@@ -79,4 +85,4 @@ enum displayFaces {
 	faceStopwatch
 };
 
-void updateDisplay();
+void updateDisplay(SPI_HandleTypeDef *hspi);

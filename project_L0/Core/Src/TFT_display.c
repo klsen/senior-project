@@ -1,4 +1,14 @@
-// code ripped from Adafruit library
+/*
+ * Basic graphics library for using the Adafruit TFT LCD display
+ * with the ST7735R driver chip and SPI. Based heavily on Adafruit
+ * Arduino library for the same display.
+ *
+ * Can:
+ *   Initialize display
+ *   Draw lines between 2 points
+ *   Draw rectangles
+ *   Print characters
+ */
 
 #include "TFT_display.h"
 
@@ -297,14 +307,14 @@ void drawChar(uint8_t x, uint8_t y, uint8_t ch, uint16_t color, uint16_t bg, uin
 // this function is slow, and you can definitely see a scrolling speed thing going on
 // how to remove this so it prints near instantly?
 // maybe not needed if all we're doing is printing time (very few characters)
-void drawText(uint8_t x, uint8_t y, uint8_t size, uint16_t color, char *str, SPI_HandleTypeDef *hspi) {
-	int strsize = 0;
-	for (int i = 0; str[i] != '\0'; i++) {
-		strsize++;
-	}
-	fillRect(x, y, strsize*size*6, size*8, ST77XX_WHITE, hspi);
+void drawText(uint8_t x, uint8_t y, uint8_t size, uint16_t color, uint16_t bg, char *str, SPI_HandleTypeDef *hspi) {
+//	int strsize = 0;
+//	for (int i = 0; str[i] != '\0'; i++) {
+//		strsize++;
+//	}
+//	fillRect(x, y, strsize*size*6, size*8, bg, hspi);
 	// add text wrap
 	for (int i = 0; str[i] != '\0'; i++) {
-		drawChar(x+i*6*size, y, str[i], color, ST77XX_BLACK, size, size, hspi);
+		drawChar(x+i*6*size, y, str[i], color, bg, size, size, hspi);
 	}
 }

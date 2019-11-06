@@ -1,6 +1,6 @@
 /*
- * file for handling navigation between different apps/interfaces.
- * uses global flags (concurrency problem).
+ * File for handling navigation between different apps/interfaces.
+ * uses global flags (concurrency problem?).
  */
 
 #include "navigation.h"
@@ -12,10 +12,12 @@ void updateDisplay(SPI_HandleTypeDef *hspi) {
 //	faceChange = 1;			// writes every time it enters function call (makes flag effectively always 1)
 	// update main clock face
 	// missing space for current time
+	static uint16_t bg;
 	if (face == faceMain) {
 		if (faceChange == 1) {
-			fillScreen(ST77XX_CYAN, hspi);
-			drawText(0, HEIGHT-10, 1, ST77XX_BLACK, "main     ", hspi);
+			bg = ST77XX_CYAN;
+			fillScreen(bg, hspi);
+			drawText(0, HEIGHT-10, 1, ST77XX_BLACK, bg, "main     ", hspi);
 			faceChange = 0;
 		}
 		if (clockSet == 0) {
