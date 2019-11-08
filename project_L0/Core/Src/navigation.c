@@ -12,7 +12,7 @@ void updateDisplay(SPI_HandleTypeDef *hspi) {
 //	faceChange = 1;			// writes every time it enters function call (makes flag effectively always 1)
 	// update main clock face
 	// missing space for current time
-	static uint16_t bg;
+	static uint16_t bg;			// remove whenever you put bg as a global in tft_display
 	if (face == faceMain) {
 		if (faceChange == 1) {
 			bg = ST77XX_CYAN;
@@ -21,17 +21,17 @@ void updateDisplay(SPI_HandleTypeDef *hspi) {
 			faceChange = 0;
 		}
 		if (clockSet == 0) {
-			drawText(0, 0, 1, ST77XX_BLACK, "not setting", hspi);
-			drawText(0, 10, 1, ST77XX_BLACK, "     ", hspi);
+			drawText(0, 0, 1, ST77XX_BLACK, bg, "not setting", hspi);
+			drawText(0, 10, 1, ST77XX_BLACK, bg, "     ", hspi);
 		}
 		else if (clockSet == 1) {
-			drawText(0, 0, 1, ST77XX_BLACK, "setting... ", hspi);
+			drawText(0, 0, 1, ST77XX_BLACK, bg, "setting... ", hspi);
 			switch (clockField) {
-				case 1: drawText(0, 10, 1, ST77XX_BLACK, "min  ", hspi); break;
-				case 2: drawText(0, 10, 1, ST77XX_BLACK, "hr   ", hspi); break;
-				case 3: drawText(0, 10, 1, ST77XX_BLACK, "year ", hspi); break;
-				case 4: drawText(0, 10, 1, ST77XX_BLACK, "month", hspi); break;
-				case 5: drawText(0, 10, 1, ST77XX_BLACK, "day  ", hspi); break;
+				case 1: drawText(0, 10, 1, ST77XX_BLACK, bg, "min  ", hspi); break;
+				case 2: drawText(0, 10, 1, ST77XX_BLACK, bg, "hr   ", hspi); break;
+				case 3: drawText(0, 10, 1, ST77XX_BLACK, bg, "year ", hspi); break;
+				case 4: drawText(0, 10, 1, ST77XX_BLACK, bg, "month", hspi); break;
+				case 5: drawText(0, 10, 1, ST77XX_BLACK, bg, "day  ", hspi); break;
 				default: break;
 			}
 		}
@@ -39,23 +39,24 @@ void updateDisplay(SPI_HandleTypeDef *hspi) {
 	// update timer face
 	else if (face == faceTimer) {
 		if (faceChange == 1) {
-			fillScreen(ST77XX_GREEN, hspi);
-			drawText(0, HEIGHT-10, 1, ST77XX_BLACK, "timer    ", hspi);
+			bg = ST77XX_GREEN;
+			fillScreen(bg, hspi);
+			drawText(0, HEIGHT-10, 1, ST77XX_BLACK, bg, "timer    ", hspi);
 			faceChange = 0;
 		}
 		if (timerSet == 0) {
-			drawText(0, 10, 1, ST77XX_BLACK, "     ", hspi);
+			drawText(0, 10, 1, ST77XX_BLACK, bg, "     ", hspi);
 			if (timerRunning == 0) {
-				drawText(0, 0, 1, ST77XX_BLACK, "not running", hspi);
+				drawText(0, 0, 1, ST77XX_BLACK, bg, "not running", hspi);
 			}
-			else if (timerRunning == 1) drawText(0, 0, 1, ST77XX_BLACK, "running    ", hspi);
+			else if (timerRunning == 1) drawText(0, 0, 1, ST77XX_BLACK, bg, "running    ", hspi);
 		}
 		else if (timerSet == 1) {
-			drawText(0, 0, 1, ST77XX_BLACK, "setting... ", hspi);
+			drawText(0, 0, 1, ST77XX_BLACK, bg, "setting... ", hspi);
 			switch (timerField) {
-				case 1: drawText(0, 10, 1, ST77XX_BLACK, "sec  ", hspi); break;
-				case 2: drawText(0, 10, 1, ST77XX_BLACK, "min  ", hspi); break;
-				case 3: drawText(0, 10, 1, ST77XX_BLACK, "hr   ", hspi); break;
+				case 1: drawText(0, 10, 1, ST77XX_BLACK, bg, "sec  ", hspi); break;
+				case 2: drawText(0, 10, 1, ST77XX_BLACK, bg, "min  ", hspi); break;
+				case 3: drawText(0, 10, 1, ST77XX_BLACK, bg, "hr   ", hspi); break;
 				default: break;
 			}
 		}
@@ -63,22 +64,23 @@ void updateDisplay(SPI_HandleTypeDef *hspi) {
 	// update alarm face
 	else if (face == faceAlarm) {
 		if (faceChange == 1) {
-			fillScreen(ST77XX_MAGENTA, hspi);
-			drawText(0, HEIGHT-10, 1, ST77XX_BLACK, "alarm    ", hspi);
+			bg = ST77XX_MAGENTA;
+			fillScreen(bg, hspi);
+			drawText(0, HEIGHT-10, 1, ST77XX_BLACK, bg, "alarm    ", hspi);
 			faceChange = 0;
 		}
 		if (alarmSet == 0) {
-			drawText(0, 10, 1, ST77XX_BLACK, "     ", hspi);
-			if (alarmRunning == 0) drawText(0, 0, 1, ST77XX_BLACK, "not running", hspi);
-			else if (alarmRunning == 1) drawText(0, 0, 1, ST77XX_BLACK, "running    ", hspi);
+			drawText(0, 10, 1, ST77XX_BLACK, bg, "     ", hspi);
+			if (alarmRunning == 0) drawText(0, 0, 1, ST77XX_BLACK, bg, "not running", hspi);
+			else if (alarmRunning == 1) drawText(0, 0, 1, ST77XX_BLACK, bg, "running    ", hspi);
 		}
 		else if (alarmSet == 1) {
-			drawText(0, 0, 1, ST77XX_BLACK, "setting... ", hspi);
+			drawText(0, 0, 1, ST77XX_BLACK, bg, "setting... ", hspi);
 			switch (alarmField) {
-				case 1: drawText(0, 10, 1, ST77XX_BLACK, "sec  ", hspi); break;
-				case 2: drawText(0, 10, 1, ST77XX_BLACK, "min  ", hspi); break;
-				case 3: drawText(0, 10, 1, ST77XX_BLACK, "hr   ", hspi); break;
-				case 4: drawText(0, 10, 1, ST77XX_BLACK, "day  ", hspi); break;
+				case 1: drawText(0, 10, 1, ST77XX_BLACK, bg, "sec  ", hspi); break;
+				case 2: drawText(0, 10, 1, ST77XX_BLACK, bg, "min  ", hspi); break;
+				case 3: drawText(0, 10, 1, ST77XX_BLACK, bg, "hr   ", hspi); break;
+				case 4: drawText(0, 10, 1, ST77XX_BLACK, bg, "day  ", hspi); break;
 				default: break;
 			}
 		}
@@ -86,12 +88,13 @@ void updateDisplay(SPI_HandleTypeDef *hspi) {
 	// update stopwatch face
 	else if (face == faceStopwatch) {
 		if (faceChange == 1) {
-			fillScreen(ST77XX_YELLOW, hspi);
-			drawText(0, HEIGHT-10, 1, ST77XX_BLACK, "stopwatch", hspi);
+			bg = ST77XX_YELLOW;
+			fillScreen(bg, hspi);
+			drawText(0, HEIGHT-10, 1, ST77XX_BLACK, bg, "stopwatch", hspi);
 			faceChange = 0;
 		}
-		if (stopwatchRunning == 0) drawText(0, 0, 1, ST77XX_BLACK, "not running", hspi);
-		else if (stopwatchRunning == 1) drawText(0, 0, 1, ST77XX_BLACK, "running    ", hspi);
+		if (stopwatchRunning == 0) drawText(0, 0, 1, ST77XX_BLACK, bg, "not running", hspi);
+		else if (stopwatchRunning == 1) drawText(0, 0, 1, ST77XX_BLACK, bg, "running    ", hspi);
 	}
 }
 
