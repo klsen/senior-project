@@ -23,9 +23,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "navigation.h"
-#include "TFT_display.h"
-#include "TFT_display_test.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -127,7 +125,7 @@ int main(void)
 	  HAL_Delay(1000);
 
 	  // clocks tests
-	  // not a loopable test yet; just print after test, i guess
+	  // not a loopable test yet; just print time after test, i guess
 	  clockTest(&hrtc, &hspi1);
 	  printDateTime(&hrtc, &hspi1);
 

@@ -3,6 +3,12 @@
  * which uses the ST7735R driver chip and communicates using SPI.
  */
 
+#ifndef TFT_DISPLAY_TEST_H
+#define TFT_DISPLAY_TEST_H
+
+#include "stm32l0xx_hal.h"
+#include "TFT_display.h"
+
 // draws diagonal, horizontal, and vertical lines
 void lineTest(uint16_t bg, SPI_HandleTypeDef *hspi);
 
@@ -15,3 +21,5 @@ void textTest(uint16_t bg, SPI_HandleTypeDef *hspi);
 
 // draws pixels, horizontal lines, and vertical lines
 void basicTest(uint16_t bg, SPI_HandleTypeDef *hspi);
+
+#endif

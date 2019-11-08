@@ -32,7 +32,9 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "navigation.h"
+#include "TFT_display.h"
+#include "TFT_display_test.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/

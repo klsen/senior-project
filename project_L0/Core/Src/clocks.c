@@ -154,11 +154,11 @@ void setAlarm(RTC_HandleTypeDef *hrtc) {
 // print functions for RTC
 // assumes we're using SPI display and file TFT_display.c
 // pulls date and time structs automatically to only print current time in RTC
-char* printTime(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
-	char* str;
+void printTime(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
+	char* str[40];
 
 	RTC_TimeTypeDef *stime;
-	HAL_RTC_getTime(hrtc, stime, RTC_FORMAT_BIN);
+	HAL_RTC_GetTime(hrtc, stime, RTC_FORMAT_BIN);
 
 	uint8_t sec = stime->Seconds;
 	uint8_t min = stime->Minutes;
@@ -167,22 +167,22 @@ char* printTime(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 	drawText(0, 0, 1, ST77XX_BLACK, ST77XX_WHITE, str, hspi);
 }
 
-char* printDate(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
-	char* str;
+void printDate(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
+	char* str[40];
 
 	RTC_DateTypeDef *sdate;
-	HAL_RTC_getDate(hrtc, stime, RTC_FORMAT_BIN);
+	HAL_RTC_GetDate(hrtc, sdate, RTC_FORMAT_BIN);
 
 	uint8_t yr = sdate->Year;
 	uint8_t month = sdate->Month;
 	uint8_t day = sdate->Date;
-	sprintf(str, "year: %2d, month: %2d, day: %2d");
+	sprintf(str, "year: %2d, month: %2d, day: %2d", yr, month, day);
 	drawText(0, 10, 1, ST77XX_BLACK, ST77XX_WHITE, str, hspi);
 }
 
-char* printDateTime(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
-	printDate(hrtc, hspi);
+void printDateTime(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 	printTime(hrtc, hspi);
+	printDate(hrtc, hspi);
 }
 // ---- end of clock print functions ----
 

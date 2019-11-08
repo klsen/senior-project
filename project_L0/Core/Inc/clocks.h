@@ -5,6 +5,7 @@
 
 #include "stm32l0xx_hal.h"
 #include "TFT_display.h"
+#include <stdio.h>
 
 /*
  * l0 pinout:

@@ -83,19 +83,19 @@ void charTest(uint16_t bg, SPI_HandleTypeDef *hspi) {
 
 void textTest(uint16_t bg, SPI_HandleTypeDef *hspi) {
 	char *str = "Hello";
-	drawText(0, 0, 1, ST77XX_WHITE, str, hspi);
+	drawText(0, 0, 1, ST77XX_BLACK, bg, str, hspi);
 	HAL_Delay(1000);
 
 	str = "Looooooooooooooooooooooooooooooong string";
-	drawText(0, 16, 1, ST77XX_WHITE, str, hspi);
+	drawText(0, 16, 1, ST77XX_BLACK, bg, str, hspi);
 	HAL_Delay(1000);
 
 	str = "more text";
-	drawText(0, 40, 1, ST77XX_WHITE, str, hspi);
+	drawText(0, 40, 1, ST77XX_BLACK, bg, str, hspi);
 	HAL_Delay(1000);
 
 	str = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-	drawText(0, 64, 1, ST77XX_WHITE, str, hspi);
+	drawText(0, 64, 1, ST77XX_BLACK, bg, str, hspi);
 	HAL_Delay(500);
 
 	fillScreen(bg, hspi);

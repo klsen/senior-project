@@ -136,7 +136,6 @@ void drawRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t color, SPI_Ha
 void fillRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t color, SPI_HandleTypeDef* hspi);
 void fillScreen(uint16_t color, SPI_HandleTypeDef* hspi);
 
-
 void drawChar(uint8_t x, uint8_t y, uint8_t ch, uint16_t color, uint16_t bg, uint8_t size_x, uint8_t size_y, SPI_HandleTypeDef *hspi);
 void drawText(uint8_t x, uint8_t y, uint8_t size, uint16_t color, uint16_t bg, char *str, SPI_HandleTypeDef *hspi);
 
