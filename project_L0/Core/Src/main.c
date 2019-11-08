@@ -125,9 +125,8 @@ int main(void)
 	  HAL_Delay(1000);
 
 	  // clocks tests
-	  // not a loopable test yet; just print time after test, i guess
+	  // not a loopable test yet
 	  clockTest(&hrtc, &hspi1);
-	  printDateTime(&hrtc, &hspi1);
 
 	  // display tests
 //	  lineTest(bg, &hspi1);

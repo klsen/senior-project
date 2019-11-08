@@ -14,16 +14,16 @@
  */
 
 // uncomment after you get functions args sorted
-//void setTime();
-//void setDate();
-//void setDateTime();
+void setTime(RTC_HandleTypeDef *hrtc);
+void setDate(RTC_HandleTypeDef *hrtc);
+void setDateTime(RTC_HandleTypeDef *hrtc);
 //
 //void setAlarm();
 //
-//void printTime();
-//void printDate();
-//void printDateTime();
-//
-//void clockTest();
+void printTime(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
+void printDate(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
+void printDateTime(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
+
+void clockTest(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
 
 #endif

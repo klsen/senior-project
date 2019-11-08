@@ -35,7 +35,8 @@ void setTime(RTC_HandleTypeDef *hrtc) {
 	// do nothing until done
 	// not following BCD format (4-bit digit 1, 4-bit digit 2)
 	// while makes program hang? ignore instead?
-	while (HAL_RTC_SetTime(hrtc, &stime, RTC_FORMAT_BIN) != HAL_OK);
+//	while (HAL_RTC_SetTime(hrtc, &stime, RTC_FORMAT_BIN) != HAL_OK);
+	HAL_RTC_SetTime(hrtc, &stime, RTC_FORMAT_BIN);
 }
 
 // change to use args
@@ -69,8 +70,11 @@ void setDateTime(RTC_HandleTypeDef *hrtc) {
 	// ---- end date ----
 
 	// do nothing until done
-	while (HAL_RTC_SetTime(hrtc, &stime, RTC_FORMAT_BIN) != HAL_OK);
-	while (HAL_RTC_SetDate(hrtc, &sdate, RTC_FORMAT_BIN) != HAL_OK);
+//	while (HAL_RTC_SetTime(hrtc, &stime, RTC_FORMAT_BIN) != HAL_OK);
+//	while (HAL_RTC_SetDate(hrtc, &sdate, RTC_FORMAT_BIN) != HAL_OK);
+
+	HAL_RTC_SetTime(hrtc, &stime, RTC_FORMAT_BIN);
+	HAL_RTC_SetDate(hrtc, &sdate, RTC_FORMAT_BIN);
 }
 
 // for time of day+week
@@ -155,29 +159,39 @@ void setAlarm(RTC_HandleTypeDef *hrtc) {
 // assumes we're using SPI display and file TFT_display.c
 // pulls date and time structs automatically to only print current time in RTC
 void printTime(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
-	char* str[40];
+	char str[40];		// problems when using only char*
 
-	RTC_TimeTypeDef *stime;
-	HAL_RTC_GetTime(hrtc, stime, RTC_FORMAT_BIN);
+	RTC_TimeTypeDef stime;		// problems when unitialized? doesn't look like it so far
+	HAL_RTC_GetTime(hrtc, &stime, RTC_FORMAT_BIN);
+	HAL_RTC_GetDate(hrtc, NULL, RTC_FORMAT_BIN);
 
-	uint8_t sec = stime->Seconds;
-	uint8_t min = stime->Minutes;
-	uint8_t hr = stime->Hours;
-	sprintf(str, "sec: %2d, min: %2d, hour: %2d", sec, min, hr);
+	uint8_t sec = stime.Seconds;
+	uint8_t min = stime.Minutes;
+	uint8_t hr = stime.Hours;
+	sprintf(str, "sec: %2d", sec);
 	drawText(0, 0, 1, ST77XX_BLACK, ST77XX_WHITE, str, hspi);
+	sprintf(str, "min: %2d", min);
+	drawText(0, 10, 1, ST77XX_BLACK, ST77XX_WHITE, str, hspi);
+	sprintf(str, "hr: %3d", hr);
+	drawText(0, 20, 1, ST77XX_BLACK, ST77XX_WHITE, str, hspi);
 }
 
 void printDate(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
-	char* str[40];
+	char str[40];		// problems when using only char*
 
-	RTC_DateTypeDef *sdate;
-	HAL_RTC_GetDate(hrtc, sdate, RTC_FORMAT_BIN);
+	RTC_DateTypeDef sdate;		// problems when unitialized? doesn't look like it so far
+	HAL_RTC_GetTime(hrtc, NULL, RTC_FORMAT_BIN);
+	HAL_RTC_GetDate(hrtc, &sdate, RTC_FORMAT_BIN);
 
-	uint8_t yr = sdate->Year;
-	uint8_t month = sdate->Month;
-	uint8_t day = sdate->Date;
-	sprintf(str, "year: %2d, month: %2d, day: %2d", yr, month, day);
-	drawText(0, 10, 1, ST77XX_BLACK, ST77XX_WHITE, str, hspi);
+	uint8_t yr = sdate.Year;
+	uint8_t month = sdate.Month;
+	uint8_t day = sdate.Date;
+	sprintf(str, "year: %3d", yr);
+	drawText(0, 40, 1, ST77XX_BLACK, ST77XX_WHITE, str, hspi);
+	sprintf(str, "month: %4d", month);
+	drawText(0, 50, 1, ST77XX_BLACK, ST77XX_WHITE, str, hspi);
+	sprintf(str, "day: %2d", day);
+	drawText(0, 60, 1, ST77XX_BLACK, ST77XX_WHITE, str, hspi);
 }
 
 void printDateTime(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {

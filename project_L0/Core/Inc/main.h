@@ -35,6 +35,7 @@ extern "C" {
 #include "navigation.h"
 #include "TFT_display.h"
 #include "TFT_display_test.h"
+#include "clocks.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
