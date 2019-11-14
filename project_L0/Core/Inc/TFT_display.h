@@ -124,20 +124,39 @@ void setAddrWindow(uint16_t x, uint16_t y, uint16_t w, uint16_t h, SPI_HandleTyp
 // ---- End of lower level functions ----
 
 // ---- Graphics functions ----
+// ---- base functions ----
 // convention: spi handle is last argument of funct
 uint16_t colorFixer(uint16_t);
 void drawPixel(uint8_t x, uint8_t y, uint16_t color, SPI_HandleTypeDef* hspi);
 void drawHLine(uint8_t x, uint8_t y, uint8_t size, uint16_t color, SPI_HandleTypeDef* hspi);
 void drawVLine(uint8_t x, uint8_t y, uint8_t size, uint16_t color, SPI_HandleTypeDef* hspi);
+// ---- end of base functions ----
 
+// ---- basic shapes and lines ----
 // these functions are based completely on above functions
 void drawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint16_t color, SPI_HandleTypeDef* hspi);
 void drawRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t color, SPI_HandleTypeDef* hspi);
 void fillRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t color, SPI_HandleTypeDef* hspi);
 void fillScreen(uint16_t color, SPI_HandleTypeDef* hspi);
+// ---- end of basic shapes and lines ----
 
-void drawChar(uint8_t x, uint8_t y, uint8_t ch, uint16_t color, uint16_t bg, uint8_t size_x, uint8_t size_y, SPI_HandleTypeDef *hspi);
-void drawText(uint8_t x, uint8_t y, uint8_t size, uint16_t color, uint16_t bg, char *str, SPI_HandleTypeDef *hspi);
+// ---- text functions ----
+// variables to make using functions easier or something
+uint8_t cursorX;
+uint8_t cursorY;
+uint8_t textSize;
+uint16_t textColor;
+uint16_t bg;
+//void drawChar(uint8_t x, uint8_t y, uint8_t ch, uint16_t color, uint16_t bg, uint8_t size_x, uint8_t size_y, SPI_HandleTypeDef *hspi);
+//void drawText(uint8_t x, uint8_t y, uint8_t size, uint16_t color, uint16_t bg, char *str, SPI_HandleTypeDef *hspi);
+void drawChar(uint8_t ch, SPI_HandleTypeDef *hspi);
+void drawText(char *str, SPI_HandleTypeDef *hspi);
+void setBackgroundColor(uint16_t color);
+void setCursor(uint8_t x, uint8_t y);
+void setTextSize(uint8_t size);
+void setTextColor(uint16_t color);
+void clearScreen(uint16_t color, SPI_HandleTypeDef* hspi);
+// ---- end of text functions ----
 
 /* some more ideas for graphics:
  *   canvas system: a data structure or array representing the layout of the screen
@@ -145,6 +164,7 @@ void drawText(uint8_t x, uint8_t y, uint8_t size, uint16_t color, uint16_t bg, c
  *     declare as static so it can go into flash? might make things slower but might not really
  *       if we can do this, we can use DMA to do the whole screen transfer, and we'd need to do no work on it
  *     can use palette system so each pixel can be represented with much less bits (2, 4, or 8)
+ *     can switch palettes on the fly (probably implied, why am i typing this out)
  *     rewrite graphics functions to work with this system
  *   draw bitmaps: import a file and read, or whatever
  *   draw other shapes: circles, triangles, polygons, rounded rectangles, etc.
@@ -166,6 +186,8 @@ void drawText(uint8_t x, uint8_t y, uint8_t size, uint16_t color, uint16_t bg, c
  *   info needs very little memory, but how can we make this faster?
  *     retranslate 1-bit data structure into 16-bit data structure and pass as one call to SPI?
  *   is very slow on L0 nucleo
+ *   ram is only 20kB, and can't use flash for variables that aren't const. 2-bit palette system and
+ *     translate 1/4 of display at a time might fit into ram
  */
 // ---- End of graphics functions ----
 #endif

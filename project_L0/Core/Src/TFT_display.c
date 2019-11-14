@@ -12,6 +12,7 @@
 
 #include "TFT_display.h"
 
+// ---- lower level functions ----
 void SPI_CS_LOW() {HAL_GPIO_WritePin(CS_GPIO, CS_PIN, GPIO_PIN_RESET);}
 
 void SPI_CS_HIGH() {HAL_GPIO_WritePin(CS_GPIO, CS_PIN, GPIO_PIN_SET);}
@@ -134,6 +135,13 @@ void TFT_startup(SPI_HandleTypeDef *hspi) {
 
 	displayInit(initCommands, hspi);
 	setAddrWindow(0, 0, WIDTH, HEIGHT, hspi);
+
+	// set the global variables
+	cursorX = 0;
+	cursorY = 0;
+	textSize = 1;
+	textColor = ST77XX_BLACK;
+	bg = ST77XX_WHITE;
 }
 
 // draw something: set addr window -> write to ram memory
@@ -157,7 +165,9 @@ void setAddrWindow(uint16_t x, uint16_t y, uint16_t w, uint16_t h, SPI_HandleTyp
 	temp[3] = (y+h-1) & (0x00FF);
 	sendCommand(ST77XX_RASET, temp, 4, hspi);
 }
+// ---- end of lower level functions
 
+// ---- base graphics functions ----
 // 8-bit spi bus wants msb first; in array, lowest index is sent first
 // because L4 is little-endian
 //   for 16-bit value, it sends lower byte before upper byte
@@ -216,7 +226,9 @@ void drawVLine(uint8_t x, uint8_t y, uint8_t size, uint16_t color, SPI_HandleTyp
 
 	sendCommand(ST77XX_RAMWR, colors, size*2, hspi);
 }
+// ---- end of base graphics functions
 
+// ---- basic shapes and lines ----
 void drawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint16_t color, SPI_HandleTypeDef *hspi) {
 	// based on Bresenham's line drawing algorithm (thx Adafruit and Wikipedia)
 	if (x0 == x1) {
@@ -276,8 +288,11 @@ void fillRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t color, SPI_Ha
 void fillScreen(uint16_t color, SPI_HandleTypeDef *hspi) {
 	fillRect(0, 0, WIDTH, HEIGHT, color, hspi);
 }
+// ---- end of basic shapes and lines ----
 
-void drawChar(uint8_t x, uint8_t y, uint8_t ch, uint16_t color, uint16_t bg, uint8_t size_x, uint8_t size_y, SPI_HandleTypeDef *hspi) {
+// ---- text functions ----
+//void drawChar(uint8_t x, uint8_t y, uint8_t ch, uint16_t color, uint16_t bg, uint8_t size_x, uint8_t size_y, SPI_HandleTypeDef *hspi) {
+void drawChar(uint8_t ch, SPI_HandleTypeDef *hspi) {
 	// very much ripped from Adafruit
 	// saves me a lot of time from making my own fonts
 	// thinking of only using 1 parameter for size?
@@ -290,39 +305,53 @@ void drawChar(uint8_t x, uint8_t y, uint8_t ch, uint16_t color, uint16_t bg, uin
 
 //	if(!_cp437 && (c >= 176)) c++; // Handle 'classic' charset behavior
 
-	for(int8_t i=0; i<5; i++ ) { // Char bitmap = 5 columns
+	for (int8_t i=0; i<5; i++ ) { // Char bitmap = 5 columns
 		uint8_t line = font[ch*5+i];
-		for(int8_t j=0; j<8; j++, line >>= 1) {
-			if(line & 1) {
-				if(size_x == 1 && size_y == 1)
-					drawPixel(x+i, y+j, color, hspi);
+		for (int8_t j=0; j<8; j++, line >>= 1) {
+			if (line & 1) {
+				if (textSize == 1)
+					drawPixel(cursorX+i, cursorY+j, textColor, hspi);
 				else
-					fillRect(x+i*size_x, y+j*size_y, size_x, size_y, color, hspi);
-			} else if(bg != color) {
-				if(size_x == 1 && size_y == 1)
-					drawPixel(x+i, y+j, bg, hspi);
+					fillRect(cursorX+i*textSize, cursorY+j*textSize, textSize, textSize, textColor, hspi);
+			} else if (bg != textColor) {
+				if (textSize == 1)
+					drawPixel(cursorX+i, cursorY+j, bg, hspi);
 				else
-					fillRect(x+i*size_x, y+j*size_y, size_x, size_y, bg, hspi);
+					fillRect(cursorX+i*textSize, cursorY+j*textSize, textSize, textSize, bg, hspi);
 			}
 		}
 	}
-	if(bg != color) { // If opaque, draw vertical line for last column
-		if(size_x == 1 && size_y == 1) drawVLine(x+5, y, 8, bg, hspi);
-		else          fillRect(x+5*size_x, y, size_x, 8*size_y, bg, hspi);
+
+	// not sure if needed? forgot what it did 11/13/19
+	if (bg != textColor) { // If opaque, draw vertical line for last column
+		if (textSize == 1) drawVLine(cursorX+5, cursorY, 8, bg, hspi);
+		else fillRect(cursorX+5*textSize, cursorY, textSize, 8*textSize, bg, hspi);
 	}
 }
 
 // this function is slow, and you can definitely see a scrolling speed thing going on
 // how to remove this so it prints near instantly?
 // maybe not needed if all we're doing is printing time (very few characters)
-void drawText(uint8_t x, uint8_t y, uint8_t size, uint16_t color, uint16_t bg, char *str, SPI_HandleTypeDef *hspi) {
-//	int strsize = 0;
-//	for (int i = 0; str[i] != '\0'; i++) {
-//		strsize++;
-//	}
-//	fillRect(x, y, strsize*size*6, size*8, bg, hspi);
+void drawText(char *str, SPI_HandleTypeDef *hspi) {
 	// add text wrap
 	for (int i = 0; str[i] != '\0'; i++) {
-		drawChar(x+i*6*size, y, str[i], color, bg, size, size, hspi);
+		drawChar(str[i], hspi);
 	}
 }
+
+void setBackgroundColor(uint16_t color) {bg = color;}
+
+void setCursor(uint8_t x, uint8_t y) {
+	cursorX = x;
+	cursorY = y;
+}
+
+void setTextSize(uint8_t size) {textSize = size;}
+
+void setTextColor(uint16_t color) {textColor = color;}
+
+void clearScreen(uint16_t color, SPI_HandleTypeDef *hspi) {
+	bg = color;
+	fillScreen(color, hspi);
+}
+// ---- end of text functions ----
