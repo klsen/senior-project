@@ -24,7 +24,7 @@ struct dates {
 	uint8_t yr;
 	uint8_t month;
 	uint8_t date;
-	uint8_t weekday;
+	uint8_t weekday;		// in hal, week starts monday counting from 1
 };
 
 // struct for alarm stuff
@@ -43,6 +43,7 @@ void setDateTime(RTC_HandleTypeDef *hrtc, struct dates *d, struct times *t);
 
 // setting alarm
 void setAlarm(RTC_HandleTypeDef *hrtc, struct alarmTimes *a);
+void setAlarmB(RTC_HandleTypeDef *hrtc);
 
 // ---- getting rtc times ----
 void getTime(RTC_HandleTypeDef *hrtc, struct times *t);

@@ -74,64 +74,74 @@ void setAlarm(RTC_HandleTypeDef *hrtc, struct alarmTimes *a) {
 	salarm.Alarm = RTC_ALARM_A;			// change if using different alarm
 
 	// do nothing until done
-	while (HAL_RTC_SetAlarm_IT(hrtc, &salarm, RTC_FORMAT_BCD) != HAL_OK);
+//	while (HAL_RTC_SetAlarm_IT(hrtc, &salarm, RTC_FORMAT_BCD) != HAL_OK);
+	HAL_RTC_SetAlarm_IT(hrtc, &salarm, RTC_FORMAT_BIN);
 }
 
-//// for no. of seconds
-//// using RTC alarm A
-//// thinking of using timer instead of rtc alarm for this
-////   interrupts on a second granularity for display? not sure of rtc has
-//void setTimer(RTC_HandleTypeDef *hrtc) {
-//	RTC_AlarmTypeDef salarm = {0};
-//
-//	RTC_TimeTypeDef salarmtime = {0};
-//	// fields we actually care about
-//	salarmtime.Hours = 0;
-//	salarmtime.Minutes = 0;
-//	salarmtime.Seconds = 0;
-//	salarmtime.TimeFormat = RTC_HOURFORMAT_24;
-//	// idc about the rest of these?
-//	salarmtime.SubSeconds = 0;
-//	salarmtime.SecondFraction = 0;
-//	salarmtime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
-//	salarmtime.StoreOperation = RTC_STOREOPERATION_RESET; // not even sure if we need this
-//
-//	// change to set with args
-//	salarm.AlarmTime = salarmtime;		// uses time struct
-//	salarm.AlarmMask = RTC_ALARMMASK_ALL;		// not sure what this does. research more
-//	salarm.AlarmSubSecondMask = RTC_ALARMSUBSECONDMASK_ALL;		// no sub-second comparison. research what this does more
-//	salarm.AlarmDateWeekDaySel = RTC_ALARMDATEWEEKDAYSEL_DATE;
-//	salarm.AlarmDateWeekDay = 1;	// change to calculate using current clock date
-//	salarm.Alarm = RTC_ALARM_B;		// define for which alarm hardware to use
-//
-//	// do nothing until done
-//	while (HAL_RTC_SetAlarm_IT(hrtc, &salarm, RTC_FORMAT_BIN) != HAL_OK);
-//}
+// set an alarm 1 sec after current time to produce signal every sec
+// i hope this doesnt take too much time (haha)
+void setAlarmB(RTC_HandleTypeDef *hrtc) {
+	RTC_AlarmTypeDef salarm = {0};
+	RTC_TimeTypeDef salarmtime = {0};
 
-// thinking we have to implement alarm callbacks instead of irq handler
-// callbacks defined as "weak" in library, irq handler is not
-// who knows if this is even gonna work
-// how to write callback: we're only given rtc handle
-//   check for flags, run based on flags, clear flags(?)
-//   check state typedef (nvm, only has ready, reset, busy, timeout, error)
-//   lock object? (enum that only has locked and unlocked status)
+	struct dates d;
+	struct times t;
+	getDateTime(hrtc, &d, &t);
 
-// rtc handle: contains rtc base address, init, lock, state
-//   none look useful >:(
-//   gonna use peripheral addresses?
-//   getState()? (getState is useless, only returns state typedef ^)
+	// if tree to increment time by 1 sec
+	if (t.sec + 1 > 60) {
+		if (t.min + 1 > 60) {
+			if (t.hr + 1 > 24) {
+				d.weekday = ((d.weekday+1) % 7) + 1;
+			}
+			t.hr = (t.hr + 1) % 24;
+		}
+		t.min = (t.min + 1) % 60;
+	}
+	t.sec = (t.sec + 1) % 60;
 
-// check rtc exported macros section
-// get/clear flag macro (difference between exti flag macros?)
-//   bunch of flag definitions for different flags :O
+	// change to set with args
+	salarmtime.Hours = t.hr;
+	salarmtime.Minutes = t.min;
+	salarmtime.Seconds = t.sec;
+	salarmtime.TimeFormat = RTC_HOURFORMAT_24;
+	salarmtime.SubSeconds = 0;
+	salarmtime.SecondFraction = 0;
+	salarmtime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
+	salarmtime.StoreOperation = RTC_STOREOPERATION_RESET;
+
+	salarm.AlarmTime = salarmtime;
+	salarm.AlarmMask = RTC_ALARMMASK_ALL;
+	salarm.AlarmSubSecondMask = RTC_ALARMSUBSECONDMASK_ALL;
+	salarm.AlarmDateWeekDaySel = RTC_ALARMDATEWEEKDAYSEL_WEEKDAY;
+	salarm.AlarmDateWeekDay = d.weekday;
+	salarm.Alarm = RTC_ALARM_B;			// change if using different alarm
+
+	HAL_RTC_SetAlarm_IT(hrtc, &salarm, RTC_FORMAT_BIN);
+}
+
+// ---- callbacks for interrupts ----
+// used for alarm function in project
+// meant to send signal to use motor
+// change to use hw timer so signal is temporary
 void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc) {
 	// change pin to whatever's accessible
 	// using PC0
 	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_0);
 }
 
-// ---- clock get functions ----
+// used to send interrupt every sec to print to display.
+// hack?
+// more efficient ways to do it?
+void HAL_RTC_AlarmBEventCallback(RTC_HandleTypeDef *hrtc) {
+	// print to screen
+	// set alarm for next sec
+	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_1);
+	setAlarmB(hrtc);
+}
+// ---- end of callbacks ----
 
+// ---- clock get functions ----
 // maybe needs subseconds?
 void getTime(RTC_HandleTypeDef *hrtc, struct times *t) {
 	RTC_TimeTypeDef stime;
