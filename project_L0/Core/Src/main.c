@@ -48,6 +48,7 @@ LPTIM_HandleTypeDef hlptim1;
 RTC_HandleTypeDef hrtc;
 
 SPI_HandleTypeDef hspi1;
+DMA_HandleTypeDef hdma_spi1_tx;
 
 TIM_HandleTypeDef htim21;
 
@@ -63,6 +64,7 @@ static void MX_ADC_Init(void);
 static void MX_RTC_Init(void);
 static void MX_TIM21_Init(void);
 static void MX_LPTIM1_Init(void);
+static void MX_DMA_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -106,6 +108,7 @@ int main(void)
   MX_RTC_Init();
   MX_TIM21_Init();
   MX_LPTIM1_Init();
+  MX_DMA_Init();
   /* USER CODE BEGIN 2 */
 	uint16_t bg = ST77XX_BLACK;
 	HAL_Delay(2000);
@@ -460,6 +463,22 @@ static void MX_TIM21_Init(void)
   /* USER CODE BEGIN TIM21_Init 2 */
 
   /* USER CODE END TIM21_Init 2 */
+
+}
+
+/** 
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void) 
+{
+
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA1_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA1_Channel2_3_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel2_3_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel2_3_IRQn);
 
 }
 

@@ -22,17 +22,25 @@ void SPI_DC_HIGH() {HAL_GPIO_WritePin(DC_GPIO, DC_PIN, GPIO_PIN_SET);}
 
 // still ripped but now im changing it
 void sendCommand(uint8_t cmd, uint8_t *args, uint16_t numArgs, SPI_HandleTypeDef *hspi) {
+	while (HAL_SPI_GetState(hspi) == HAL_SPI_STATE_BUSY_TX);		// block next transfer request while DMA transfer is ongoing
 	SPI_CS_LOW();	// chip select
 
 	SPI_DC_LOW();	// command mode
-	HAL_SPI_Transmit(hspi, &cmd, 1, 1000);
+	HAL_SPI_Transmit(hspi, &cmd, 1, 1000);	// not using DMA bc it's only 1 byte
 
 	SPI_DC_HIGH();	// data mode
 	if (numArgs) {
-		HAL_SPI_Transmit(hspi, args, numArgs, 1000);
+		HAL_SPI_Transmit_DMA(hspi, args, numArgs);
 	}
 
-	SPI_CS_HIGH();	// chip select disable
+//	SPI_CS_HIGH();	// chip select disable
+}
+
+// DMA callback on transfer compelete
+// using only for sending data, but not commands
+// dont send request when transfer is ongoing
+void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
+	if (HAL_GPIO_ReadPin(CS_GPIO, CS_PIN) == GPIO_PIN_RESET) SPI_CS_HIGH();	// chip select disable
 }
 
 // array parser heavily based on Adafruit library code
