@@ -339,6 +339,15 @@ void drawText(char *str, SPI_HandleTypeDef *hspi) {
 	}
 }
 
+void drawTextAt(uint8_t x, uint8_t y, char *str, SPI_HandleTypeDef *hspi) {
+	// add text wrap
+	int i = 0;
+	for (i = 0; str[i] != '\0'; i++) {
+		drawChar(str[i], hspi);
+	}
+//	setCursor(x+i*textSize*6, y);
+}
+
 void setBackgroundColor(uint16_t color) {bg = color;}
 
 void setCursor(uint8_t x, uint8_t y) {
@@ -350,8 +359,8 @@ void setTextSize(uint8_t size) {textSize = size;}
 
 void setTextColor(uint16_t color) {textColor = color;}
 
-void clearScreen(uint16_t color, SPI_HandleTypeDef *hspi) {
-	bg = color;
-	fillScreen(color, hspi);
+void clearScreen(uint16_t backgroundColor, SPI_HandleTypeDef *hspi) {
+	bg = backgroundColor;
+	fillScreen(backgroundColor, hspi);
 }
 // ---- end of text functions ----

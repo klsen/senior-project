@@ -5,7 +5,7 @@
 
 #include "TFT_display_test.h"
 
-void lineTest(uint16_t bg, SPI_HandleTypeDef *hspi) {
+void lineTest(SPI_HandleTypeDef *hspi) {
 	int x = WIDTH/2;
 	int y = HEIGHT/2;
 
@@ -49,10 +49,11 @@ void lineTest(uint16_t bg, SPI_HandleTypeDef *hspi) {
 	drawRect(x, y-HEIGHT/4, WIDTH/2, HEIGHT/4, ST77XX_WHITE, hspi);
 	HAL_Delay(1000);
 
+	bg = ST77XX_BLACK;
 	fillScreen(bg, hspi);
 }
 
-void charTest(uint16_t bg, SPI_HandleTypeDef *hspi) {
+void charTest(SPI_HandleTypeDef *hspi) {
 	uint8_t x, y;
 
 	uint16_t rainbowColors[] = {
@@ -67,13 +68,16 @@ void charTest(uint16_t bg, SPI_HandleTypeDef *hspi) {
 
 	// print the standard 127 6x8 characters in different sizes
 	for (int ch_size = 1; ch_size < 6; ch_size++) {
+		setTextSize(ch_size);
 		for (unsigned char ch = 0; ch < 255; ch++) {
 			// move to right enough for next char
 			x = (ch*ch_size*6) % (WIDTH/(ch_size*6)*(ch_size*6));
 			// line break when x gets near WIDTH
 			y = ((8*ch_size) * ((ch*ch_size*6) / (WIDTH/(ch_size*6)*(ch_size*6)))) % (HEIGHT/(ch_size*8)*(ch_size*8));
 
-			drawChar(x, y, ch, rainbowColors[ch%7], bg, ch_size, ch_size, hspi);
+			setCursor(x, y);
+			setTextColor(rainbowColors[ch%7]);
+			drawChar(ch, hspi);
 //			HAL_Delay(250);
 		}
 		HAL_Delay(1000);
@@ -81,27 +85,27 @@ void charTest(uint16_t bg, SPI_HandleTypeDef *hspi) {
 	}
 }
 
-void textTest(uint16_t bg, SPI_HandleTypeDef *hspi) {
+void textTest(SPI_HandleTypeDef *hspi) {
 	char *str = "Hello";
-	drawText(0, 0, 1, ST77XX_BLACK, bg, str, hspi);
+	drawTextAt(0, 0, str, hspi);
 	HAL_Delay(1000);
 
 	str = "Looooooooooooooooooooooooooooooong string";
-	drawText(0, 16, 1, ST77XX_BLACK, bg, str, hspi);
+	drawTextAt(0, 16, str, hspi);
 	HAL_Delay(1000);
 
 	str = "more text";
-	drawText(0, 40, 1, ST77XX_BLACK, bg, str, hspi);
+	drawTextAt(0, 40, str, hspi);
 	HAL_Delay(1000);
 
 	str = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-	drawText(0, 64, 1, ST77XX_BLACK, bg, str, hspi);
+	drawTextAt(0, 64, str, hspi);
 	HAL_Delay(500);
 
 	fillScreen(bg, hspi);
 }
 
-void basicTest(uint16_t bg, SPI_HandleTypeDef *hspi) {
+void basicTest(SPI_HandleTypeDef *hspi) {
 	drawPixel(0, 0, ST77XX_BLUE, hspi);
 	HAL_Delay(250);
 	drawHLine(0, 159, 128, ST77XX_RED, hspi);

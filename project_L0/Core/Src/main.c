@@ -110,7 +110,8 @@ int main(void)
   MX_LPTIM1_Init();
   MX_DMA_Init();
   /* USER CODE BEGIN 2 */
-	uint16_t bg = ST77XX_BLACK;
+//	uint16_t bg = ST77XX_BLACK;
+  	bg = ST77XX_BLACK;
 	HAL_Delay(2000);
 	TFT_startup(&hspi1);
 	fillScreen(bg, &hspi1);

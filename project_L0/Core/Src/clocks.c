@@ -201,12 +201,13 @@ void printTime(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 	struct times t;
 	getTime(hrtc, &t);
 
+	setTextColor(ST77XX_WHITE);
 	sprintf(str, "sec: %2d", t.sec);
-	drawText(0, 0, 1, ST77XX_BLACK, ST77XX_WHITE, str, hspi);
+	drawTextAt(0, 0, str, hspi);
 	sprintf(str, "min: %2d", t.min);
-	drawText(0, 10, 1, ST77XX_BLACK, ST77XX_WHITE, str, hspi);
+	drawTextAt(0, 10, str, hspi);
 	sprintf(str, "hr: %3d", t.hr);
-	drawText(0, 20, 1, ST77XX_BLACK, ST77XX_WHITE, str, hspi);
+	drawTextAt(0, 20, str, hspi);
 }
 
 void printDate(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
@@ -215,14 +216,15 @@ void printDate(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 	struct dates d;
 	getDate(hrtc, &d);
 
+	setTextColor(ST77XX_WHITE);
 	sprintf(str, "year: %3d", d.yr);
-	drawText(0, 40, 1, ST77XX_BLACK, ST77XX_WHITE, str, hspi);
+	drawTextAt(0, 40, str, hspi);
 	sprintf(str, "month: %4d", d.month);
-	drawText(0, 50, 1, ST77XX_BLACK, ST77XX_WHITE, str, hspi);
+	drawTextAt(0, 50, str, hspi);
 	sprintf(str, "day: %2d", d.date);
-	drawText(0, 60, 1, ST77XX_BLACK, ST77XX_WHITE, str, hspi);
+	drawTextAt(0, 60, str, hspi);
 	sprintf(str, "day: %2d", d.weekday);	// probably not gonna show nice since its an enum
-	drawText(0, 70, 1, ST77XX_BLACK, ST77XX_WHITE, str, hspi);
+	drawTextAt(0, 70, str, hspi);
 }
 
 void printDateTime(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {

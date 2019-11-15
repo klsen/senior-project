@@ -10,16 +10,16 @@
 #include "TFT_display.h"
 
 // draws diagonal, horizontal, and vertical lines
-void lineTest(uint16_t bg, SPI_HandleTypeDef *hspi);
+void lineTest(SPI_HandleTypeDef *hspi);
 
 // draws all characters in the character set in different colors
 // and different sizes
-void charTest(uint16_t bg, SPI_HandleTypeDef *hspi);
+void charTest(SPI_HandleTypeDef *hspi);
 
 // draws small bits of text using a char*
-void textTest(uint16_t bg, SPI_HandleTypeDef *hspi);
+void textTest(SPI_HandleTypeDef *hspi);
 
 // draws pixels, horizontal lines, and vertical lines
-void basicTest(uint16_t bg, SPI_HandleTypeDef *hspi);
+void basicTest(SPI_HandleTypeDef *hspi);
 
 #endif
