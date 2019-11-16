@@ -322,7 +322,7 @@ void drawChar(uint8_t ch, SPI_HandleTypeDef *hspi) {
 		}
 	}
 
-	// not sure if needed? forgot what it did 11/13/19
+	// 6wx8h char. this is 6th column, since it's always blank for kerning
 	if (bg != textColor) { // If opaque, draw vertical line for last column
 		if (textSize == 1) drawVLine(cursorX+5, cursorY, 8, bg, hspi);
 		else fillRect(cursorX+5*textSize, cursorY, textSize, 8*textSize, bg, hspi);

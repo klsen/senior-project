@@ -7,6 +7,7 @@
 
 
 #include "clocks.h"
+#include "timers.h"
 
 // set rtc time. uses perosnal struct as arg
 void setTime(RTC_HandleTypeDef *hrtc, struct times *t) {
@@ -56,6 +57,8 @@ void setAlarm(RTC_HandleTypeDef *hrtc, struct alarmTimes *a) {
 	RTC_AlarmTypeDef salarm = {0};
 	RTC_TimeTypeDef salarmtime = {0};
 
+	watchAlarm = *a;	// this is probably fine (value at a is defined already)
+
 	// change to set with args
 	salarmtime.Hours = a->hr;
 	salarmtime.Minutes = a->min;
@@ -80,6 +83,8 @@ void setAlarm(RTC_HandleTypeDef *hrtc, struct alarmTimes *a) {
 
 // set an alarm 1 sec after current time to produce signal every sec
 // i hope this doesnt take too much time (haha)
+// should probably use this 2nd alarm for timer function instead of wasting it like this lol
+// can use one of the hw timers to do this instead?
 void setAlarmB(RTC_HandleTypeDef *hrtc) {
 	RTC_AlarmTypeDef salarm = {0};
 	RTC_TimeTypeDef salarmtime = {0};
@@ -120,6 +125,55 @@ void setAlarmB(RTC_HandleTypeDef *hrtc) {
 	HAL_RTC_SetAlarm_IT(hrtc, &salarm, RTC_FORMAT_BIN);
 }
 
+// set alarm for timer function of watch project
+// using RTC alarm hardware
+void setTimer(RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *htim, struct times *t_in) {
+	RTC_AlarmTypeDef salarm = {0};
+	RTC_TimeTypeDef salarmtime = {0};
+
+	watchTimerSeconds = t_in->sec + t_in->min*60 + t_in->hr * 3600;
+	struct dates d;
+	struct times t;
+	getDateTime(hrtc, &d, &t);
+
+	struct alarmTimes a;
+
+	// adding timer value to current time so we can set an alarm time
+	if (t.sec + t_in->sec > 60) {		// adding seconds
+		if (t.min + t_in->min > 60) {		// adding minutes
+			if (t.hr + t_in->hr > 24) {			// adding hours
+				a.weekday = ((d.weekday + t_in->hr/24) % 7) + 1;		// bc weekday count starts from 1
+			}
+			a.hr = (t.hr + t_in->hr) % 24;
+		}
+		a.min = (t.min + t_in->min) % 60;
+	}
+	a.sec = (t.sec + t_in->sec) % 60;
+
+	// setting RTC parameters
+	salarmtime.Hours = a.hr;
+	salarmtime.Minutes = a.min;
+	salarmtime.Seconds = a.sec;
+	salarmtime.TimeFormat = RTC_HOURFORMAT_24;
+	salarmtime.SubSeconds = 0;
+	salarmtime.SecondFraction = 0;
+	salarmtime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
+	salarmtime.StoreOperation = RTC_STOREOPERATION_RESET;
+
+	salarm.AlarmTime = salarmtime;
+	salarm.AlarmMask = RTC_ALARMMASK_ALL;
+	salarm.AlarmSubSecondMask = RTC_ALARMSUBSECONDMASK_ALL;
+	salarm.AlarmDateWeekDaySel = RTC_ALARMDATEWEEKDAYSEL_WEEKDAY;
+	salarm.AlarmDateWeekDay = a.weekday;
+	salarm.Alarm = RTC_ALARM_B;			// change if using different alarm
+
+	// do nothing until done
+//	while (HAL_RTC_SetAlarm_IT(hrtc, &salarm, RTC_FORMAT_BCD) != HAL_OK);
+	HAL_RTC_SetAlarm_IT(hrtc, &salarm, RTC_FORMAT_BIN);
+
+	runTimerDisplay(htim);
+}
+
 // ---- callbacks for interrupts ----
 // used for alarm function in project
 // meant to send signal to use motor
@@ -128,16 +182,30 @@ void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc) {
 	// change pin to whatever's accessible
 	// using PC0
 	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_0);
+	HAL_Delay(500);			// does this work in interrupt/callback? might not
+	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_0);
+	HAL_RTC_DeactivateAlarm(hrtc, RTC_ALARM_A);
 }
 
 // used to send interrupt every sec to print to display.
 // hack?
 // more efficient ways to do it?
+//void HAL_RTC_AlarmBEventCallback(RTC_HandleTypeDef *hrtc) {
+//	// print to screen
+//	// set alarm for next sec
+//	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_1);
+//	setAlarmB(hrtc);
+//}
+
 void HAL_RTC_AlarmBEventCallback(RTC_HandleTypeDef *hrtc) {
-	// print to screen
-	// set alarm for next sec
-	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_1);
-	setAlarmB(hrtc);
+	// toggles pin on end of timer. clears alarm
+	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_2);
+	HAL_RTC_DeactivateAlarm(hrtc, RTC_ALARM_B);
+
+	/*
+	 * should run motor thing and update display to signal user
+	 * also clear alarm
+	 */
 }
 // ---- end of callbacks ----
 
