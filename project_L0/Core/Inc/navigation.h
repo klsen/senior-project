@@ -4,8 +4,14 @@
  * using functions defined in TFT_display.c.
  */
 
+#ifndef NAVIGATION_H
+#define NAVIGATION_H
+
 #include "stm32l0xx_hal.h"
 #include "TFT_display.h"
+#include "clocks.h"
+#include "timers.h"
+#include "main.h"
 
 // uses gpio external interrupts. interrupt handler/callback function
 // ignores ports, so only pin number is needed.
@@ -98,30 +104,9 @@ enum displayFaces {
 	faceStopwatch
 };
 
-const char* weekdayNames[8] = {
-	"",			// padding so i can avoid dealing with out-of-bounds access
-	"mon  ",
-	"tues ",
-	"wed  ",
-	"thurs",
-	"fri  ",
-	"sat  ",
-	"sun  "
-};
-
-const char* monthNames[12] = {
-	"jan ",
-	"feb ",
-	"mar ",
-	"apr ",
-	"may ",
-	"jun ",
-	"jul ",
-	"aug ",
-	"sept",
-	"oct ",
-	"nov ",
-	"dec "
-};
+const char* weekdayNames[8];
+const char* monthNames[12];
 
 void updateDisplay(SPI_HandleTypeDef *hspi);
+
+#endif

@@ -62,7 +62,9 @@ void Error_Handler(void);
 
 /* Private defines -----------------------------------------------------------*/
 /* USER CODE BEGIN Private defines */
-
+LPTIM_HandleTypeDef hlptim1;
+RTC_HandleTypeDef hrtc;
+TIM_HandleTypeDef htim21;
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

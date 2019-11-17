@@ -4,8 +4,32 @@
  */
 
 #include "navigation.h"
-#include "clocks.h"
-#include "timers.h"
+
+const char* weekdayNames[8] = {
+	"",			// padding so i can avoid dealing with out-of-bounds access
+	"mon  ",
+	"tues ",
+	"wed  ",
+	"thurs",
+	"fri  ",
+	"sat  ",
+	"sun  "
+};
+
+const char* monthNames[12] = {
+	"jan ",
+	"feb ",
+	"mar ",
+	"apr ",
+	"may ",
+	"jun ",
+	"jul ",
+	"aug ",
+	"sept",
+	"oct ",
+	"nov ",
+	"dec "
+};
 
 // update screen based on global variables
 // going in main, so it's executing in a while loop
@@ -44,7 +68,7 @@ void updateDisplay(SPI_HandleTypeDef *hspi) {
 				drawTextAt(0, 10, "     ", hspi);
 				sprintf(str, "%2d:%2d:%2d", currentTime.hr, currentTime.min, currentTime.sec);
 				drawTextAt(0, 60, str, hspi);
-				sprintf(str, "%s, %d, %d   %s", monthNames[currentDate.month], currentDate.day, currentDate.yr, weekdayNames[currentDate.weekday]);
+				sprintf(str, "%s, %d, %d   %s", monthNames[currentDate.month], currentDate.date, currentDate.yr, weekdayNames[currentDate.weekday]);
 				drawTextAt(0, 70, str, hspi);
 			}
 			else if (clockSet == 1) {
@@ -59,7 +83,7 @@ void updateDisplay(SPI_HandleTypeDef *hspi) {
 				}
 				sprintf(str, "%2d:%2d   ", tempClockTimes.hr, tempClockTimes.min);
 				drawTextAt(0, 60, str, hspi);
-				sprintf(str, "%s, %d, %d", monthNames[tempClockDate.month], tempClockDate.day, tempClockDate.yr);
+				sprintf(str, "%s, %d, %d", monthNames[tempClockDate.month], tempClockDate.date, tempClockDate.yr);
 				drawTextAt(0, 70, str, hspi);
 			}
 		}
@@ -207,12 +231,12 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 			clockField = (clockField + 1) % (NUM_CLOCKFIELDS + 1);
 			if (clockField != 0) {
 				clockSet = 1;
-				getDateTime(&tempClockDate, &tempClockTimes, hrtc);
+				getDateTime(&tempClockDate, &tempClockTimes, &hrtc);
 			}
 			else {
 				clockSet = 0;
 				// second set to 0, weekday ignored(?)
-				setDateTime(&tempClockDate, &tempClockTimes, hrtc);
+				setDateTime(&tempClockDate, &tempClockTimes, &hrtc);
 			}
 		}
 		// checks on clock set for other buttons here
@@ -253,7 +277,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 				else {
 					timerSet = 0;
 					timerRunning = 1;	// careful where this gets set/unset
-					setTimer(&tempTimer, hrtc, htim);
+					setTimer(&tempTimer, &hrtc, &htim21);
 				}
 			}
 		}
@@ -334,11 +358,11 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 		if (GPIO_Pin == BUTTON1) {	// start/stop
 			if (stopwatchRunning == 0) {
 				stopwatchRunning = 1;
-				runStopwatch(hlptim);
+				runStopwatch(&hlptim1);
 			}
 			else {
 				stopwatchRunning = 0;
-				pauseStopwatch(hlptim);
+				pauseStopwatch(&hlptim1);
 			}
 		}
 		if (GPIO_Pin == BUTTON2) {
@@ -349,7 +373,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 		if (GPIO_Pin == BUTTON3) {
 			// clear stopwatch hw
 			stopwatchRunning = 0;
-			clearStopwatch(hlptim);
+			clearStopwatch(&hlptim1);
 		}
 	}
 }
