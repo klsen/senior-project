@@ -252,7 +252,7 @@ void getDateTime(struct dates *d, struct times *t, RTC_HandleTypeDef *hrtc) {
 	HAL_RTC_GetTime(hrtc, &stime, RTC_FORMAT_BIN);
 	HAL_RTC_GetDate(hrtc, &sdate, RTC_FORMAT_BIN);
 
-	d->yr = sdate.Year > 50 ? sdate.Year+1900 : sdate.Year+2000;
+	d->yr = sdate.Year > 50 ? sdate.Year+1900 : sdate.Year+2000;		// make assumptions on whether it's 19xx or 20xx
 	d->month = sdate.Month;
 	d->date = sdate.Date;
 	d->weekday = sdate.WeekDay;

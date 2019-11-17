@@ -11,8 +11,8 @@
 // going in main, so it's executing in a while loop
 //   software interrupt on flag so that this doesn't run all the time?
 void updateDisplay(SPI_HandleTypeDef *hspi) {
-	char* str[40];
-	uint32_t stopwatchVal, hr, min, sec;
+	char str[40];
+	uint32_t stopwatchVal, timerVal, hr, min, sec;
 	struct dates currentDate;
 	struct times currentTime;
 	// update main clock face
@@ -28,7 +28,7 @@ void updateDisplay(SPI_HandleTypeDef *hspi) {
 			drawTextAt(0, HEIGHT-10, "timer    ", hspi);
 		}
 		if (face == faceAlarm) {
-			clearScreen(ST77XX_MAGNETA, hspi);
+			clearScreen(ST77XX_MAGENTA, hspi);
 			drawTextAt(0, HEIGHT-10, "alarm    ", hspi);
 		}
 		if (face == faceStopwatch) {
@@ -176,41 +176,89 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_1);
 	if (GPIO_Pin == BUTTON0) {
 		face = (face + 1) % NUM_FACES;
-		faceChange = 1;
+		updateFace = 1;
 	}
 	// use RTC
-	if (face == faceMain) {
+	if (face == faceClock) {
+		updateClock = 1;
 		if (GPIO_Pin == BUTTON1 && clockSet) {
 			// change fields up, do nothing if not setting clock
+			switch (clockField) {
+				case 0: tempClockTimes.min = (tempClockTimes.min+1) % 60; break;
+				case 1: tempClockTimes.hr = (tempClockTimes.hr+1) % 60; break;
+				case 2: tempClockDate.yr = (tempClockDate.yr+1) % 100; break;
+				case 3: tempClockDate.month = (tempClockDate.month+1) % 12; break;
+				case 4: tempClockDate.date = (tempClockDate.date+1) % 31; break;		// make more robust?
+				default: break;
+			}
 		}
 		if (GPIO_Pin == BUTTON2 && clockSet) {
 			// change fields down, do nothing if not setting clock
+			switch (clockField) {
+				case 0: tempClockTimes.min = tempClockTimes.min == 0 ? 59 : tempClockTimes.min-1; break;
+				case 1: tempClockTimes.hr = tempClockTimes.hr == 0 ? 59 : tempClockTimes.hr-1; break;
+				case 2: tempClockDate.yr--; break;		// supposed to be from 1950-2050. no need to do bounds checking
+				case 3: tempClockDate.month = tempClockDate.month == 0 ? 11 : tempClockDate.month-1; break;
+				case 4: tempClockDate.date = tempClockDate.date == 0 ? 31 : tempClockDate.date-1; break;
+				default: break;
+			}
 		}
 		if (GPIO_Pin == BUTTON3) {
 			clockField = (clockField + 1) % (NUM_CLOCKFIELDS + 1);
-			if (clockField != 0) clockSet = 1;
-			else clockSet = 0;
+			if (clockField != 0) {
+				clockSet = 1;
+				getDateTime(&tempClockDate, &tempClockTimes, hrtc);
+			}
+			else {
+				clockSet = 0;
+				// second set to 0, weekday ignored(?)
+				setDateTime(&tempClockDate, &tempClockTimes, hrtc);
+			}
 		}
 		// checks on clock set for other buttons here
 	}
 	// use lptimer
 	else if (face == faceTimer) {
+		updateTimer = 1;
 		if (timerRunning == 0) {
 			if (GPIO_Pin == BUTTON1) {
 				if (timerSet == 0) timerRunning = 1;
+				else {
+					switch (timerField) {
+						case 0: tempTimer.sec = (tempTimer.sec+1) % 60; break;
+						case 1: tempTimer.min = (tempTimer.min+1) % 60; break;
+						case 2: tempTimer.hr = (tempTimer.hr+1) % 24; break;
+						default: break;
+					}
+				}
 			}
 			if (GPIO_Pin == BUTTON2) {
+				if (timerSet == 1) {
+					switch (timerField) {
+						case 0: tempTimer.sec = tempTimer.sec == 0 ? 59 : tempTimer.sec-1; break;
+						case 1: tempTimer.min = tempTimer.min == 0 ? 59-1+60 : tempTimer.min-1; break;
+						case 2: tempTimer.hr = tempTimer.hr == 0 ? 23 : tempTimer.hr-1; break;
+						default: break;
+					}
+				}
 			}
 			if (GPIO_Pin == BUTTON3) {
 				timerField = (timerField + 1) % (NUM_TIMERFIELDS + 1);
-				if (timerField != 0) timerSet = 1;
+				if (timerField != 0) {
+					timerSet = 1;
+					tempTimer.sec = 0;
+					tempTimer.min = 0;
+					tempTimer.hr = 0;
+				}
 				else {
 					timerSet = 0;
 					timerRunning = 1;	// careful where this gets set/unset
+					setTimer(&tempTimer, hrtc, htim);
 				}
 			}
 		}
 		// not sure if this set is in scope of buttons (probably, but not entirely?)
+		// complete this
 		else if (timerRunning == 1) {
 			if (GPIO_Pin == BUTTON1) {
 				// start timer hw
@@ -228,18 +276,36 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	}
 	// use RTC alarm
 	else if (face == faceAlarm) {
+		updateAlarm = 1;
 		if (alarmRunning == 0) {
-			if (GPIO_Pin == BUTTON1) {
+			if (GPIO_Pin == BUTTON1 && alarmSet) {
 				// change field up
+				switch (alarmField) {
+					case 0: tempAlarm.sec = (tempAlarm.sec + 1) % 60; break;
+					case 1: tempAlarm.min = (tempAlarm.min + 1) % 60; break;
+					case 2: tempAlarm.hr = (tempAlarm.hr + 1) % 24; break;
+					case 3: tempAlarm.weekday = (tempAlarm.weekday + 1) % 7 + 1; break;
+					default: break;
+				}
 			}
-			if (GPIO_Pin == BUTTON2) {
+			if (GPIO_Pin == BUTTON2 && alarmSet) {
 				// change field down
+				switch (alarmField) {
+					case 0: tempAlarm.sec = tempAlarm.sec == 0 ? 59 : tempAlarm.sec-1;
+					case 1: tempAlarm.min = tempAlarm.min == 0 ? 59 : tempAlarm.min-1;
+					case 2: tempAlarm.hr = tempAlarm.hr == 0 ? 23 : tempAlarm.hr-1;
+					case 3: tempAlarm.weekday = tempAlarm.weekday == 1 ? 7 : tempAlarm.weekday-1;
+				}
 			}
 			if (GPIO_Pin == BUTTON3) {
 				// toggle between fields
 				alarmField = (alarmField + 1) % (NUM_ALARMFIELDS + 1);
 				if (alarmField != 0) {
 					alarmSet = 1;
+					tempAlarm.sec = 0;
+					tempAlarm.min = 0;
+					tempAlarm.hr = 0;
+					tempAlarm.weekday = 1;
 				}
 				else {
 					alarmSet = 0;
@@ -248,6 +314,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 			}
 		}
 		// not entirely in scope of buttons
+		// complete this
 		else if (alarmRunning == 1) {
 //			if (GPIO_Pin == BUTTON1) {
 //				// none
@@ -263,16 +330,26 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	}
 	// use regular timer
 	else if (face == faceStopwatch) {
+		updateStopwatch = 1;
 		if (GPIO_Pin == BUTTON1) {	// start/stop
-			if (stopwatchRunning == 0) stopwatchRunning = 1;
-			else stopwatchRunning = 0;
+			if (stopwatchRunning == 0) {
+				stopwatchRunning = 1;
+				runStopwatch(hlptim);
+			}
+			else {
+				stopwatchRunning = 0;
+				pauseStopwatch(hlptim);
+			}
 		}
 		if (GPIO_Pin == BUTTON2) {
 			// pull data and set lap
+			lapPrev = lapCurrent;
+			lapCurrent = stopwatchCNT;
 		}
 		if (GPIO_Pin == BUTTON3) {
 			// clear stopwatch hw
 			stopwatchRunning = 0;
+			clearStopwatch(hlptim);
 		}
 	}
 }

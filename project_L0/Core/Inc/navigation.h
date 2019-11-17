@@ -61,6 +61,7 @@ struct alarmTimes tempAlarm;
 
 // for stopwatch
 static int stopwatchRunning;
+uint32_t lapPrev, lapCurrent;
 int tempStopwatch[NUM_STOPWATCHFIELDS];
 
 // using volatile keyword
@@ -97,7 +98,7 @@ enum displayFaces {
 	faceStopwatch
 };
 
-const unsigned char weekdayNames[8] = {
+const char* weekdayNames[8] = {
 	"",			// padding so i can avoid dealing with out-of-bounds access
 	"mon  ",
 	"tues ",
@@ -108,7 +109,7 @@ const unsigned char weekdayNames[8] = {
 	"sun  "
 };
 
-const unsigned char monthNames[12] = {
+const char* monthNames[12] = {
 	"jan ",
 	"feb ",
 	"mar ",
