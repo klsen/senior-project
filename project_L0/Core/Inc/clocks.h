@@ -17,7 +17,7 @@
 
 // ---- variables ----
 struct alarmTimes watchAlarm;		// for keeping track of what alarms are in the RTC.
-struct alarmTimes watchTimer;		// sharing 1 alarm hardware between 2 times (is this necessary?)
+struct times watchTimer;		// sharing 1 alarm hardware between 2 times (is this necessary?)
 uint32_t watchTimerSeconds;
 // ---- end of variables ----
 
@@ -45,23 +45,22 @@ struct alarmTimes {
 };
 // ---- end of structs ----
 
-// change to follow convention set by TFT_display? other params, then peripheral handle?
 // ---- setting rtc time ----
-void setTime(RTC_HandleTypeDef *hrtc, struct times *t);
-void setDate(RTC_HandleTypeDef *hrtc, struct dates *d);
-void setDateTime(RTC_HandleTypeDef *hrtc, struct dates *d, struct times *t);
+void setTime(struct times *t, RTC_HandleTypeDef *hrtc);
+void setDate(struct dates *d, RTC_HandleTypeDef *hrtc);
+void setDateTime(struct dates *d, struct times *t, RTC_HandleTypeDef *hrtc);
 // ---- end of rtc setters ----
 
 // ---- alarm setters ----
-void setAlarm(RTC_HandleTypeDef *hrtc, struct alarmTimes *a);
+void setAlarm(struct alarmTimes *a, RTC_HandleTypeDef *hrtc);
 void setAlarmB(RTC_HandleTypeDef *hrtc);
-void setTimer(RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *htim, struct times *t_in);
+void setTimer(struct times *t_in, RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *htim);
 // ---- end of alarm setters ----
 
 // ---- getting rtc times ----
-void getTime(RTC_HandleTypeDef *hrtc, struct times *t);
-void getDate(RTC_HandleTypeDef *hrtc, struct dates *d);
-void getDateTime(RTC_HandleTypeDef *hrtc, struct dates *d, struct times *t);
+void getTime(struct times *t, RTC_HandleTypeDef *hrtc);
+void getDate(struct dates *d, RTC_HandleTypeDef *hrtc);
+void getDateTime(struct dates *d, struct times *t, RTC_HandleTypeDef *hrtc);
 // ---- end of getters ----
 
 // ---- printing stuff ----

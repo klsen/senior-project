@@ -10,7 +10,7 @@
 #include "timers.h"
 
 // set rtc time. uses perosnal struct as arg
-void setTime(RTC_HandleTypeDef *hrtc, struct times *t) {
+void setTime(struct times *t, RTC_HandleTypeDef *hrtc) {
 	RTC_TimeTypeDef stime = {0};	// change to malloc call? does that work in embedded?
 
 	// set using args later
@@ -35,7 +35,7 @@ void setTime(RTC_HandleTypeDef *hrtc, struct times *t) {
 }
 
 // set rtc date. uses personal struct
-void setDate(RTC_HandleTypeDef *hrtc, struct dates *d) {
+void setDate(struct dates *d, RTC_HandleTypeDef *hrtc) {
 	// ---- date ----
 	RTC_DateTypeDef sdate = {0};
 
@@ -47,13 +47,13 @@ void setDate(RTC_HandleTypeDef *hrtc, struct dates *d) {
 	HAL_RTC_SetDate(hrtc, &sdate, RTC_FORMAT_BIN);
 }
 
-void setDateTime(RTC_HandleTypeDef *hrtc, struct dates *d, struct times *t) {
-	setDate(hrtc, d);
-	setTime(hrtc, t);
+void setDateTime(struct dates *d, struct times *t, RTC_HandleTypeDef *hrtc) {
+	setDate(d, hrtc);
+	setTime(t, hrtc);
 }
 
 // for time of day+week
-void setAlarm(RTC_HandleTypeDef *hrtc, struct alarmTimes *a) {
+void setAlarm(struct alarmTimes *a, RTC_HandleTypeDef *hrtc) {
 	RTC_AlarmTypeDef salarm = {0};
 	RTC_TimeTypeDef salarmtime = {0};
 
@@ -91,7 +91,7 @@ void setAlarmB(RTC_HandleTypeDef *hrtc) {
 
 	struct dates d;
 	struct times t;
-	getDateTime(hrtc, &d, &t);
+	getDateTime(&d, &t, hrtc);
 
 	// if tree to increment time by 1 sec
 	if (t.sec + 1 > 60) {
@@ -127,14 +127,18 @@ void setAlarmB(RTC_HandleTypeDef *hrtc) {
 
 // set alarm for timer function of watch project
 // using RTC alarm hardware
-void setTimer(RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *htim, struct times *t_in) {
+void setTimer(struct times *t_in, RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *htim) {
 	RTC_AlarmTypeDef salarm = {0};
 	RTC_TimeTypeDef salarmtime = {0};
 
+	// set global variables to hold value being set
+	watchTimer = *t_in;
 	watchTimerSeconds = t_in->sec + t_in->min*60 + t_in->hr * 3600;
+
+	// pull current RTC time
 	struct dates d;
 	struct times t;
-	getDateTime(hrtc, &d, &t);
+	getDateTime(&d, &t, hrtc);
 
 	struct alarmTimes a;
 
@@ -211,7 +215,7 @@ void HAL_RTC_AlarmBEventCallback(RTC_HandleTypeDef *hrtc) {
 
 // ---- clock get functions ----
 // maybe needs subseconds?
-void getTime(RTC_HandleTypeDef *hrtc, struct times *t) {
+void getTime(struct times *t, RTC_HandleTypeDef *hrtc) {
 	RTC_TimeTypeDef stime;
 
 	// programming manual says to read time after date. something shadow registers.
@@ -224,7 +228,7 @@ void getTime(RTC_HandleTypeDef *hrtc, struct times *t) {
 	t->sec = stime.Seconds;
 }
 
-void getDate(RTC_HandleTypeDef *hrtc, struct dates *d) {
+void getDate(struct dates *d, RTC_HandleTypeDef *hrtc) {
 	RTC_DateTypeDef sdate;
 
 	// programming manual says to read time after date. something shadow registers.
@@ -239,7 +243,7 @@ void getDate(RTC_HandleTypeDef *hrtc, struct dates *d) {
 }
 
 // not using getDate and getTime for efficiency (?)
-void getDateTime(RTC_HandleTypeDef *hrtc, struct dates *d, struct times *t) {
+void getDateTime(struct dates *d, struct times *t, RTC_HandleTypeDef *hrtc) {
 	RTC_DateTypeDef sdate;
 	RTC_TimeTypeDef stime;
 
@@ -267,7 +271,7 @@ void printTime(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 	char str[40];		// problems when using only char*
 
 	struct times t;
-	getTime(hrtc, &t);
+	getTime(&t, hrtc);
 
 	setTextColor(ST77XX_WHITE);
 	sprintf(str, "sec: %2d", t.sec);
@@ -282,7 +286,7 @@ void printDate(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 	char str[40];		// problems when using only char*
 
 	struct dates d;
-	getDate(hrtc, &d);
+	getDate(&d, hrtc);
 
 	setTextColor(ST77XX_WHITE);
 	sprintf(str, "year: %3d", d.yr);
@@ -312,13 +316,13 @@ void clockTest(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 	printDateTime(hrtc, hspi);
 
 	HAL_Delay(1000);
-	setTime(hrtc, &t);
+	setTime(&t, hrtc);
 	printDateTime(hrtc, hspi);
 	HAL_Delay(1000);
 	printDateTime(hrtc, hspi);
 
 	HAL_Delay(1000);
-	setDateTime(hrtc, &d, &t);
+	setDateTime(&d, &t, hrtc);
 	printDateTime(hrtc, hspi);
 	HAL_Delay(1000);
 	printDateTime(hrtc, hspi);
@@ -328,11 +332,11 @@ void alarmTest(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 	struct dates d;
 	struct times t;
 
-	getDateTime(hrtc, &d, &t);
+	getDateTime(&d, &t, hrtc);
 
 	if (t.sec > 60) t.min += 1;
 	t.sec = (t.sec+10) % 60;
 	struct alarmTimes a = {t.hr, t.min, t.sec, d.weekday};
 
-	setAlarm(hrtc, &a);
+	setAlarm(&a, hrtc);
 }

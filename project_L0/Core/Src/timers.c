@@ -21,7 +21,7 @@ void pauseStopwatch(LPTIM_HandleTypeDef *hlptim) {
 //	temp = hlptim->Instance->CNT;
 }
 
-void stopStopwatch(LPTIM_HandleTypeDef *hlptim) {
+void clearStopwatch(LPTIM_HandleTypeDef *hlptim) {
 	pauseStopwatch(hlptim);
 	stopwatchCNT = 0;
 }

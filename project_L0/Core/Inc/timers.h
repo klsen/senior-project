@@ -26,4 +26,18 @@
 
 uint32_t stopwatchCNT;		// 16-bit can't hold a day's worth of seconds
 
+// ---- stopwatch functions ----
+void runStopwatch(LPTIM_HandleTypeDef *hlptim);
+void pauseStopwatch(LPTIM_HandleTypeDef *hlptim);
+void clearStopwatch(LPTIM_HandleTypeDef *hlptim);
+// ---- end of stopwatch functions ----
+
+// ---- timer functions ----
+void runTimerDisplay(TIM_HandleTypeDef *htim);
+// ---- end of timer functions ----
+
+// ---- motor PWM and other functions ----
+void runMotor(TIM_HandleTypeDef *htim);
+// ---- end of other functions ----
+
 #endif

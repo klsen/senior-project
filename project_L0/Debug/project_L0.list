@@ -21,29 +21,29 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, ALLOC, LOAD, DATA
   8 .data         00000068  20000000  08006a28  00020000  2**2
                   CONTENTS, ALLOC, LOAD, DATA
-  9 .bss          00000244  20000068  08006a90  00020068  2**2
+  9 .bss          00000250  20000068  08006a90  00020068  2**2
                   ALLOC
- 10 ._user_heap_stack 00000604  200002ac  08006a90  000202ac  2**0
+ 10 ._user_heap_stack 00000600  200002b8  08006a90  000202b8  2**0
                   ALLOC
  11 .ARM.attributes 00000028  00000000  00000000  00020068  2**0
                   CONTENTS, READONLY
- 12 .debug_info   000151c3  00000000  00000000  00020090  2**0
+ 12 .debug_info   00015c9e  00000000  00000000  00020090  2**0
                   CONTENTS, READONLY, DEBUGGING
- 13 .debug_abbrev 00002d56  00000000  00000000  00035253  2**0
+ 13 .debug_abbrev 00002da2  00000000  00000000  00035d2e  2**0
                   CONTENTS, READONLY, DEBUGGING
- 14 .debug_aranges 00001218  00000000  00000000  00037fb0  2**3
+ 14 .debug_aranges 00001218  00000000  00000000  00038ad0  2**3
                   CONTENTS, READONLY, DEBUGGING
- 15 .debug_ranges 00001088  00000000  00000000  000391c8  2**3
+ 15 .debug_ranges 00001088  00000000  00000000  00039ce8  2**3
                   CONTENTS, READONLY, DEBUGGING
- 16 .debug_macro  00017516  00000000  00000000  0003a250  2**0
+ 16 .debug_macro  00017680  00000000  00000000  0003ad70  2**0
                   CONTENTS, READONLY, DEBUGGING
- 17 .debug_line   0000f581  00000000  00000000  00051766  2**0
+ 17 .debug_line   0000f76f  00000000  00000000  000523f0  2**0
                   CONTENTS, READONLY, DEBUGGING
- 18 .debug_str    0008d3c7  00000000  00000000  00060ce7  2**0
+ 18 .debug_str    0008d407  00000000  00000000  00061b5f  2**0
                   CONTENTS, READONLY, DEBUGGING
- 19 .comment      0000007b  00000000  00000000  000ee0ae  2**0
+ 19 .comment      0000007b  00000000  00000000  000eef66  2**0
                   CONTENTS, READONLY
- 20 .debug_frame  000042d0  00000000  00000000  000ee12c  2**2
+ 20 .debug_frame  000042d0  00000000  00000000  000eefe4  2**2
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -1963,7 +1963,7 @@ void setTextColor(uint16_t color) {textColor = color;}
 #include "timers.h"
 
 // set rtc time. uses perosnal struct as arg
-void setTime(RTC_HandleTypeDef *hrtc, struct times *t) {
+void setTime(struct times *t, RTC_HandleTypeDef *hrtc) {
  8000de4:	b590      	push	{r4, r7, lr}
  8000de6:	b089      	sub	sp, #36	; 0x24
  8000de8:	af00      	add	r7, sp, #0
@@ -1981,18 +1981,18 @@ void setTime(RTC_HandleTypeDef *hrtc, struct times *t) {
 
 	// set using args later
 	stime.Hours = t->hr;
- 8000e00:	683b      	ldr	r3, [r7, #0]
+ 8000e00:	687b      	ldr	r3, [r7, #4]
  8000e02:	781a      	ldrb	r2, [r3, #0]
  8000e04:	0021      	movs	r1, r4
  8000e06:	187b      	adds	r3, r7, r1
  8000e08:	701a      	strb	r2, [r3, #0]
 	stime.Minutes = t->min;
- 8000e0a:	683b      	ldr	r3, [r7, #0]
+ 8000e0a:	687b      	ldr	r3, [r7, #4]
  8000e0c:	785a      	ldrb	r2, [r3, #1]
  8000e0e:	187b      	adds	r3, r7, r1
  8000e10:	705a      	strb	r2, [r3, #1]
 	stime.Seconds = t->sec;
- 8000e12:	683b      	ldr	r3, [r7, #0]
+ 8000e12:	687b      	ldr	r3, [r7, #4]
  8000e14:	789a      	ldrb	r2, [r3, #2]
  8000e16:	187b      	adds	r3, r7, r1
  8000e18:	709a      	strb	r2, [r3, #2]
@@ -2028,7 +2028,7 @@ void setTime(RTC_HandleTypeDef *hrtc, struct times *t) {
 //	while (HAL_RTC_SetTime(hrtc, &stime, RTC_FORMAT_BIN) != HAL_OK);
 	HAL_RTC_SetTime(hrtc, &stime, RTC_FORMAT_BIN);
  8000e3a:	1879      	adds	r1, r7, r1
- 8000e3c:	687b      	ldr	r3, [r7, #4]
+ 8000e3c:	683b      	ldr	r3, [r7, #0]
  8000e3e:	2200      	movs	r2, #0
  8000e40:	0018      	movs	r0, r3
  8000e42:	f003 f90d 	bl	8004060 <HAL_RTC_SetTime>
@@ -2041,7 +2041,7 @@ void setTime(RTC_HandleTypeDef *hrtc, struct times *t) {
 08000e4e <setDate>:
 
 // set rtc date. uses personal struct
-void setDate(RTC_HandleTypeDef *hrtc, struct dates *d) {
+void setDate(struct dates *d, RTC_HandleTypeDef *hrtc) {
  8000e4e:	b590      	push	{r4, r7, lr}
  8000e50:	b085      	sub	sp, #20
  8000e52:	af00      	add	r7, sp, #0
@@ -2055,22 +2055,22 @@ void setDate(RTC_HandleTypeDef *hrtc, struct dates *d) {
  8000e5e:	601a      	str	r2, [r3, #0]
 
 	sdate.Month = d->month;
- 8000e60:	683b      	ldr	r3, [r7, #0]
+ 8000e60:	687b      	ldr	r3, [r7, #4]
  8000e62:	785a      	ldrb	r2, [r3, #1]
  8000e64:	193b      	adds	r3, r7, r4
  8000e66:	705a      	strb	r2, [r3, #1]
 	sdate.Date = d->date;
- 8000e68:	683b      	ldr	r3, [r7, #0]
+ 8000e68:	687b      	ldr	r3, [r7, #4]
  8000e6a:	789a      	ldrb	r2, [r3, #2]
  8000e6c:	193b      	adds	r3, r7, r4
  8000e6e:	709a      	strb	r2, [r3, #2]
 	sdate.WeekDay = d->weekday;
- 8000e70:	683b      	ldr	r3, [r7, #0]
+ 8000e70:	687b      	ldr	r3, [r7, #4]
  8000e72:	78da      	ldrb	r2, [r3, #3]
  8000e74:	193b      	adds	r3, r7, r4
  8000e76:	701a      	strb	r2, [r3, #0]
 	sdate.Year = d->yr % 100; 		// set only between 0-99. part of the library (!?)
- 8000e78:	683b      	ldr	r3, [r7, #0]
+ 8000e78:	687b      	ldr	r3, [r7, #4]
  8000e7a:	781b      	ldrb	r3, [r3, #0]
  8000e7c:	2164      	movs	r1, #100	; 0x64
  8000e7e:	0018      	movs	r0, r3
@@ -2082,7 +2082,7 @@ void setDate(RTC_HandleTypeDef *hrtc, struct dates *d) {
 
 	HAL_RTC_SetDate(hrtc, &sdate, RTC_FORMAT_BIN);
  8000e8c:	1939      	adds	r1, r7, r4
- 8000e8e:	687b      	ldr	r3, [r7, #4]
+ 8000e8e:	683b      	ldr	r3, [r7, #0]
  8000e90:	2200      	movs	r2, #0
  8000e92:	0018      	movs	r0, r3
  8000e94:	f003 fa04 	bl	80042a0 <HAL_RTC_SetDate>
@@ -2094,22 +2094,22 @@ void setDate(RTC_HandleTypeDef *hrtc, struct dates *d) {
 
 08000ea0 <setDateTime>:
 
-void setDateTime(RTC_HandleTypeDef *hrtc, struct dates *d, struct times *t) {
+void setDateTime(struct dates *d, struct times *t, RTC_HandleTypeDef *hrtc) {
  8000ea0:	b580      	push	{r7, lr}
  8000ea2:	b084      	sub	sp, #16
  8000ea4:	af00      	add	r7, sp, #0
  8000ea6:	60f8      	str	r0, [r7, #12]
  8000ea8:	60b9      	str	r1, [r7, #8]
  8000eaa:	607a      	str	r2, [r7, #4]
-	setDate(hrtc, d);
- 8000eac:	68ba      	ldr	r2, [r7, #8]
+	setDate(d, hrtc);
+ 8000eac:	687a      	ldr	r2, [r7, #4]
  8000eae:	68fb      	ldr	r3, [r7, #12]
  8000eb0:	0011      	movs	r1, r2
  8000eb2:	0018      	movs	r0, r3
  8000eb4:	f7ff ffcb 	bl	8000e4e <setDate>
-	setTime(hrtc, t);
+	setTime(t, hrtc);
  8000eb8:	687a      	ldr	r2, [r7, #4]
- 8000eba:	68fb      	ldr	r3, [r7, #12]
+ 8000eba:	68bb      	ldr	r3, [r7, #8]
  8000ebc:	0011      	movs	r1, r2
  8000ebe:	0018      	movs	r0, r3
  8000ec0:	f7ff ff90 	bl	8000de4 <setTime>
@@ -2167,7 +2167,7 @@ void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc) {
 
 // ---- clock get functions ----
 // maybe needs subseconds?
-void getTime(RTC_HandleTypeDef *hrtc, struct times *t) {
+void getTime(struct times *t, RTC_HandleTypeDef *hrtc) {
  8000f0c:	b590      	push	{r4, r7, lr}
  8000f0e:	b089      	sub	sp, #36	; 0x24
  8000f10:	af00      	add	r7, sp, #0
@@ -2181,12 +2181,12 @@ void getTime(RTC_HandleTypeDef *hrtc, struct times *t) {
  8000f16:	210c      	movs	r1, #12
  8000f18:	000c      	movs	r4, r1
  8000f1a:	1879      	adds	r1, r7, r1
- 8000f1c:	687b      	ldr	r3, [r7, #4]
+ 8000f1c:	683b      	ldr	r3, [r7, #0]
  8000f1e:	2200      	movs	r2, #0
  8000f20:	0018      	movs	r0, r3
  8000f22:	f003 f961 	bl	80041e8 <HAL_RTC_GetTime>
 	HAL_RTC_GetDate(hrtc, NULL, RTC_FORMAT_BIN);
- 8000f26:	687b      	ldr	r3, [r7, #4]
+ 8000f26:	683b      	ldr	r3, [r7, #0]
  8000f28:	2200      	movs	r2, #0
  8000f2a:	2100      	movs	r1, #0
  8000f2c:	0018      	movs	r0, r3
@@ -2196,17 +2196,17 @@ void getTime(RTC_HandleTypeDef *hrtc, struct times *t) {
  8000f32:	0021      	movs	r1, r4
  8000f34:	187b      	adds	r3, r7, r1
  8000f36:	781a      	ldrb	r2, [r3, #0]
- 8000f38:	683b      	ldr	r3, [r7, #0]
+ 8000f38:	687b      	ldr	r3, [r7, #4]
  8000f3a:	701a      	strb	r2, [r3, #0]
 	t->min = stime.Minutes;
  8000f3c:	187b      	adds	r3, r7, r1
  8000f3e:	785a      	ldrb	r2, [r3, #1]
- 8000f40:	683b      	ldr	r3, [r7, #0]
+ 8000f40:	687b      	ldr	r3, [r7, #4]
  8000f42:	705a      	strb	r2, [r3, #1]
 	t->sec = stime.Seconds;
  8000f44:	187b      	adds	r3, r7, r1
  8000f46:	789a      	ldrb	r2, [r3, #2]
- 8000f48:	683b      	ldr	r3, [r7, #0]
+ 8000f48:	687b      	ldr	r3, [r7, #4]
  8000f4a:	709a      	strb	r2, [r3, #2]
 }
  8000f4c:	46c0      	nop			; (mov r8, r8)
@@ -2216,7 +2216,7 @@ void getTime(RTC_HandleTypeDef *hrtc, struct times *t) {
 
 08000f54 <getDate>:
 
-void getDate(RTC_HandleTypeDef *hrtc, struct dates *d) {
+void getDate(struct dates *d, RTC_HandleTypeDef *hrtc) {
  8000f54:	b590      	push	{r4, r7, lr}
  8000f56:	b085      	sub	sp, #20
  8000f58:	af00      	add	r7, sp, #0
@@ -2227,7 +2227,7 @@ void getDate(RTC_HandleTypeDef *hrtc, struct dates *d) {
 	// programming manual says to read time after date. something shadow registers.
 	// not done automatically in HAL
 	HAL_RTC_GetTime(hrtc, NULL, RTC_FORMAT_BIN);
- 8000f5e:	687b      	ldr	r3, [r7, #4]
+ 8000f5e:	683b      	ldr	r3, [r7, #0]
  8000f60:	2200      	movs	r2, #0
  8000f62:	2100      	movs	r1, #0
  8000f64:	0018      	movs	r0, r3
@@ -2235,7 +2235,7 @@ void getDate(RTC_HandleTypeDef *hrtc, struct dates *d) {
 	HAL_RTC_GetDate(hrtc, &sdate, RTC_FORMAT_BIN);
  8000f6a:	240c      	movs	r4, #12
  8000f6c:	1939      	adds	r1, r7, r4
- 8000f6e:	687b      	ldr	r3, [r7, #4]
+ 8000f6e:	683b      	ldr	r3, [r7, #0]
  8000f70:	2200      	movs	r2, #0
  8000f72:	0018      	movs	r0, r3
  8000f74:	f003 fa42 	bl	80043fc <HAL_RTC_GetDate>
@@ -2256,23 +2256,23 @@ void getDate(RTC_HandleTypeDef *hrtc, struct dates *d) {
  8000f90:	78db      	ldrb	r3, [r3, #3]
  8000f92:	3b30      	subs	r3, #48	; 0x30
  8000f94:	b2db      	uxtb	r3, r3
- 8000f96:	683a      	ldr	r2, [r7, #0]
+ 8000f96:	687a      	ldr	r2, [r7, #4]
  8000f98:	7013      	strb	r3, [r2, #0]
 	d->month = sdate.Month;
  8000f9a:	210c      	movs	r1, #12
  8000f9c:	187b      	adds	r3, r7, r1
  8000f9e:	785a      	ldrb	r2, [r3, #1]
- 8000fa0:	683b      	ldr	r3, [r7, #0]
+ 8000fa0:	687b      	ldr	r3, [r7, #4]
  8000fa2:	705a      	strb	r2, [r3, #1]
 	d->date = sdate.Date;
  8000fa4:	187b      	adds	r3, r7, r1
  8000fa6:	789a      	ldrb	r2, [r3, #2]
- 8000fa8:	683b      	ldr	r3, [r7, #0]
+ 8000fa8:	687b      	ldr	r3, [r7, #4]
  8000faa:	709a      	strb	r2, [r3, #2]
 	d->weekday = sdate.WeekDay;
  8000fac:	187b      	adds	r3, r7, r1
  8000fae:	781a      	ldrb	r2, [r3, #0]
- 8000fb0:	683b      	ldr	r3, [r7, #0]
+ 8000fb0:	687b      	ldr	r3, [r7, #4]
  8000fb2:	70da      	strb	r2, [r3, #3]
 }
  8000fb4:	46c0      	nop			; (mov r8, r8)
@@ -2295,10 +2295,10 @@ void printTime(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 	char str[40];		// problems when using only char*
 
 	struct times t;
-	getTime(hrtc, &t);
- 8000fc6:	250c      	movs	r5, #12
- 8000fc8:	197a      	adds	r2, r7, r5
- 8000fca:	687b      	ldr	r3, [r7, #4]
+	getTime(&t, hrtc);
+ 8000fc6:	687a      	ldr	r2, [r7, #4]
+ 8000fc8:	250c      	movs	r5, #12
+ 8000fca:	197b      	adds	r3, r7, r5
  8000fcc:	0011      	movs	r1, r2
  8000fce:	0018      	movs	r0, r3
  8000fd0:	f7ff ff9c 	bl	8000f0c <getTime>
@@ -2372,10 +2372,10 @@ void printDate(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 	char str[40];		// problems when using only char*
 
 	struct dates d;
-	getDate(hrtc, &d);
- 8001056:	250c      	movs	r5, #12
- 8001058:	197a      	adds	r2, r7, r5
- 800105a:	687b      	ldr	r3, [r7, #4]
+	getDate(&d, hrtc);
+ 8001056:	687a      	ldr	r2, [r7, #4]
+ 8001058:	250c      	movs	r5, #12
+ 800105a:	197b      	adds	r3, r7, r5
  800105c:	0011      	movs	r1, r2
  800105e:	0018      	movs	r0, r3
  8001060:	f7ff ff78 	bl	8000f54 <getDate>
@@ -2540,9 +2540,9 @@ void clockTest(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
  8001184:	009b      	lsls	r3, r3, #2
  8001186:	0018      	movs	r0, r3
  8001188:	f000 ff68 	bl	800205c <HAL_Delay>
-	setTime(hrtc, &t);
- 800118c:	197a      	adds	r2, r7, r5
- 800118e:	687b      	ldr	r3, [r7, #4]
+	setTime(&t, hrtc);
+ 800118c:	687a      	ldr	r2, [r7, #4]
+ 800118e:	197b      	adds	r3, r7, r5
  8001190:	0011      	movs	r1, r2
  8001192:	0018      	movs	r0, r3
  8001194:	f7ff fe26 	bl	8000de4 <setTime>
@@ -2569,10 +2569,10 @@ void clockTest(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
  80011bc:	009b      	lsls	r3, r3, #2
  80011be:	0018      	movs	r0, r3
  80011c0:	f000 ff4c 	bl	800205c <HAL_Delay>
-	setDateTime(hrtc, &d, &t);
- 80011c4:	197a      	adds	r2, r7, r5
- 80011c6:	1939      	adds	r1, r7, r4
- 80011c8:	687b      	ldr	r3, [r7, #4]
+	setDateTime(&d, &t, hrtc);
+ 80011c4:	687a      	ldr	r2, [r7, #4]
+ 80011c6:	1979      	adds	r1, r7, r5
+ 80011c8:	193b      	adds	r3, r7, r4
  80011ca:	0018      	movs	r0, r3
  80011cc:	f7ff fe68 	bl	8000ea0 <setDateTime>
 	printDateTime(hrtc, hspi);
@@ -2691,9 +2691,9 @@ int main(void)
 	  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_1);
  800126e:	e7ee      	b.n	800124e <main+0x4e>
  8001270:	2000008c 	.word	0x2000008c
- 8001274:	20000158 	.word	0x20000158
+ 8001274:	20000164 	.word	0x20000164
  8001278:	50000400 	.word	0x50000400
- 800127c:	20000134 	.word	0x20000134
+ 800127c:	2000013c 	.word	0x2000013c
 
 08001280 <SystemClock_Config>:
 /**
@@ -3013,7 +3013,7 @@ static void MX_ADC_Init(void)
  8001442:	b002      	add	sp, #8
  8001444:	bd80      	pop	{r7, pc}
  8001446:	46c0      	nop			; (mov r8, r8)
- 8001448:	200001b0 	.word	0x200001b0
+ 8001448:	200001bc 	.word	0x200001bc
  800144c:	40012400 	.word	0x40012400
 
 08001450 <MX_LPTIM1_Init>:
@@ -3076,7 +3076,7 @@ static void MX_LPTIM1_Init(void)
  800148e:	46c0      	nop			; (mov r8, r8)
  8001490:	46bd      	mov	sp, r7
  8001492:	bd80      	pop	{r7, pc}
- 8001494:	20000104 	.word	0x20000104
+ 8001494:	2000010c 	.word	0x2000010c
  8001498:	40007c00 	.word	0x40007c00
  800149c:	0000ffff 	.word	0x0000ffff
 
@@ -3322,7 +3322,7 @@ static void MX_RTC_Init(void)
  80015ee:	46bd      	mov	sp, r7
  80015f0:	b010      	add	sp, #64	; 0x40
  80015f2:	bd80      	pop	{r7, pc}
- 80015f4:	20000134 	.word	0x20000134
+ 80015f4:	2000013c 	.word	0x2000013c
  80015f8:	40002800 	.word	0x40002800
 
 080015fc <MX_SPI1_Init>:
@@ -3408,7 +3408,7 @@ static void MX_SPI1_Init(void)
  800165e:	46bd      	mov	sp, r7
  8001660:	bd80      	pop	{r7, pc}
  8001662:	46c0      	nop			; (mov r8, r8)
- 8001664:	20000158 	.word	0x20000158
+ 8001664:	20000164 	.word	0x20000164
  8001668:	40013000 	.word	0x40013000
 
 0800166c <MX_TIM21_Init>:
@@ -3598,7 +3598,7 @@ static void MX_TIM21_Init(void)
  800177a:	b00a      	add	sp, #40	; 0x28
  800177c:	bd80      	pop	{r7, pc}
  800177e:	46c0      	nop			; (mov r8, r8)
- 8001780:	20000268 	.word	0x20000268
+ 8001780:	20000274 	.word	0x20000274
  8001784:	40010800 	.word	0x40010800
 
 08001788 <MX_DMA_Init>:
@@ -4199,9 +4199,9 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
  8001b10:	b002      	add	sp, #8
  8001b12:	bd80      	pop	{r7, pc}
  8001b14:	50000400 	.word	0x50000400
- 8001b18:	20000090 	.word	0x20000090
+ 8001b18:	20000094 	.word	0x20000094
  8001b1c:	80000003 	.word	0x80000003
- 8001b20:	20000094 	.word	0x20000094
+ 8001b20:	20000090 	.word	0x20000090
  8001b24:	2000009c 	.word	0x2000009c
  8001b28:	20000098 	.word	0x20000098
  8001b2c:	200000a8 	.word	0x200000a8
@@ -4607,7 +4607,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
  8001d4a:	bd80      	pop	{r7, pc}
  8001d4c:	40013000 	.word	0x40013000
  8001d50:	40021000 	.word	0x40021000
- 8001d54:	2000020c 	.word	0x2000020c
+ 8001d54:	20000218 	.word	0x20000218
  8001d58:	40020030 	.word	0x40020030
 
 08001d5c <HAL_TIM_Base_MspInit>:
@@ -4772,7 +4772,7 @@ void RTC_IRQHandler(void)
  8001dce:	46bd      	mov	sp, r7
  8001dd0:	bd80      	pop	{r7, pc}
  8001dd2:	46c0      	nop			; (mov r8, r8)
- 8001dd4:	20000134 	.word	0x20000134
+ 8001dd4:	2000013c 	.word	0x2000013c
 
 08001dd8 <EXTI4_15_IRQHandler>:
 
@@ -4833,7 +4833,7 @@ void DMA1_Channel2_3_IRQHandler(void)
  8001e0e:	46bd      	mov	sp, r7
  8001e10:	bd80      	pop	{r7, pc}
  8001e12:	46c0      	nop			; (mov r8, r8)
- 8001e14:	2000020c 	.word	0x2000020c
+ 8001e14:	20000218 	.word	0x20000218
 
 08001e18 <LPTIM1_IRQHandler>:
 
@@ -4859,7 +4859,7 @@ void LPTIM1_IRQHandler(void)
  8001e26:	46bd      	mov	sp, r7
  8001e28:	bd80      	pop	{r7, pc}
  8001e2a:	46c0      	nop			; (mov r8, r8)
- 8001e2c:	20000104 	.word	0x20000104
+ 8001e2c:	2000010c 	.word	0x2000010c
 
 08001e30 <SPI1_IRQHandler>:
 
@@ -4885,7 +4885,7 @@ void SPI1_IRQHandler(void)
  8001e3e:	46bd      	mov	sp, r7
  8001e40:	bd80      	pop	{r7, pc}
  8001e42:	46c0      	nop			; (mov r8, r8)
- 8001e44:	20000158 	.word	0x20000158
+ 8001e44:	20000164 	.word	0x20000164
 
 08001e48 <_sbrk>:
  8001e48:	b580      	push	{r7, lr}
@@ -4928,7 +4928,7 @@ void SPI1_IRQHandler(void)
  8001e94:	b004      	add	sp, #16
  8001e96:	bd80      	pop	{r7, pc}
  8001e98:	200000bc 	.word	0x200000bc
- 8001e9c:	200002b0 	.word	0x200002b0
+ 8001e9c:	200002b8 	.word	0x200002b8
 
 08001ea0 <SystemInit>:
   * @brief  Setup the microcontroller system.
@@ -5095,7 +5095,7 @@ void HAL_LPTIM_AutoReloadMatchCallback(LPTIM_HandleTypeDef *hlptim) {
  8001f88:	20000000 	.word	0x20000000
  8001f8c:	20000068 	.word	0x20000068
  8001f90:	20000068 	.word	0x20000068
- 8001f94:	200002ac 	.word	0x200002ac
+ 8001f94:	200002b8 	.word	0x200002b8
 
 08001f98 <ADC1_COMP_IRQHandler>:
  8001f98:	e7fe      	b.n	8001f98 <ADC1_COMP_IRQHandler>
@@ -5244,7 +5244,7 @@ __weak void HAL_IncTick(void)
  800203e:	46c0      	nop			; (mov r8, r8)
  8002040:	46bd      	mov	sp, r7
  8002042:	bd80      	pop	{r7, pc}
- 8002044:	200002a4 	.word	0x200002a4
+ 8002044:	200002b0 	.word	0x200002b0
 
 08002048 <HAL_GetTick>:
   * @note This function is declared as __weak to be overwritten in case of other
@@ -5263,7 +5263,7 @@ __weak uint32_t HAL_GetTick(void)
  8002052:	46bd      	mov	sp, r7
  8002054:	bd80      	pop	{r7, pc}
  8002056:	46c0      	nop			; (mov r8, r8)
- 8002058:	200002a4 	.word	0x200002a4
+ 8002058:	200002b0 	.word	0x200002b0
 
 0800205c <HAL_Delay>:
   *       implementations in user file.
@@ -17747,7 +17747,7 @@ HAL_StatusTypeDef HAL_TIMEx_RemapConfig(TIM_HandleTypeDef *htim, uint32_t Remap)
  80063e2:	602b      	str	r3, [r5, #0]
  80063e4:	bd70      	pop	{r4, r5, r6, pc}
  80063e6:	46c0      	nop			; (mov r8, r8)
- 80063e8:	200002a8 	.word	0x200002a8
+ 80063e8:	200002b4 	.word	0x200002b4
 
 080063ec <__malloc_lock>:
  80063ec:	4770      	bx	lr
