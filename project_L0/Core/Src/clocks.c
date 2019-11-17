@@ -274,6 +274,7 @@ void printTime(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 	getTime(&t, hrtc);
 
 	setTextColor(ST77XX_WHITE);
+	setBackgroundColor(ST77XX_BLACK);
 	sprintf(str, "sec: %2d", t.sec);
 	drawTextAt(0, 0, str, hspi);
 	sprintf(str, "min: %2d", t.min);
@@ -289,6 +290,7 @@ void printDate(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 	getDate(&d, hrtc);
 
 	setTextColor(ST77XX_WHITE);
+	setBackgroundColor(ST77XX_BLACK);
 	sprintf(str, "year: %3d", d.yr);
 	drawTextAt(0, 40, str, hspi);
 	sprintf(str, "month: %4d", d.month);

@@ -30,7 +30,7 @@ struct times {
 
 // weekday can be omitted? 0 if not set
 struct dates {
-	uint8_t yr;
+	uint16_t yr;
 	uint8_t month;
 	uint8_t date;
 	uint8_t weekday;		// in hal, week starts monday counting from 1

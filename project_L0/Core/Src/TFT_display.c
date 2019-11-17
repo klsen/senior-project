@@ -31,7 +31,8 @@ void sendCommand(uint8_t cmd, uint8_t *args, uint16_t numArgs, SPI_HandleTypeDef
 
 	SPI_DC_HIGH();	// data mode
 	if (numArgs) {
-		HAL_SPI_Transmit_DMA(hspi, args, numArgs);
+		HAL_SPI_Transmit_IT(hspi, args, numArgs);
+//		HAL_SPI_Transmit_DMA(hspi, args, numArgs);
 	}
 
 //	SPI_CS_HIGH();	// chip select disable
@@ -211,11 +212,11 @@ void drawHLine(uint8_t x, uint8_t y, uint8_t size, uint16_t color, SPI_HandleTyp
 
 void drawVLine(uint8_t x, uint8_t y, uint8_t size, uint16_t color, SPI_HandleTypeDef *hspi) {
 	// bounds checking
-	if (y < 0) x = 0;						// don't set x out of bounds
-	if (y > HEIGHT) x = HEIGHT;
+	if (y < 0) y = 0;						// don't set x out of bounds
+	if (y > HEIGHT) y = HEIGHT;
 	if (y+size > HEIGHT) size = HEIGHT-y;	// don't set size so line draws out of bounds
 	if (y+size < 0) size = 0-y;
-	if ((x > WIDTH) || (x < 0)) return;		// don't draw if y is out of bounds
+	if ((x > WIDTH) || (x < 0)) return;		// don't draw if x is out of bounds
 
 	setAddrWindow(x, y, 1, size, hspi);
 	uint16_t colors[size];
@@ -342,8 +343,10 @@ void drawText(char *str, SPI_HandleTypeDef *hspi) {
 void drawTextAt(uint8_t x, uint8_t y, char *str, SPI_HandleTypeDef *hspi) {
 	// add text wrap
 	int i = 0;
+	setCursor(x,y);
 	for (i = 0; str[i] != '\0'; i++) {
 		drawChar(str[i], hspi);
+		setCursor(cursorX+textSize*6, cursorY);
 	}
 //	setCursor(x+i*textSize*6, y);
 }

@@ -77,6 +77,7 @@ void charTest(SPI_HandleTypeDef *hspi) {
 
 			setCursor(x, y);
 			setTextColor(rainbowColors[ch%7]);
+			setBackgroundColor(ST77XX_BLACK);
 			drawChar(ch, hspi);
 //			HAL_Delay(250);
 		}

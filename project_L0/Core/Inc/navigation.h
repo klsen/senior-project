@@ -105,7 +105,7 @@ enum displayFaces {
 };
 
 const char* weekdayNames[8];
-const char* monthNames[12];
+const char* monthNames[13];
 
 void updateDisplay(SPI_HandleTypeDef *hspi);
 

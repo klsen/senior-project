@@ -115,6 +115,10 @@ int main(void)
 	HAL_Delay(2000);
 	TFT_startup(&hspi1);
 	fillScreen(bg, &hspi1);
+
+	updateFace = 1;
+	face = faceClock;
+	updateClock = 1;
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -130,15 +134,15 @@ int main(void)
 
 	  // clocks tests
 	  // not a loopable test yet
-	  clockTest(&hrtc, &hspi1);
+//	  clockTest(&hrtc, &hspi1);
 
 	  // display tests
-//	  lineTest(bg, &hspi1);
-//	  charTest(bg, &hspi1);
+//	  lineTest(&hspi1);
+//	  charTest(&hspi1);
 //	  textTest(bg, &hspi1);
 
 	  // nav tests
-//	  updateDisplay(&hspi1);
+	  updateDisplay(&hspi1);
   }
   /* USER CODE END 3 */
 }
@@ -355,15 +359,7 @@ static void MX_RTC_Init(void)
   sAlarm.AlarmDateWeekDaySel = RTC_ALARMDATEWEEKDAYSEL_DATE;
   sAlarm.AlarmDateWeekDay = 1;
   sAlarm.Alarm = RTC_ALARM_A;
-  if (HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BIN) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /** Enable the Alarm B 
-  */
-  sAlarm.AlarmDateWeekDay = 1;
-  sAlarm.Alarm = RTC_ALARM_B;
-  if (HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BIN) != HAL_OK)
+  if (HAL_RTC_SetAlarm(&hrtc, &sAlarm, RTC_FORMAT_BIN) != HAL_OK)
   {
     Error_Handler();
   }
@@ -406,7 +402,7 @@ static void MX_SPI1_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN SPI1_Init 2 */
-
+  hspi1.hdmatx = &hdma_spi1_tx;
   /* USER CODE END SPI1_Init 2 */
 
 }
@@ -545,6 +541,9 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI2_3_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI2_3_IRQn);
+
   HAL_NVIC_SetPriority(EXTI4_15_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI4_15_IRQn);
 

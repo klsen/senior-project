@@ -16,7 +16,8 @@ const char* weekdayNames[8] = {
 	"sun  "
 };
 
-const char* monthNames[12] = {
+const char* monthNames[13] = {
+	"",			// month names also start with 1
 	"jan ",
 	"feb ",
 	"mar ",
@@ -66,6 +67,7 @@ void updateDisplay(SPI_HandleTypeDef *hspi) {
 			if (clockSet == 0) {
 				drawTextAt(0, 0, "not setting", hspi);
 				drawTextAt(0, 10, "     ", hspi);
+				getDateTime(&currentDate, &currentTime, &hrtc);
 				sprintf(str, "%2d:%2d:%2d", currentTime.hr, currentTime.min, currentTime.sec);
 				drawTextAt(0, 60, str, hspi);
 				sprintf(str, "%s, %d, %d   %s", monthNames[currentDate.month], currentDate.date, currentDate.yr, weekdayNames[currentDate.weekday]);
@@ -83,7 +85,7 @@ void updateDisplay(SPI_HandleTypeDef *hspi) {
 				}
 				sprintf(str, "%2d:%2d   ", tempClockTimes.hr, tempClockTimes.min);
 				drawTextAt(0, 60, str, hspi);
-				sprintf(str, "%s, %d, %d", monthNames[tempClockDate.month], tempClockDate.date, tempClockDate.yr);
+				sprintf(str, "%s, %d, %d      ", monthNames[tempClockDate.month], tempClockDate.date, tempClockDate.yr);
 				drawTextAt(0, 70, str, hspi);
 			}
 		}
@@ -208,22 +210,22 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 		if (GPIO_Pin == BUTTON1 && clockSet) {
 			// change fields up, do nothing if not setting clock
 			switch (clockField) {
-				case 0: tempClockTimes.min = (tempClockTimes.min+1) % 60; break;
-				case 1: tempClockTimes.hr = (tempClockTimes.hr+1) % 60; break;
-				case 2: tempClockDate.yr = (tempClockDate.yr+1) % 100; break;
-				case 3: tempClockDate.month = (tempClockDate.month+1) % 12; break;
-				case 4: tempClockDate.date = (tempClockDate.date+1) % 31; break;		// make more robust?
+				case 1: tempClockTimes.min = (tempClockTimes.min+1) % 60; break;
+				case 2: tempClockTimes.hr = (tempClockTimes.hr+1) % 24; break;
+				case 3: tempClockDate.yr++; break;		// supposed to be between large numbers. no need for bounds checking
+				case 4: tempClockDate.month = (tempClockDate.month+1) % 12 + 1; break;
+				case 5: tempClockDate.date = (tempClockDate.date+1) % 31; break;		// make more robust?
 				default: break;
 			}
 		}
 		if (GPIO_Pin == BUTTON2 && clockSet) {
 			// change fields down, do nothing if not setting clock
 			switch (clockField) {
-				case 0: tempClockTimes.min = tempClockTimes.min == 0 ? 59 : tempClockTimes.min-1; break;
-				case 1: tempClockTimes.hr = tempClockTimes.hr == 0 ? 59 : tempClockTimes.hr-1; break;
-				case 2: tempClockDate.yr--; break;		// supposed to be from 1950-2050. no need to do bounds checking
-				case 3: tempClockDate.month = tempClockDate.month == 0 ? 11 : tempClockDate.month-1; break;
-				case 4: tempClockDate.date = tempClockDate.date == 0 ? 31 : tempClockDate.date-1; break;
+				case 1: tempClockTimes.min = tempClockTimes.min == 0 ? 59 : tempClockTimes.min-1; break;
+				case 2: tempClockTimes.hr = tempClockTimes.hr == 0 ? 24 : tempClockTimes.hr-1; break;
+				case 3: tempClockDate.yr--; break;		// supposed to be from 1950-2050. no need to do bounds checking
+				case 4: tempClockDate.month = tempClockDate.month == 1 ? 12 : tempClockDate.month-1; break;
+				case 5: tempClockDate.date = tempClockDate.date == 0 ? 31 : tempClockDate.date-1; break;
 				default: break;
 			}
 		}
@@ -231,7 +233,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 			clockField = (clockField + 1) % (NUM_CLOCKFIELDS + 1);
 			if (clockField != 0) {
 				clockSet = 1;
-				getDateTime(&tempClockDate, &tempClockTimes, &hrtc);
+				if (clockField == 1) getDateTime(&tempClockDate, &tempClockTimes, &hrtc);	// should pull current time on setting 1st field
 			}
 			else {
 				clockSet = 0;
@@ -249,9 +251,9 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 				if (timerSet == 0) timerRunning = 1;
 				else {
 					switch (timerField) {
-						case 0: tempTimer.sec = (tempTimer.sec+1) % 60; break;
-						case 1: tempTimer.min = (tempTimer.min+1) % 60; break;
-						case 2: tempTimer.hr = (tempTimer.hr+1) % 24; break;
+						case 1: tempTimer.sec = (tempTimer.sec+1) % 60; break;
+						case 2: tempTimer.min = (tempTimer.min+1) % 60; break;
+						case 3: tempTimer.hr = (tempTimer.hr+1) % 24; break;
 						default: break;
 					}
 				}
@@ -259,9 +261,9 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 			if (GPIO_Pin == BUTTON2) {
 				if (timerSet == 1) {
 					switch (timerField) {
-						case 0: tempTimer.sec = tempTimer.sec == 0 ? 59 : tempTimer.sec-1; break;
-						case 1: tempTimer.min = tempTimer.min == 0 ? 59-1+60 : tempTimer.min-1; break;
-						case 2: tempTimer.hr = tempTimer.hr == 0 ? 23 : tempTimer.hr-1; break;
+						case 1: tempTimer.sec = tempTimer.sec == 0 ? 59 : tempTimer.sec-1; break;
+						case 2: tempTimer.min = tempTimer.min == 0 ? 59 : tempTimer.min-1; break;
+						case 3: tempTimer.hr = tempTimer.hr == 0 ? 23 : tempTimer.hr-1; break;
 						default: break;
 					}
 				}
@@ -270,9 +272,11 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 				timerField = (timerField + 1) % (NUM_TIMERFIELDS + 1);
 				if (timerField != 0) {
 					timerSet = 1;
-					tempTimer.sec = 0;
-					tempTimer.min = 0;
-					tempTimer.hr = 0;
+					if (timerField == 1) {
+						tempTimer.sec = 0;
+						tempTimer.min = 0;
+						tempTimer.hr = 0;
+					}
 				}
 				else {
 					timerSet = 0;
@@ -305,20 +309,20 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 			if (GPIO_Pin == BUTTON1 && alarmSet) {
 				// change field up
 				switch (alarmField) {
-					case 0: tempAlarm.sec = (tempAlarm.sec + 1) % 60; break;
-					case 1: tempAlarm.min = (tempAlarm.min + 1) % 60; break;
-					case 2: tempAlarm.hr = (tempAlarm.hr + 1) % 24; break;
-					case 3: tempAlarm.weekday = (tempAlarm.weekday + 1) % 7 + 1; break;
+					case 1: tempAlarm.sec = (tempAlarm.sec + 1) % 60; break;
+					case 2: tempAlarm.min = (tempAlarm.min + 1) % 60; break;
+					case 3: tempAlarm.hr = (tempAlarm.hr + 1) % 24; break;
+					case 4: tempAlarm.weekday = (tempAlarm.weekday + 1) % 7 + 1; break;
 					default: break;
 				}
 			}
 			if (GPIO_Pin == BUTTON2 && alarmSet) {
 				// change field down
 				switch (alarmField) {
-					case 0: tempAlarm.sec = tempAlarm.sec == 0 ? 59 : tempAlarm.sec-1;
-					case 1: tempAlarm.min = tempAlarm.min == 0 ? 59 : tempAlarm.min-1;
-					case 2: tempAlarm.hr = tempAlarm.hr == 0 ? 23 : tempAlarm.hr-1;
-					case 3: tempAlarm.weekday = tempAlarm.weekday == 1 ? 7 : tempAlarm.weekday-1;
+					case 1: tempAlarm.sec = tempAlarm.sec == 0 ? 59 : tempAlarm.sec-1;
+					case 2: tempAlarm.min = tempAlarm.min == 0 ? 59 : tempAlarm.min-1;
+					case 3: tempAlarm.hr = tempAlarm.hr == 0 ? 23 : tempAlarm.hr-1;
+					case 4: tempAlarm.weekday = tempAlarm.weekday == 1 ? 7 : tempAlarm.weekday-1;
 				}
 			}
 			if (GPIO_Pin == BUTTON3) {
@@ -326,10 +330,12 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 				alarmField = (alarmField + 1) % (NUM_ALARMFIELDS + 1);
 				if (alarmField != 0) {
 					alarmSet = 1;
-					tempAlarm.sec = 0;
-					tempAlarm.min = 0;
-					tempAlarm.hr = 0;
-					tempAlarm.weekday = 1;
+					if (alarmField == 1) {
+						tempAlarm.sec = 0;
+						tempAlarm.min = 0;
+						tempAlarm.hr = 0;
+						tempAlarm.weekday = 1;
+					}
 				}
 				else {
 					alarmSet = 0;
