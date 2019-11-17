@@ -27,25 +27,37 @@
 // variables to track state of apps, set in callback/interrupt
 // straight global instead of static/scope in file only?
 // need volatile keyword?
-static int face;
+
 static int faceChange;		// flag set and cleared in different places, careful
+
+// ---- buncha flags ----
+volatile uint8_t updateFace;
+volatile uint8_t updateClock;
+volatile uint8_t updateTimer;
+volatile uint8_t updateAlarm;
+volatile uint8_t updateStopwatch;
+// ---- end of flags ----
+
+// for face on screen
+static int face;
 
 // for clock
 static int clockSet;
 static int clockField;
-int tempClock[NUM_CLOCKFIELDS];
+struct dates tempClockDate;
+struct times tempClockTimes;
 
 // for timer
 static int timerSet;
 static int timerField;
 static int timerRunning;
-int tempTimer[NUM_TIMERFIELDS];
+struct times tempTimer;
 
 // for alarm
 static volatile int alarmSet;
 static int alarmField;
 static int alarmRunning;
-int tempAlarm[NUM_ALARMFIELDS];
+struct alarmTimes tempAlarm;
 
 // for stopwatch
 static int stopwatchRunning;
@@ -79,10 +91,36 @@ int tempStopwatch[NUM_STOPWATCHFIELDS];
 // enum for different faces used (clock, timer, alarm, stopwatch)
 // probably not needed
 enum displayFaces {
-	faceMain,
+	faceClock,
 	faceTimer,
 	faceAlarm,
 	faceStopwatch
+};
+
+const unsigned char weekdayNames[8] = {
+	"",			// padding so i can avoid dealing with out-of-bounds access
+	"mon  ",
+	"tues ",
+	"wed  ",
+	"thurs",
+	"fri  ",
+	"sat  ",
+	"sun  "
+};
+
+const unsigned char monthNames[12] = {
+	"jan ",
+	"feb ",
+	"mar ",
+	"apr ",
+	"may ",
+	"jun ",
+	"jul ",
+	"aug ",
+	"sept",
+	"oct ",
+	"nov ",
+	"dec "
 };
 
 void updateDisplay(SPI_HandleTypeDef *hspi);

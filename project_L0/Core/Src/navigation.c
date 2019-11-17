@@ -4,92 +4,161 @@
  */
 
 #include "navigation.h"
+#include "clocks.h"
+#include "timers.h"
 
 // update screen based on global variables
 // going in main, so it's executing in a while loop
 //   software interrupt on flag so that this doesn't run all the time?
 void updateDisplay(SPI_HandleTypeDef *hspi) {
+	char* str[40];
+	uint32_t stopwatchVal, hr, min, sec;
+	struct dates currentDate;
+	struct times currentTime;
 	// update main clock face
 	// missing space for current time
-//	static uint16_t bg;			// remove whenever you put bg as a global in tft_display
-	if (face == faceMain) {
-		if (faceChange == 1) {
+	if (updateFace == 1) {
+		updateFace = 0;
+		if (face == faceClock) {
 			clearScreen(ST77XX_CYAN, hspi);
 			drawTextAt(0, HEIGHT-10, "main     ", hspi);
-			faceChange = 0;
 		}
-		if (clockSet == 0) {
-			drawTextAt(0, 0, "not setting", hspi);
-			drawTextAt(0, 10, "     ", hspi);
+		if (face == faceTimer) {
+			clearScreen(ST77XX_GREEN, hspi);
+			drawTextAt(0, HEIGHT-10, "timer    ", hspi);
 		}
-		else if (clockSet == 1) {
-			drawTextAt(0, 0, "setting... ", hspi);
-			switch (clockField) {
-				case 1: drawTextAt(0, 10, "min  ", hspi); break;
-				case 2: drawTextAt(0, 10, "hr   ", hspi); break;
-				case 3: drawTextAt(0, 10, "year ", hspi); break;
-				case 4: drawTextAt(0, 10, "month", hspi); break;
-				case 5: drawTextAt(0, 10, "day  ", hspi); break;
-				default: break;
+		if (face == faceAlarm) {
+			clearScreen(ST77XX_MAGNETA, hspi);
+			drawTextAt(0, HEIGHT-10, "alarm    ", hspi);
+		}
+		if (face == faceStopwatch) {
+			clearScreen(ST77XX_YELLOW, hspi);
+			drawTextAt(0, HEIGHT-10, "stopwatch", hspi);
+		}
+	}
+	if (face == faceClock) {
+		if (updateClock == 1) {
+			updateClock = 0;
+			if (clockSet == 0) {
+				drawTextAt(0, 0, "not setting", hspi);
+				drawTextAt(0, 10, "     ", hspi);
+				sprintf(str, "%2d:%2d:%2d", currentTime.hr, currentTime.min, currentTime.sec);
+				drawTextAt(0, 60, str, hspi);
+				sprintf(str, "%s, %d, %d   %s", monthNames[currentDate.month], currentDate.day, currentDate.yr, weekdayNames[currentDate.weekday]);
+				drawTextAt(0, 70, str, hspi);
+			}
+			else if (clockSet == 1) {
+				drawTextAt(0, 0, "setting... ", hspi);
+				switch (clockField) {
+					case 1: drawTextAt(0, 10, "min  ", hspi); break;
+					case 2: drawTextAt(0, 10, "hr   ", hspi); break;
+					case 3: drawTextAt(0, 10, "year ", hspi); break;
+					case 4: drawTextAt(0, 10, "month", hspi); break;
+					case 5: drawTextAt(0, 10, "day  ", hspi); break;
+					default: break;
+				}
+				sprintf(str, "%2d:%2d   ", tempClockTimes.hr, tempClockTimes.min);
+				drawTextAt(0, 60, str, hspi);
+				sprintf(str, "%s, %d, %d", monthNames[tempClockDate.month], tempClockDate.day, tempClockDate.yr);
+				drawTextAt(0, 70, str, hspi);
 			}
 		}
 	}
 	// update timer face
 	else if (face == faceTimer) {
-		if (faceChange == 1) {
-			clearScreen(ST77XX_GREEN, hspi);
-			drawTextAt(0, HEIGHT-10, "timer    ", hspi);
-			faceChange = 0;
-		}
-		if (timerSet == 0) {
-			drawTextAt(0, 10, "     ", hspi);
-			if (timerRunning == 0) {
-				drawTextAt(0, 0, "not running", hspi);
+		if (updateTimer == 1) {
+			updateTimer = 0;
+			if (timerSet == 0) {
+				timerVal = watchTimerSeconds;
+
+				if (timerVal != 0) {
+					hr = timerVal / 3600;
+					timerVal %= 3600;
+					min = timerVal / 60;
+					timerVal %= 60;
+					sec = timerVal;
+
+					sprintf(str, "%2d:%2d:%2d", hr, min, sec);
+					drawTextAt(0, 60, str, hspi);
+				}
+				else {
+					drawTextAt(0, 60, "        ", hspi);
+				}
+
+				drawTextAt(0, 10, "     ", hspi);
+				if (timerRunning == 0) {
+					drawTextAt(0, 0, "not running", hspi);
+				}
+				else if (timerRunning == 1) {
+					drawTextAt(0, 0, "running    ", hspi);
+				}
 			}
-			else if (timerRunning == 1) drawTextAt(0, 0, "running    ", hspi);
-		}
-		else if (timerSet == 1) {
-			drawTextAt(0, 0, "setting... ", hspi);
-			switch (timerField) {
-				case 1: drawTextAt(0, 10, "sec  ", hspi); break;
-				case 2: drawTextAt(0, 10, "min  ", hspi); break;
-				case 3: drawTextAt(0, 10, "hr   ", hspi); break;
-				default: break;
+			else if (timerSet == 1) {
+				drawTextAt(0, 0, "setting... ", hspi);
+				switch (timerField) {
+					case 1: drawTextAt(0, 10, "sec  ", hspi); break;
+					case 2: drawTextAt(0, 10, "min  ", hspi); break;
+					case 3: drawTextAt(0, 10, "hr   ", hspi); break;
+					default: break;
+				}
+				sprintf(str, "%2d:%2d:%2d", tempTimer.hr, tempTimer.min, tempTimer.sec);
+				drawTextAt(0, 60, str, hspi);
 			}
 		}
 	}
 	// update alarm face
 	else if (face == faceAlarm) {
-		if (faceChange == 1) {
-			clearScreen(ST77XX_MAGENTA, hspi);
-			drawTextAt(0, HEIGHT-10, "alarm    ", hspi);
-			faceChange = 0;
-		}
-		if (alarmSet == 0) {
-			drawTextAt(0, 10, "     ", hspi);
-			if (alarmRunning == 0) drawTextAt(0, 0, "not running", hspi);
-			else if (alarmRunning == 1) drawTextAt(0, 0, "running    ", hspi);
-		}
-		else if (alarmSet == 1) {
-			drawTextAt(0, 0, "setting... ", hspi);
-			switch (alarmField) {
-				case 1: drawTextAt(0, 10, "sec  ", hspi); break;
-				case 2: drawTextAt(0, 10, "min  ", hspi); break;
-				case 3: drawTextAt(0, 10, "hr   ", hspi); break;
-				case 4: drawTextAt(0, 10, "day  ", hspi); break;
-				default: break;
+		if (updateAlarm == 1) {
+			updateAlarm = 0;
+			if (alarmSet == 0) {
+				drawTextAt(0, 10, "     ", hspi);
+				if (alarmRunning == 0) {
+					drawTextAt(0, 0, "not running", hspi);
+					drawTextAt(0, 60, "              ", hspi);		// clears line used in other cases. probably should wrap in graphics function
+				}
+				else if (alarmRunning == 1) {
+					drawTextAt(0, 0, "running    ", hspi);
+					sprintf(str, "%2d:%2d:%2d %s", watchAlarm.hr, watchAlarm.min, watchAlarm.sec, weekdayNames[watchAlarm.weekday]);
+					drawTextAt(0, 60, str, hspi);
+				}
+			}
+			else if (alarmSet == 1) {
+				drawTextAt(0, 0, "setting... ", hspi);
+				switch (alarmField) {
+					case 1: drawTextAt(0, 10, "sec  ", hspi); break;
+					case 2: drawTextAt(0, 10, "min  ", hspi); break;
+					case 3: drawTextAt(0, 10, "hr   ", hspi); break;
+					case 4: drawTextAt(0, 10, "day  ", hspi); break;
+					default: break;
+				}
+				// maybe make this more efficient
+				sprintf(str, "%2d:%2d:%2d %s", tempAlarm.hr, tempAlarm.min, tempAlarm.sec, weekdayNames[tempAlarm.weekday]);
+				drawTextAt(0, 60, str, hspi);
 			}
 		}
 	}
 	// update stopwatch face
 	else if (face == faceStopwatch) {
-		if (faceChange == 1) {
-			clearScreen(ST77XX_YELLOW, hspi);
-			drawTextAt(0, HEIGHT-10, "stopwatch", hspi);
-			faceChange = 0;
+		if (updateStopwatch == 1) {
+			updateStopwatch = 0;
+			// translating 32-bit counter to hours, minutes, seconds
+			stopwatchVal = stopwatchCNT;
+
+			hr = stopwatchVal / 3600;
+			stopwatchVal %= 3600;
+			min = stopwatchVal / 60;
+			stopwatchVal %= 60;
+			sec = stopwatchVal;
+
+			sprintf(str, "%2d:%2d:%2d", hr, min, sec);
+			drawTextAt(0, 60, str, hspi);
+			if (stopwatchRunning == 0) {
+				drawTextAt(0, 0, "not running", hspi);
+			}
+			else if (stopwatchRunning == 1) {
+				drawTextAt(0, 0, "running    ", hspi);
+			}
 		}
-		if (stopwatchRunning == 0) drawTextAt(0, 0, "not running", hspi);
-		else if (stopwatchRunning == 1) drawTextAt(0, 0, "running    ", hspi);
 	}
 }
 
