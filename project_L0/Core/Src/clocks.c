@@ -70,8 +70,7 @@ void setAlarm(struct alarmTimes *a, RTC_HandleTypeDef *hrtc) {
 	salarmtime.StoreOperation = RTC_STOREOPERATION_RESET;
 
 	salarm.AlarmTime = salarmtime;
-//	salarm.AlarmMask = RTC_ALARMMASK_ALL;
-	salarm.AlarmMask = RTC_ALARMMASK_MINUTES;
+	salarm.AlarmMask = RTC_ALARMMASK_NONE;
 	salarm.AlarmSubSecondMask = RTC_ALARMSUBSECONDMASK_ALL;
 	salarm.AlarmDateWeekDaySel = RTC_ALARMDATEWEEKDAYSEL_WEEKDAY;
 	salarm.AlarmDateWeekDay = a->weekday;
@@ -186,10 +185,36 @@ void setTimer(struct times *t_in, RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *ht
 void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc) {
 	// change pin to whatever's accessible
 	// using PC0
+//	switch (alarmMask) {
+//		case RTC_ALARMMASK_DATEWEEKDAY: {
+//			HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_1);
+//			setAlarmWithMask(&watchAlarm, RTC_ALARMMASK_HOURS, hrtc);
+//			alarmMask = RTC_ALARMMASK_HOURS;
+//			break;
+//		}
+//		case RTC_ALARMMASK_HOURS: {
+//			HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_1);
+//			setAlarmWithMask(&watchAlarm, RTC_ALARMMASK_MINUTES, hrtc);
+//			alarmMask = RTC_ALARMMASK_MINUTES;
+//			break;
+//		}
+//		case RTC_ALARMMASK_MINUTES: {
+//			HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_1);
+//			setAlarmWithMask(&watchAlarm, RTC_ALARMMASK_SECONDS, hrtc);
+//			alarmMask = RTC_ALARMMASK_SECONDS;
+//			break;
+//		}
+//		case RTC_ALARMMASK_SECONDS: {
+//			HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_1);
+//		//	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET);
+//		//	HAL_Delay(500);			// does this work in interrupt/callback? might not
+//		//	HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_1);
+//			HAL_RTC_DeactivateAlarm(hrtc, RTC_ALARM_A);
+//			break;
+//		}
+//		default: break;
+//	}
 	HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_1);
-//	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET);
-//	HAL_Delay(500);			// does this work in interrupt/callback? might not
-//	HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_1);
 	HAL_RTC_DeactivateAlarm(hrtc, RTC_ALARM_A);
 }
 
@@ -341,7 +366,7 @@ void alarmTest(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 //	if (t.sec > 60) t.min += 1;
 //	t.sec = (t.sec+10) % 60;
 //	struct alarmTimes a = {t.hr, t.min, t.sec, d.weekday};
-	struct alarmTimes a = {0, 1, 0, RTC_WEEKDAY_MONDAY};
+	struct alarmTimes a = {0, 0, 15, RTC_WEEKDAY_MONDAY};
 
 	HAL_Delay(1000);
 
@@ -353,7 +378,7 @@ void alarmTest(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 
 	setAlarm(&a, hrtc);
 
-	HAL_Delay(60000);
+	HAL_Delay(10000);
 	getDateTime(&d, &t, hrtc);
 	sprintf(str, "%2u:%2u:%2u %2u", t.hr, t.min, t.sec, d.weekday);
 	drawTextAt(0, 0, str, hspi);

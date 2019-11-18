@@ -17,6 +17,7 @@
 
 // ---- variables ----
 struct alarmTimes watchAlarm;		// for keeping track of what alarms are in the RTC.
+uint32_t alarmMask;
 struct times watchTimer;			// using RTC alarmB for this now
 uint32_t watchTimerSeconds;
 // ---- end of variables ----
