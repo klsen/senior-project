@@ -34,7 +34,7 @@
 // straight global instead of static/scope in file only?
 // need volatile keyword?
 
-static int faceChange;		// flag set and cleared in different places, careful
+static volatile int faceChange;		// flag set and cleared in different places, careful
 
 // ---- buncha flags ----
 volatile uint8_t updateFace;
@@ -45,55 +45,30 @@ volatile uint8_t updateStopwatch;
 // ---- end of flags ----
 
 // for face on screen
-static int face;
+static volatile int face;
 
 // for clock
-static int clockSet;
-static int clockField;
+static volatile int clockSet;
+static volatile int clockField;
 struct dates tempClockDate;
 struct times tempClockTimes;
 
 // for timer
-static int timerSet;
-static int timerField;
-static int timerRunning;
+static volatile int timerSet;
+static volatile int timerField;
+static volatile int timerRunning;
 struct times tempTimer;
 
 // for alarm
 static volatile int alarmSet;
-static int alarmField;
-static int alarmRunning;
+static volatile int alarmField;
+static volatile int alarmRunning;
 struct alarmTimes tempAlarm;
 
 // for stopwatch
-static int stopwatchRunning;
+static volatile int stopwatchRunning;
 uint32_t lapPrev, lapCurrent;
 int tempStopwatch[NUM_STOPWATCHFIELDS];
-
-// using volatile keyword
-//static volatile int face;
-//static volatile int faceChange;		// flag set and cleared in different places, careful
-//
-//// for clock
-//static volatile int clockSet;
-//static volatile int clockField;
-//int tempClock[NUM_CLOCKFIELDS];
-//
-//// for timer
-//static volatile int timerSet;
-//static volatile int timerField;
-//static volatile int timerRunning;
-//int tempTimer[NUM_TIMERFIELDS];
-//
-//// for alarm
-//static volatile int alarmSet;
-//static volatile int alarmField;
-//static volatile int alarmRunning;
-//int tempAlarm[NUM_ALARMFIELDS];
-//
-//// for stopwatch
-//static volatile int stopwatchRunning;
-//int tempStopwatch[NUM_STOPWATCHFIELDS];
 
 // enum for different faces used (clock, timer, alarm, stopwatch)
 // probably not needed

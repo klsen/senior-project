@@ -154,6 +154,9 @@ void HAL_LPTIM_MspInit(LPTIM_HandleTypeDef* hlptim)
   /* USER CODE END LPTIM1_MspInit 0 */
     /* Peripheral clock enable */
     __HAL_RCC_LPTIM1_CLK_ENABLE();
+    /* LPTIM1 interrupt Init */
+    HAL_NVIC_SetPriority(LPTIM1_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(LPTIM1_IRQn);
   /* USER CODE BEGIN LPTIM1_MspInit 1 */
 
   /* USER CODE END LPTIM1_MspInit 1 */
@@ -176,6 +179,9 @@ void HAL_LPTIM_MspDeInit(LPTIM_HandleTypeDef* hlptim)
   /* USER CODE END LPTIM1_MspDeInit 0 */
     /* Peripheral clock disable */
     __HAL_RCC_LPTIM1_CLK_DISABLE();
+
+    /* LPTIM1 interrupt DeInit */
+    HAL_NVIC_DisableIRQ(LPTIM1_IRQn);
   /* USER CODE BEGIN LPTIM1_MspDeInit 1 */
 
   /* USER CODE END LPTIM1_MspDeInit 1 */
@@ -198,6 +204,9 @@ void HAL_RTC_MspInit(RTC_HandleTypeDef* hrtc)
   /* USER CODE END RTC_MspInit 0 */
     /* Peripheral clock enable */
     __HAL_RCC_RTC_ENABLE();
+    /* RTC interrupt Init */
+    HAL_NVIC_SetPriority(RTC_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(RTC_IRQn);
   /* USER CODE BEGIN RTC_MspInit 1 */
 
   /* USER CODE END RTC_MspInit 1 */
@@ -220,6 +229,9 @@ void HAL_RTC_MspDeInit(RTC_HandleTypeDef* hrtc)
   /* USER CODE END RTC_MspDeInit 0 */
     /* Peripheral clock disable */
     __HAL_RCC_RTC_DISABLE();
+
+    /* RTC interrupt DeInit */
+    HAL_NVIC_DisableIRQ(RTC_IRQn);
   /* USER CODE BEGIN RTC_MspDeInit 1 */
 
   /* USER CODE END RTC_MspDeInit 1 */
@@ -333,6 +345,9 @@ void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* htim_base)
   /* USER CODE END TIM21_MspInit 0 */
     /* Peripheral clock enable */
     __HAL_RCC_TIM21_CLK_ENABLE();
+    /* TIM21 interrupt Init */
+    HAL_NVIC_SetPriority(TIM21_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(TIM21_IRQn);
   /* USER CODE BEGIN TIM21_MspInit 1 */
 
   /* USER CODE END TIM21_MspInit 1 */
@@ -355,6 +370,9 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* htim_base)
   /* USER CODE END TIM21_MspDeInit 0 */
     /* Peripheral clock disable */
     __HAL_RCC_TIM21_CLK_DISABLE();
+
+    /* TIM21 interrupt DeInit */
+    HAL_NVIC_DisableIRQ(TIM21_IRQn);
   /* USER CODE BEGIN TIM21_MspDeInit 1 */
 
   /* USER CODE END TIM21_MspDeInit 1 */

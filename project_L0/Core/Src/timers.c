@@ -4,7 +4,6 @@
 // should set flags to update screen? hmmmmmmm....
 
 #include "timers.h"
-#include "clocks.h"
 
 // ---- Stopwatch functions ----
 // set stopwatch. using lptimer. maybe better with regular timer?
@@ -33,8 +32,9 @@ void clearStopwatch(LPTIM_HandleTypeDef *hlptim) {
 //   now...does hal do this automatically?
 void HAL_LPTIM_AutoReloadMatchCallback(LPTIM_HandleTypeDef *hlptim) {
 	// toggle pin, should toggle every 1s. change this pin
-	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);
-	stopwatchCNT++;
+	HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_1);
+//	stopwatchCNT++;
+//	updateStopwatch = 1;
 }
 // ---- end of stopwatch functions ----
 

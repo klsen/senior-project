@@ -70,7 +70,8 @@ void setAlarm(struct alarmTimes *a, RTC_HandleTypeDef *hrtc) {
 	salarmtime.StoreOperation = RTC_STOREOPERATION_RESET;
 
 	salarm.AlarmTime = salarmtime;
-	salarm.AlarmMask = RTC_ALARMMASK_ALL;
+//	salarm.AlarmMask = RTC_ALARMMASK_ALL;
+	salarm.AlarmMask = RTC_ALARMMASK_MINUTES;
 	salarm.AlarmSubSecondMask = RTC_ALARMSUBSECONDMASK_ALL;
 	salarm.AlarmDateWeekDaySel = RTC_ALARMDATEWEEKDAYSEL_WEEKDAY;
 	salarm.AlarmDateWeekDay = a->weekday;
@@ -185,9 +186,10 @@ void setTimer(struct times *t_in, RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *ht
 void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc) {
 	// change pin to whatever's accessible
 	// using PC0
-	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_0);
-	HAL_Delay(500);			// does this work in interrupt/callback? might not
-	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_0);
+	HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_1);
+//	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET);
+//	HAL_Delay(500);			// does this work in interrupt/callback? might not
+//	HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_1);
 	HAL_RTC_DeactivateAlarm(hrtc, RTC_ALARM_A);
 }
 
@@ -336,9 +338,23 @@ void alarmTest(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 
 	getDateTime(&d, &t, hrtc);
 
-	if (t.sec > 60) t.min += 1;
-	t.sec = (t.sec+10) % 60;
-	struct alarmTimes a = {t.hr, t.min, t.sec, d.weekday};
+//	if (t.sec > 60) t.min += 1;
+//	t.sec = (t.sec+10) % 60;
+//	struct alarmTimes a = {t.hr, t.min, t.sec, d.weekday};
+	struct alarmTimes a = {0, 1, 0, RTC_WEEKDAY_MONDAY};
+
+	HAL_Delay(1000);
+
+	char str[40];
+	sprintf(str, "%2u:%2u:%2u %2u", t.hr, t.min, t.sec, d.weekday);
+	drawTextAt(0, 0, str, hspi);
+	sprintf(str, "%2u:%2u:%2u %2u", a.hr, a.min, a.sec, a.weekday);
+	drawTextAt(0, 10, str, hspi);
 
 	setAlarm(&a, hrtc);
+
+	HAL_Delay(60000);
+	getDateTime(&d, &t, hrtc);
+	sprintf(str, "%2u:%2u:%2u %2u", t.hr, t.min, t.sec, d.weekday);
+	drawTextAt(0, 0, str, hspi);
 }

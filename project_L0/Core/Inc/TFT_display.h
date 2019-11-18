@@ -143,11 +143,12 @@ void fillScreen(uint16_t color, SPI_HandleTypeDef* hspi);
 // ---- text functions ----
 // variables to make using functions easier or something
 // no protections from accessing these variables directly. what's the point of setters (??)
-static uint8_t cursorX;
-static uint8_t cursorY;
-static uint8_t textSize;
-static uint16_t textColor;
-static uint16_t bg;
+// non-static suppresses warnings. is this fine?
+uint8_t cursorX;
+uint8_t cursorY;
+uint8_t textSize;
+uint16_t textColor;
+uint16_t bg;
 //void drawChar(uint8_t x, uint8_t y, uint8_t ch, uint16_t color, uint16_t bg, uint8_t size_x, uint8_t size_y, SPI_HandleTypeDef *hspi);
 //void drawText(uint8_t x, uint8_t y, uint8_t size, uint16_t color, uint16_t bg, char *str, SPI_HandleTypeDef *hspi);
 void drawChar(uint8_t ch, SPI_HandleTypeDef *hspi);

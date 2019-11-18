@@ -71,7 +71,17 @@ static void MX_DMA_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+void peripheralClockConfig() {
+	RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
+	PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC|RCC_PERIPHCLK_LPTIM1;
+	PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
+	PeriphClkInit.LptimClockSelection = RCC_LPTIM1CLKSOURCE_LSE;
 
+	if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
+	{
+		Error_Handler();
+	}
+}
 /* USER CODE END 0 */
 
 /**
@@ -98,7 +108,7 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-
+  peripheralClockConfig();
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -119,6 +129,8 @@ int main(void)
 	updateFace = 1;
 	face = faceClock;
 	updateClock = 1;
+//	runStopwatch(&hlptim1);
+	alarmTest(&hrtc, &hspi1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -129,8 +141,8 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 	  // default
-	  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_1);
-	  HAL_Delay(1000);
+//	  HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_1);
+//	  HAL_Delay(1000);
 
 	  // clocks tests
 	  // not a loopable test yet
@@ -142,7 +154,7 @@ int main(void)
 //	  textTest(bg, &hspi1);
 
 	  // nav tests
-	  updateDisplay(&hspi1);
+//	  updateDisplay(&hspi1);
   }
   /* USER CODE END 3 */
 }
@@ -356,10 +368,19 @@ static void MX_RTC_Init(void)
   sAlarm.AlarmTime.StoreOperation = RTC_STOREOPERATION_RESET;
   sAlarm.AlarmMask = RTC_ALARMMASK_NONE;
   sAlarm.AlarmSubSecondMask = RTC_ALARMSUBSECONDMASK_ALL;
-  sAlarm.AlarmDateWeekDaySel = RTC_ALARMDATEWEEKDAYSEL_DATE;
+  sAlarm.AlarmDateWeekDaySel = RTC_ALARMDATEWEEKDAYSEL_WEEKDAY;
   sAlarm.AlarmDateWeekDay = 1;
   sAlarm.Alarm = RTC_ALARM_A;
-  if (HAL_RTC_SetAlarm(&hrtc, &sAlarm, RTC_FORMAT_BIN) != HAL_OK)
+  if (HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BIN) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Enable the Alarm B 
+  */
+  sAlarm.AlarmDateWeekDaySel = RTC_ALARMDATEWEEKDAYSEL_DATE;
+  sAlarm.AlarmDateWeekDay = 1;
+  sAlarm.Alarm = RTC_ALARM_B;
+  if (HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BIN) != HAL_OK)
   {
     Error_Handler();
   }

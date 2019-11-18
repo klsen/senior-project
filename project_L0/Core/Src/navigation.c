@@ -37,7 +37,8 @@ const char* monthNames[13] = {
 //   software interrupt on flag so that this doesn't run all the time?
 void updateDisplay(SPI_HandleTypeDef *hspi) {
 	char str[40];
-	uint32_t stopwatchVal, timerVal, hr, min, sec;
+	uint32_t stopwatchVal, timerVal;
+	uint8_t hr, min, sec;
 	struct dates currentDate;
 	struct times currentTime;
 	// update main clock face
@@ -68,9 +69,9 @@ void updateDisplay(SPI_HandleTypeDef *hspi) {
 				drawTextAt(0, 0, "not setting", hspi);
 				drawTextAt(0, 10, "     ", hspi);
 				getDateTime(&currentDate, &currentTime, &hrtc);
-				sprintf(str, "%2d:%2d:%2d", currentTime.hr, currentTime.min, currentTime.sec);
+				sprintf(str, "%2u:%2u:%2u", currentTime.hr, currentTime.min, currentTime.sec);
 				drawTextAt(0, 60, str, hspi);
-				sprintf(str, "%s, %d, %d   %s", monthNames[currentDate.month], currentDate.date, currentDate.yr, weekdayNames[currentDate.weekday]);
+				sprintf(str, "%s, %2u, %4u   %s", monthNames[currentDate.month], currentDate.date, currentDate.yr, weekdayNames[currentDate.weekday]);
 				drawTextAt(0, 70, str, hspi);
 			}
 			else if (clockSet == 1) {
@@ -83,9 +84,9 @@ void updateDisplay(SPI_HandleTypeDef *hspi) {
 					case 5: drawTextAt(0, 10, "day  ", hspi); break;
 					default: break;
 				}
-				sprintf(str, "%2d:%2d   ", tempClockTimes.hr, tempClockTimes.min);
+				sprintf(str, "%2u:%2u   ", tempClockTimes.hr, tempClockTimes.min);
 				drawTextAt(0, 60, str, hspi);
-				sprintf(str, "%s, %d, %d      ", monthNames[tempClockDate.month], tempClockDate.date, tempClockDate.yr);
+				sprintf(str, "%s, %2u, %4u      ", monthNames[tempClockDate.month], tempClockDate.date, tempClockDate.yr);
 				drawTextAt(0, 70, str, hspi);
 			}
 		}
@@ -104,7 +105,7 @@ void updateDisplay(SPI_HandleTypeDef *hspi) {
 					timerVal %= 60;
 					sec = timerVal;
 
-					sprintf(str, "%2d:%2d:%2d", hr, min, sec);
+					sprintf(str, "%2u:%2u:%2u", hr, min, sec);
 					drawTextAt(0, 60, str, hspi);
 				}
 				else {
@@ -127,7 +128,7 @@ void updateDisplay(SPI_HandleTypeDef *hspi) {
 					case 3: drawTextAt(0, 10, "hr   ", hspi); break;
 					default: break;
 				}
-				sprintf(str, "%2d:%2d:%2d", tempTimer.hr, tempTimer.min, tempTimer.sec);
+				sprintf(str, "%2u:%2u:%2u", tempTimer.hr, tempTimer.min, tempTimer.sec);
 				drawTextAt(0, 60, str, hspi);
 			}
 		}
@@ -144,7 +145,7 @@ void updateDisplay(SPI_HandleTypeDef *hspi) {
 				}
 				else if (alarmRunning == 1) {
 					drawTextAt(0, 0, "running    ", hspi);
-					sprintf(str, "%2d:%2d:%2d %s", watchAlarm.hr, watchAlarm.min, watchAlarm.sec, weekdayNames[watchAlarm.weekday]);
+					sprintf(str, "%2u:%2u:%2u %s", watchAlarm.hr, watchAlarm.min, watchAlarm.sec, weekdayNames[watchAlarm.weekday]);
 					drawTextAt(0, 60, str, hspi);
 				}
 			}
@@ -158,7 +159,7 @@ void updateDisplay(SPI_HandleTypeDef *hspi) {
 					default: break;
 				}
 				// maybe make this more efficient
-				sprintf(str, "%2d:%2d:%2d %s", tempAlarm.hr, tempAlarm.min, tempAlarm.sec, weekdayNames[tempAlarm.weekday]);
+				sprintf(str, "%2u:%2u:%2u %s", tempAlarm.hr, tempAlarm.min, tempAlarm.sec, weekdayNames[tempAlarm.weekday]);
 				drawTextAt(0, 60, str, hspi);
 			}
 		}
@@ -176,7 +177,7 @@ void updateDisplay(SPI_HandleTypeDef *hspi) {
 			stopwatchVal %= 60;
 			sec = stopwatchVal;
 
-			sprintf(str, "%2d:%2d:%2d", hr, min, sec);
+			sprintf(str, "%2u:%2u:%2u", hr, min, sec);
 			drawTextAt(0, 60, str, hspi);
 			if (stopwatchRunning == 0) {
 				drawTextAt(0, 0, "not running", hspi);

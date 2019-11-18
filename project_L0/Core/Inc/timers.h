@@ -4,6 +4,8 @@
 #define TIMERS_H
 
 #include "stm32l0xx_hal.h"
+#include "clocks.h"
+#include "navigation.h"
 
 /*
  * for using timer hardware on l0
