@@ -9,19 +9,19 @@
 // set stopwatch. using lptimer. maybe better with regular timer?
 // can operate in stop mode if using lptimer
 // modify to update screen/set flags when necessary
-void runStopwatch(LPTIM_HandleTypeDef *hlptim) {
-	HAL_LPTIM_Counter_Start_IT(hlptim, 0x8000);
+void runStopwatch() {
+	HAL_LPTIM_Counter_Start_IT(&hlptim1, 0x8000);
 }
 
 // stop the timer or pause it or whatever.
 // counter value might reset and screw up timekeeping? should save?
-void pauseStopwatch(LPTIM_HandleTypeDef *hlptim) {
-	HAL_LPTIM_Counter_Stop_IT(hlptim);
+void pauseStopwatch() {
+	HAL_LPTIM_Counter_Stop_IT(&hlptim1);
 //	temp = hlptim->Instance->CNT;
 }
 
-void clearStopwatch(LPTIM_HandleTypeDef *hlptim) {
-	pauseStopwatch(hlptim);
+void clearStopwatch() {
+	pauseStopwatch();
 	stopwatchCNT = 0;
 }
 
@@ -33,27 +33,48 @@ void clearStopwatch(LPTIM_HandleTypeDef *hlptim) {
 void HAL_LPTIM_AutoReloadMatchCallback(LPTIM_HandleTypeDef *hlptim) {
 	// toggle pin, should toggle every 1s. change this pin
 	HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_1);
-//	stopwatchCNT++;
-//	updateStopwatch = 1;
+	stopwatchCNT++;
+	updateStopwatch = 1;
 }
 // ---- end of stopwatch functions ----
 
 
 // ---- timer functions (like the timer functionality, not hardware timer) ----
+// ---- also including clock functions that use the timer ----
+// should this be changed to not have any args (for convenience)
 // used for screen updates.
 // else, we're setting rtc alarm
 // uses TIM21 with LSE (external timer w/ remap and done already by ST).
-//void setTimer(TIM_HandleTypeDef *htim, struct alarmTimes *a) {
-//	HAL_TIM_Base_Start_IT(htim);
-//}
-void runTimerDisplay(TIM_HandleTypeDef *htim) {
-	HAL_TIM_Base_Start(htim);
+void runTimerDisplay() {
+	HAL_TIM_Base_Start_IT(&htim21);
+}
+
+void stopTimerDisplay() {
+	HAL_TIM_Base_Stop_IT(&htim21);
+}
+
+void runClockDisplay() {
+	HAL_TIM_Base_Start_IT(&htim22);
+}
+
+void stopClockDisplay() {
+	HAL_TIM_Base_Stop_IT(&htim22);
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
-	// should toggle pin every 1s. change pin
-	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);
-	if (watchTimerSeconds != 0) watchTimerSeconds--;
+	if (htim->Instance == TIM21) {
+		updateTimer = 1;
+//		HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_1);
+		// should toggle pin every 1s. change pin
+		if (watchTimerSeconds != 0) {
+			HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_1);
+			watchTimerSeconds--;
+		}
+//		else stopTimerDisplay();
+	}
+	else if (htim->Instance == TIM22) {
+		updateClock = 1;
+	}
 }
 // ---- end of timer functions ----
 

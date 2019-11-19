@@ -117,9 +117,9 @@ void SPI_CS_LOW();
 void SPI_CS_HIGH();
 void SPI_DC_LOW();
 void SPI_DC_HIGH();
-void sendCommand(uint8_t, uint8_t*, uint16_t, SPI_HandleTypeDef*);
-void displayInit(uint8_t*, SPI_HandleTypeDef*);
-void TFT_startup(SPI_HandleTypeDef*);
+void sendCommand(uint8_t cmd, uint8_t* args, uint16_t numArgs, SPI_HandleTypeDef *hspi);
+void displayInit(uint8_t *args, SPI_HandleTypeDef *hspi);
+void TFT_startup(SPI_HandleTypeDef *hspi);
 void setAddrWindow(uint16_t x, uint16_t y, uint16_t w, uint16_t h, SPI_HandleTypeDef *hspi);
 // ---- End of lower level functions ----
 
@@ -130,6 +130,7 @@ uint16_t colorFixer(uint16_t);
 void drawPixel(uint8_t x, uint8_t y, uint16_t color, SPI_HandleTypeDef* hspi);
 void drawHLine(uint8_t x, uint8_t y, uint8_t size, uint16_t color, SPI_HandleTypeDef* hspi);
 void drawVLine(uint8_t x, uint8_t y, uint8_t size, uint16_t color, SPI_HandleTypeDef* hspi);
+void drawBuffer(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t *buffer, uint16_t bufferSize, SPI_HandleTypeDef *hspi);
 // ---- end of base functions ----
 
 // ---- basic shapes and lines ----
@@ -143,14 +144,13 @@ void fillScreen(uint16_t color, SPI_HandleTypeDef* hspi);
 // ---- text functions ----
 // variables to make using functions easier or something
 // no protections from accessing these variables directly. what's the point of setters (??)
-// non-static suppresses warnings. is this fine?
-uint8_t cursorX;
-uint8_t cursorY;
-uint8_t textSize;
-uint16_t textColor;
-uint16_t bg;
-//void drawChar(uint8_t x, uint8_t y, uint8_t ch, uint16_t color, uint16_t bg, uint8_t size_x, uint8_t size_y, SPI_HandleTypeDef *hspi);
-//void drawText(uint8_t x, uint8_t y, uint8_t size, uint16_t color, uint16_t bg, char *str, SPI_HandleTypeDef *hspi);
+// non-static suppresses warnings. is this fine or does it do weird behaviors?
+static uint8_t cursorX;
+static uint8_t cursorY;
+static uint8_t textSize;
+static uint16_t textColor;
+static uint16_t bg;
+
 void drawChar(uint8_t ch, SPI_HandleTypeDef *hspi);
 void drawText(char *str, SPI_HandleTypeDef *hspi);
 void drawTextAt(uint8_t x, uint8_t y, char *str, SPI_HandleTypeDef *hspi);

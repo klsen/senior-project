@@ -227,6 +227,17 @@ void drawVLine(uint8_t x, uint8_t y, uint8_t size, uint16_t color, SPI_HandleTyp
 
 	sendCommand(ST77XX_RAMWR, colors, size*2, hspi);
 }
+
+void drawBuffer(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t *buffer, uint16_t bufferSize, SPI_HandleTypeDef *hspi) {
+	// just dont call this with out-of-range vals pls.
+	if (x+w > WIDTH || y+h > HEIGHT) return;
+
+	// also don't call this with buffer size too big bc there's not enough ram for all pixels of display
+	if (bufferSize > 10240) return;
+
+	setAddrWindow(x, y, w, h, hspi);
+	sendCommand(ST77XX_RAMWR, buffer, bufferSize*2, hspi);
+}
 // ---- end of base graphics functions
 
 // ---- basic shapes and lines ----
@@ -292,42 +303,105 @@ void fillScreen(uint16_t color, SPI_HandleTypeDef *hspi) {
 // ---- end of basic shapes and lines ----
 
 // ---- text functions ----
-//void drawChar(uint8_t x, uint8_t y, uint8_t ch, uint16_t color, uint16_t bg, uint8_t size_x, uint8_t size_y, SPI_HandleTypeDef *hspi) {
+//void drawChar(uint8_t ch, SPI_HandleTypeDef *hspi) {
+//	// very much ripped from Adafruit
+//	// saves me a lot of time from making my own fonts
+//	// thinking of only using 1 parameter for size?
+//
+////	if((x >= _width)            || // Clip right
+////	   (y >= _height)           || // Clip bottom
+////	   ((x + 6 * size_x - 1) < 0) || // Clip left
+////	   ((y + 8 * size_y - 1) < 0))   // Clip top
+////		return;
+//
+////	if(!_cp437 && (c >= 176)) c++; // Handle 'classic' charset behavior
+//
+//	for (int8_t i=0; i<5; i++ ) { // Char bitmap = 5 columns
+//		uint8_t line = font[ch*5+i];
+//		for (int8_t j=0; j<8; j++, line >>= 1) {
+//			if (line & 1) {
+//				if (textSize == 1)
+//					drawPixel(cursorX+i, cursorY+j, textColor, hspi);
+//				else
+//					fillRect(cursorX+i*textSize, cursorY+j*textSize, textSize, textSize, textColor, hspi);
+//			} else if (bg != textColor) {
+//				if (textSize == 1)
+//					drawPixel(cursorX+i, cursorY+j, bg, hspi);
+//				else
+//					fillRect(cursorX+i*textSize, cursorY+j*textSize, textSize, textSize, bg, hspi);
+//			}
+//		}
+//	}
+//
+//	// 6wx8h char. this is 6th column, since it's always blank for kerning
+//	if (bg != textColor) { // If opaque, draw vertical line for last column
+//		if (textSize == 1) drawVLine(cursorX+5, cursorY, 8, bg, hspi);
+//		else fillRect(cursorX+5*textSize, cursorY, textSize, 8*textSize, bg, hspi);
+//	}
+//}
+
 void drawChar(uint8_t ch, SPI_HandleTypeDef *hspi) {
-	// very much ripped from Adafruit
-	// saves me a lot of time from making my own fonts
-	// thinking of only using 1 parameter for size?
-
-//	if((x >= _width)            || // Clip right
-//	   (y >= _height)           || // Clip bottom
-//	   ((x + 6 * size_x - 1) < 0) || // Clip left
-//	   ((y + 8 * size_y - 1) < 0))   // Clip top
-//		return;
-
-//	if(!_cp437 && (c >= 176)) c++; // Handle 'classic' charset behavior
+	uint16_t bufferSize = 6*8*textSize*textSize;
+	uint16_t buffer[bufferSize];
+	int16_t rowOffset, address;
 
 	for (int8_t i=0; i<5; i++ ) { // Char bitmap = 5 columns
 		uint8_t line = font[ch*5+i];
 		for (int8_t j=0; j<8; j++, line >>= 1) {
 			if (line & 1) {
-				if (textSize == 1)
-					drawPixel(cursorX+i, cursorY+j, textColor, hspi);
-				else
-					fillRect(cursorX+i*textSize, cursorY+j*textSize, textSize, textSize, textColor, hspi);
+				if (textSize == 1) {
+					buffer[i+j*6] = textColor;
+				}
+				else {
+					for (int8_t k = 0; k < textSize; k++) {
+						rowOffset = textSize*6;
+						for (int8_t l = 0; l < textSize; l++) {
+							address = (textSize*textSize*j*6)+(i*textSize);
+							address += rowOffset*k+l;
+							buffer[address] = textColor;
+						}
+					}
+//					fillRect(cursorX+i*textSize, cursorY+j*textSize, textSize, textSize, textColor, hspi);
+				}
 			} else if (bg != textColor) {
-				if (textSize == 1)
-					drawPixel(cursorX+i, cursorY+j, bg, hspi);
-				else
-					fillRect(cursorX+i*textSize, cursorY+j*textSize, textSize, textSize, bg, hspi);
+				if (textSize == 1) {
+					buffer[i+j*6] = bg;
+				}
+				else {
+					for (int8_t k = 0; k < textSize; k++) {
+						rowOffset = textSize*6;
+						for (int8_t l = 0; l < textSize; l++) {
+							address = (textSize*textSize*j*6)+(i*textSize);
+							address += rowOffset*k+l;
+							buffer[address] = bg;
+						}
+					}
+//					fillRect(cursorX+i*textSize, cursorY+j*textSize, textSize, textSize, bg, hspi);
+				}
 			}
 		}
 	}
 
-	// 6wx8h char. this is 6th column, since it's always blank for kerning
 	if (bg != textColor) { // If opaque, draw vertical line for last column
-		if (textSize == 1) drawVLine(cursorX+5, cursorY, 8, bg, hspi);
-		else fillRect(cursorX+5*textSize, cursorY, textSize, 8*textSize, bg, hspi);
+		for (int8_t j = 0; j < 8; j++) {
+			if (textSize == 1) {
+				buffer[5+j*6] = bg;
+			}
+			else {
+				for (int8_t k = 0; k < textSize; k++) {
+					for (int8_t l = 0; l < textSize; l++) {
+						address = (textSize*textSize*j*6)+(5*textSize);
+						address += rowOffset*k+l;
+						buffer[address] = bg;
+					}
+				}
+			}
+		}
+//		else fillRect(cursorX+5*textSize, cursorY, textSize, 8*textSize, bg, hspi);
 	}
+
+	drawBuffer(cursorX, cursorY, 6*textSize, 8*textSize, buffer, bufferSize, hspi);
+//	setCursor(cursorX+6*textSize, cursorY);
 }
 
 // this function is slow, and you can definitely see a scrolling speed thing going on

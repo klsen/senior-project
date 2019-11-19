@@ -6,6 +6,7 @@
 #include "stm32l0xx_hal.h"
 #include "clocks.h"
 #include "navigation.h"
+#include "main.h"
 
 /*
  * for using timer hardware on l0
@@ -29,14 +30,17 @@
 uint32_t stopwatchCNT;		// 16-bit can't hold a day's worth of seconds
 
 // ---- stopwatch functions ----
-void runStopwatch(LPTIM_HandleTypeDef *hlptim);
-void pauseStopwatch(LPTIM_HandleTypeDef *hlptim);
-void clearStopwatch(LPTIM_HandleTypeDef *hlptim);
+void runStopwatch();
+void pauseStopwatch();
+void clearStopwatch();
 // ---- end of stopwatch functions ----
 
-// ---- timer functions ----
-void runTimerDisplay(TIM_HandleTypeDef *htim);
-// ---- end of timer functions ----
+// ---- timer and clock functions ----
+void runTimerDisplay();
+void stopTimerDisplay();
+void runClockDisplay();
+void stopClockDisplay();
+// ---- end of timer and clock functions ----
 
 // ---- motor PWM and other functions ----
 void runMotor(TIM_HandleTypeDef *htim);

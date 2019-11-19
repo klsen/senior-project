@@ -5,6 +5,8 @@
 
 #include "stm32l0xx_hal.h"
 #include "TFT_display.h"
+#include "timers.h"
+#include "main.h"
 #include <stdio.h>			// for sprintf
 
 /*
@@ -17,9 +19,8 @@
 
 // ---- variables ----
 struct alarmTimes watchAlarm;		// for keeping track of what alarms are in the RTC.
-uint32_t alarmMask;
 struct times watchTimer;			// using RTC alarmB for this now
-uint32_t watchTimerSeconds;
+volatile uint32_t watchTimerSeconds;
 // ---- end of variables ----
 
 // ---- personal structs ----
@@ -47,32 +48,44 @@ struct alarmTimes {
 // ---- end of structs ----
 
 // ---- setting rtc time ----
-void setTime(struct times *t, RTC_HandleTypeDef *hrtc);
-void setDate(struct dates *d, RTC_HandleTypeDef *hrtc);
-void setDateTime(struct dates *d, struct times *t, RTC_HandleTypeDef *hrtc);
+//void setTime(struct times *t, RTC_HandleTypeDef *hrtc);
+//void setDate(struct dates *d, RTC_HandleTypeDef *hrtc);
+//void setDateTime(struct dates *d, struct times *t, RTC_HandleTypeDef *hrtc);
+void setTime(struct times *t);
+void setDate(struct dates *d);
+void setDateTime(struct dates *d, struct times *t);
 // ---- end of rtc setters ----
 
 // ---- alarm setters ----
-void setAlarm(struct alarmTimes *a, RTC_HandleTypeDef *hrtc);
-void setAlarmB(RTC_HandleTypeDef *hrtc);
-void setTimer(struct times *t_in, RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *htim);
+//void setAlarm(struct alarmTimes *a, RTC_HandleTypeDef *hrtc);
+//void setTimer(struct times *t_in, RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *htim);
+void setAlarm(struct alarmTimes *a);
+void setTimer(struct times *t_in);
 // ---- end of alarm setters ----
 
 // ---- getting rtc times ----
-void getTime(struct times *t, RTC_HandleTypeDef *hrtc);
-void getDate(struct dates *d, RTC_HandleTypeDef *hrtc);
-void getDateTime(struct dates *d, struct times *t, RTC_HandleTypeDef *hrtc);
+//void getTime(struct times *t, RTC_HandleTypeDef *hrtc);
+//void getDate(struct dates *d, RTC_HandleTypeDef *hrtc);
+//void getDateTime(struct dates *d, struct times *t, RTC_HandleTypeDef *hrtc);
+void getTime(struct times *t);
+void getDate(struct dates *d);
+void getDateTime(struct dates *d, struct times *t);
 // ---- end of getters ----
 
 // ---- printing stuff ----
-void printTime(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
-void printDate(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
-void printDateTime(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
+//void printTime(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
+//void printDate(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
+//void printDateTime(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
+void printTime();
+void printDate();
+void printDateTime();
 // ---- end of prints ----
 
 // ---- tests ----
-void clockTest(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
-void alarmTest(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
+//void clockTest(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
+//void alarmTest(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
+void clockTest();
+void alarmTest();
 // ---- end of tests ----
 
 #endif

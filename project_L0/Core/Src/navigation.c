@@ -68,7 +68,7 @@ void updateDisplay(SPI_HandleTypeDef *hspi) {
 			if (clockSet == 0) {
 				drawTextAt(0, 0, "not setting", hspi);
 				drawTextAt(0, 10, "     ", hspi);
-				getDateTime(&currentDate, &currentTime, &hrtc);
+				getDateTime(&currentDate, &currentTime);
 				sprintf(str, "%2u:%2u:%2u", currentTime.hr, currentTime.min, currentTime.sec);
 				drawTextAt(0, 60, str, hspi);
 				sprintf(str, "%s, %2u, %4u   %s", monthNames[currentDate.month], currentDate.date, currentDate.yr, weekdayNames[currentDate.weekday]);
@@ -118,6 +118,10 @@ void updateDisplay(SPI_HandleTypeDef *hspi) {
 				}
 				else if (timerRunning == 1) {
 					drawTextAt(0, 0, "running    ", hspi);
+					sprintf(str, "%2u:%2u:%2u", tempTimer.hr, tempTimer.min, tempTimer.sec);
+					drawTextAt(0, 50, str, hspi);
+//					sprintf(str, " %lu", watchTimerSeconds);
+//					drawTextAt(0, 60, str, hspi);
 				}
 			}
 			else if (timerSet == 1) {
@@ -234,12 +238,12 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 			clockField = (clockField + 1) % (NUM_CLOCKFIELDS + 1);
 			if (clockField != 0) {
 				clockSet = 1;
-				if (clockField == 1) getDateTime(&tempClockDate, &tempClockTimes, &hrtc);	// should pull current time on setting 1st field
+				if (clockField == 1) getDateTime(&tempClockDate, &tempClockTimes);	// should pull current time on setting 1st field
 			}
 			else {
 				clockSet = 0;
 				// second set to 0, weekday ignored(?)
-				setDateTime(&tempClockDate, &tempClockTimes, &hrtc);
+				setDateTime(&tempClockDate, &tempClockTimes);
 			}
 		}
 		// checks on clock set for other buttons here
@@ -282,7 +286,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 				else {
 					timerSet = 0;
 					timerRunning = 1;	// careful where this gets set/unset
-					setTimer(&tempTimer, &hrtc, &htim21);
+					setTimer(&tempTimer);
 				}
 			}
 		}
@@ -332,15 +336,19 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 				if (alarmField != 0) {
 					alarmSet = 1;
 					if (alarmField == 1) {
-						tempAlarm.sec = 0;
-						tempAlarm.min = 0;
-						tempAlarm.hr = 0;
-						tempAlarm.weekday = 1;
+						struct dates d;
+						struct times t;
+						getDateTime(&d, &t);
+						tempAlarm.sec = t.sec;
+						tempAlarm.min = t.min;
+						tempAlarm.hr = t.hr;
+						tempAlarm.weekday = d.weekday;
 					}
 				}
 				else {
 					alarmSet = 0;
 					alarmRunning = 1;
+					setAlarm(&tempAlarm);
 				}
 			}
 		}
@@ -365,11 +373,11 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 		if (GPIO_Pin == BUTTON1) {	// start/stop
 			if (stopwatchRunning == 0) {
 				stopwatchRunning = 1;
-				runStopwatch(&hlptim1);
+				runStopwatch();
 			}
 			else {
 				stopwatchRunning = 0;
-				pauseStopwatch(&hlptim1);
+				pauseStopwatch();
 			}
 		}
 		if (GPIO_Pin == BUTTON2) {
@@ -380,7 +388,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 		if (GPIO_Pin == BUTTON3) {
 			// clear stopwatch hw
 			stopwatchRunning = 0;
-			clearStopwatch(&hlptim1);
+			clearStopwatch();
 		}
 	}
 }

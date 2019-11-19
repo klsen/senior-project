@@ -63,7 +63,7 @@ struct times tempTimer;
 static volatile int alarmSet;
 static volatile int alarmField;
 static volatile int alarmRunning;
-struct alarmTimes tempAlarm;
+volatile struct alarmTimes tempAlarm;
 
 // for stopwatch
 static volatile int stopwatchRunning;
