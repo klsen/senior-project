@@ -142,7 +142,7 @@ void setTimer(struct times *t_in) {
 void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc) {
 	// change pin to whatever's accessible
 	// using PC0
-	HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_1);
+	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_0);
 	HAL_RTC_DeactivateAlarm(hrtc, RTC_ALARM_A);
 	alarmRunning = 0;
 	updateAlarm = 1;

@@ -204,7 +204,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	 *   check current variables and check button pressed
 	 */
 //	HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_8);	// should run for any button
-	HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_1);
+	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_3);
 	if (GPIO_Pin == BUTTON0) {
 		face = (face + 1) % NUM_FACES;
 		updateFace = 1;
@@ -364,6 +364,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 			if (GPIO_Pin == BUTTON3) {
 				// stop and clear alarm hw
 				alarmRunning = 0;
+				HAL_RTC_DeactivateAlarm(&hrtc, RTC_ALARM_A);
 			}
 		}
 	}

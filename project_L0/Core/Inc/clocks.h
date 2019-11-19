@@ -86,6 +86,7 @@ void printDateTime();
 //void alarmTest(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
 void clockTest();
 void alarmTest();
+void timerTest();
 // ---- end of tests ----
 
 #endif
