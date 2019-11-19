@@ -159,11 +159,11 @@ int main(void)
 
 	  // display tests
 //	  lineTest(&hspi1);
-	  charTest(&hspi1);
+//	  charTest(&hspi1);
 //	  textTest(bg, &hspi1);
 
 	  // ui/nav tests or full run. uncomment when ready
-//	  updateDisplay(&hspi1);
+	  updateDisplay(&hspi1);
   }
   /* USER CODE END 3 */
 }
