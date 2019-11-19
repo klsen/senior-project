@@ -268,7 +268,7 @@ int main(void)
 //    charTest(bg);
 //    textTest(bg);
 
-    updateDisplay(&hspi1);
+//    updateDisplay(&hspi1);
   }
   /* USER CODE END 3 */
 }
@@ -749,8 +749,8 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin : PD0 */
   GPIO_InitStruct.Pin = GPIO_PIN_0;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PD1 PD3 PD4 */
