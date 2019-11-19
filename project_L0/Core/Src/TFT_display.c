@@ -297,8 +297,22 @@ void fillRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t color, SPI_Ha
 	}
 }
 
+//void fillScreen(uint16_t color, SPI_HandleTypeDef *hspi) {
+//	fillRect(0, 0, WIDTH, HEIGHT, color, hspi);
+//}
+
 void fillScreen(uint16_t color, SPI_HandleTypeDef *hspi) {
-	fillRect(0, 0, WIDTH, HEIGHT, color, hspi);
+	uint16_t bufferSize = WIDTH*HEIGHT/4;
+	uint16_t buffer[bufferSize];
+	int i;
+	for (i = 0; i < bufferSize; i++) {
+		buffer[i] = colorFixer(color);
+	}
+
+	for (i = 0; i < 4; i++) {
+		drawBuffer(0, HEIGHT/4*i, WIDTH, HEIGHT/4, buffer, bufferSize, hspi);
+//		HAL_Delay(1000);
+	}
 }
 // ---- end of basic shapes and lines ----
 
@@ -401,7 +415,7 @@ void drawChar(uint8_t ch, SPI_HandleTypeDef *hspi) {
 	}
 
 	drawBuffer(cursorX, cursorY, 6*textSize, 8*textSize, buffer, bufferSize, hspi);
-//	setCursor(cursorX+6*textSize, cursorY);
+	setCursor(cursorX+6*textSize, cursorY);
 }
 
 // this function is slow, and you can definitely see a scrolling speed thing going on
