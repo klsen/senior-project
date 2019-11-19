@@ -102,6 +102,7 @@ void setTimer(struct times *t_in) {
 	struct alarmTimes a;
 
 	// adding timer value to current time so we can set an alarm time
+	// REDO THIS ADDER BC ITS NOT RIGHT
 	if (t.sec + t_in->sec > 60) {		// adding seconds
 		if (t.min + t_in->min > 60) {		// adding minutes
 			if (t.hr + t_in->hr > 24) {			// adding hours
@@ -305,7 +306,22 @@ void alarmTest() {
 
 	setAlarm(&a);
 
-	HAL_Delay(60000);
+	HAL_Delay(30000);
+	getDateTime(&d, &t);
+	sprintf(str, "%2u:%2u:%2u %2u", t.hr, t.min, t.sec, d.weekday);
+	drawTextAt(0, 0, str, &hspi1);
+
+	a.sec += 20;
+	clearScreen(ST77XX_WHITE, &hspi1);
+	setTextColor(ST77XX_BLACK);
+	sprintf(str, "%2u:%2u:%2u %2u", t.hr, t.min, t.sec, d.weekday);
+	drawTextAt(0, 0, str, &hspi1);
+	sprintf(str, "%2u:%2u:%2u %2u", a.hr, a.min, a.sec, a.weekday);
+	drawTextAt(0, 10, str, &hspi1);
+
+	setAlarm(&a);
+
+	HAL_Delay(30000);
 	getDateTime(&d, &t);
 	sprintf(str, "%2u:%2u:%2u %2u", t.hr, t.min, t.sec, d.weekday);
 	drawTextAt(0, 0, str, &hspi1);
@@ -330,7 +346,28 @@ void timerTest() {
 	sprintf(str, "timer: %2u:%2u:%2u", timerTime.hr, timerTime.min, timerTime.sec);
 	drawTextAt(0, 20, str, &hspi1);
 
-	HAL_Delay(10000);
+	HAL_Delay(20000);
+	getDateTime(&currentDate, &currentTime);
+	sprintf(str, "current: %2u:%2u:%2u", currentTime.hr, currentTime.min, currentTime.sec);
+	drawTextAt(0, 0, str, &hspi1);
+	sprintf(str, "       : %2u:%2u:%2u", currentDate.month, currentDate.date, currentDate.yr);
+	drawTextAt(0, 10, str, &hspi1);
+
+
+	timerTime.sec+=20;
+	setTimer(&timerTime);
+
+	// print current time and timer value set
+	getDateTime(&currentDate, &currentTime);
+
+	sprintf(str, "current: %2u:%2u:%2u", currentTime.hr, currentTime.min, currentTime.sec);
+	drawTextAt(0, 0, str, &hspi1);
+	sprintf(str, "       : %2u:%2u:%2u", currentDate.month, currentDate.date, currentDate.yr);
+	drawTextAt(0, 10, str, &hspi1);
+	sprintf(str, "timer: %2u:%2u:%2u", timerTime.hr, timerTime.min, timerTime.sec);
+	drawTextAt(0, 20, str, &hspi1);
+
+	HAL_Delay(40000);
 	getDateTime(&currentDate, &currentTime);
 	sprintf(str, "current: %2u:%2u:%2u", currentTime.hr, currentTime.min, currentTime.sec);
 	drawTextAt(0, 0, str, &hspi1);

@@ -57,7 +57,7 @@ struct times tempClockTimes;
 static volatile int timerSet;
 static volatile int timerField;
 static volatile int timerRunning;
-struct times tempTimer;
+volatile struct times tempTimer;
 
 // for alarm
 static volatile int alarmSet;

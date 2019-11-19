@@ -120,8 +120,8 @@ void updateDisplay(SPI_HandleTypeDef *hspi) {
 					drawTextAt(0, 0, "running    ", hspi);
 					sprintf(str, "%2u:%2u:%2u", tempTimer.hr, tempTimer.min, tempTimer.sec);
 					drawTextAt(0, 50, str, hspi);
-//					sprintf(str, " %lu", watchTimerSeconds);
-//					drawTextAt(0, 60, str, hspi);
+					sprintf(str, " %lu", watchTimerSeconds);
+					drawTextAt(0, 70, str, hspi);
 				}
 			}
 			else if (timerSet == 1) {
