@@ -153,7 +153,7 @@ void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc) {
 
 void HAL_RTCEx_AlarmBEventCallback(RTC_HandleTypeDef *hrtc) {
 	// toggles pin on end of timer. clears alarm
-	HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_1);
+	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_1);
 	HAL_RTC_DeactivateAlarm(hrtc, RTC_ALARM_B);
 	timerRunning = 0;
 	updateTimer = 1;
