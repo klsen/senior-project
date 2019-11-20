@@ -21,9 +21,9 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, ALLOC, LOAD, DATA
   8 .data         000000bc  20000000  080081b0  00020000  2**2
                   CONTENTS, ALLOC, LOAD, DATA
-  9 .bss          00000288  200000bc  0800826c  000200bc  2**2
+  9 .bss          00000280  200000bc  0800826c  000200bc  2**2
                   ALLOC
- 10 ._user_heap_stack 00000604  20000344  0800826c  00020344  2**0
+ 10 ._user_heap_stack 00000604  2000033c  0800826c  0002033c  2**0
                   ALLOC
  11 .ARM.attributes 00000028  00000000  00000000  000200bc  2**0
                   CONTENTS, READONLY
@@ -866,7 +866,7 @@ void TFT_startup(SPI_HandleTypeDef *hspi) {
  800067c:	200000d9 	.word	0x200000d9
  8000680:	200000da 	.word	0x200000da
  8000684:	200000dc 	.word	0x200000dc
- 8000688:	20000124 	.word	0x20000124
+ 8000688:	20000110 	.word	0x20000110
 
 0800068c <setAddrWindow>:
 
@@ -1722,7 +1722,7 @@ void drawChar(uint8_t ch, SPI_HandleTypeDef *hspi) {
  8000c58:	200000da 	.word	0x200000da
  8000c5c:	08007c14 	.word	0x08007c14
  8000c60:	200000dc 	.word	0x200000dc
- 8000c64:	20000124 	.word	0x20000124
+ 8000c64:	20000110 	.word	0x20000110
 							address = (textSize*textSize*j*6)+(i*textSize);
  8000c68:	4bdc      	ldr	r3, [pc, #880]	; (8000fdc <drawChar+0x698>)
  8000c6a:	781b      	ldrb	r3, [r3, #0]
@@ -2196,7 +2196,7 @@ void drawChar(uint8_t ch, SPI_HandleTypeDef *hspi) {
  8000fd8:	bdf0      	pop	{r4, r5, r6, r7, pc}
  8000fda:	46c0      	nop			; (mov r8, r8)
  8000fdc:	200000da 	.word	0x200000da
- 8000fe0:	20000124 	.word	0x20000124
+ 8000fe0:	20000110 	.word	0x20000110
  8000fe4:	200000dc 	.word	0x200000dc
  8000fe8:	200000d8 	.word	0x200000d8
  8000fec:	200000d9 	.word	0x200000d9
@@ -2349,7 +2349,7 @@ void clearScreen(uint16_t backgroundColor, SPI_HandleTypeDef *hspi) {
  80010da:	46bd      	mov	sp, r7
  80010dc:	b002      	add	sp, #8
  80010de:	bd80      	pop	{r7, pc}
- 80010e0:	20000124 	.word	0x20000124
+ 80010e0:	20000110 	.word	0x20000110
 
 080010e4 <setTime>:
 
@@ -2435,8 +2435,8 @@ void setTime(struct times *t) {
  800114e:	46bd      	mov	sp, r7
  8001150:	b009      	add	sp, #36	; 0x24
  8001152:	bd90      	pop	{r4, r7, pc}
- 8001154:	200001cc 	.word	0x200001cc
- 8001158:	2000015c 	.word	0x2000015c
+ 8001154:	200001b8 	.word	0x200001b8
+ 8001158:	20000148 	.word	0x20000148
 
 0800115c <setDate>:
 
@@ -2497,8 +2497,8 @@ void setDate(struct dates *d) {
  80011b2:	b005      	add	sp, #20
  80011b4:	bd90      	pop	{r4, r7, pc}
  80011b6:	46c0      	nop			; (mov r8, r8)
- 80011b8:	200001cc 	.word	0x200001cc
- 80011bc:	2000015c 	.word	0x2000015c
+ 80011b8:	200001b8 	.word	0x200001b8
+ 80011bc:	20000148 	.word	0x20000148
 
 080011c0 <setDateTime>:
 
@@ -2641,8 +2641,8 @@ void setAlarm(struct alarmTimes *a) {
  8001296:	b012      	add	sp, #72	; 0x48
  8001298:	bdb0      	pop	{r4, r5, r7, pc}
  800129a:	46c0      	nop			; (mov r8, r8)
- 800129c:	2000014c 	.word	0x2000014c
- 80012a0:	200001cc 	.word	0x200001cc
+ 800129c:	20000138 	.word	0x20000138
+ 80012a0:	200001b8 	.word	0x200001b8
 
 080012a4 <setTimer>:
 
@@ -2931,9 +2931,9 @@ void setTimer(struct times *t_in) {
  8001486:	b017      	add	sp, #92	; 0x5c
  8001488:	bdf0      	pop	{r4, r5, r6, r7, pc}
  800148a:	46c0      	nop			; (mov r8, r8)
- 800148c:	20000158 	.word	0x20000158
- 8001490:	20000250 	.word	0x20000250
- 8001494:	200001cc 	.word	0x200001cc
+ 800148c:	20000144 	.word	0x20000144
+ 8001490:	20000244 	.word	0x20000244
+ 8001494:	200001b8 	.word	0x200001b8
 
 08001498 <HAL_RTC_AlarmAEventCallback>:
 
@@ -2977,8 +2977,8 @@ void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc) {
  80014c8:	b002      	add	sp, #8
  80014ca:	bd80      	pop	{r7, pc}
  80014cc:	50000800 	.word	0x50000800
- 80014d0:	200000e4 	.word	0x200000e4
- 80014d4:	20000130 	.word	0x20000130
+ 80014d0:	200000e0 	.word	0x200000e0
+ 80014d4:	2000011c 	.word	0x2000011c
 
 080014d8 <HAL_RTCEx_AlarmBEventCallback>:
 
@@ -3018,8 +3018,8 @@ void HAL_RTCEx_AlarmBEventCallback(RTC_HandleTypeDef *hrtc) {
  8001508:	b002      	add	sp, #8
  800150a:	bd80      	pop	{r7, pc}
  800150c:	50000800 	.word	0x50000800
- 8001510:	200000e0 	.word	0x200000e0
- 8001514:	200001f4 	.word	0x200001f4
+ 8001510:	200001e0 	.word	0x200001e0
+ 8001514:	200001e4 	.word	0x200001e4
 
 08001518 <getDateTime>:
 	d->date = sdate.Date;
@@ -3117,7 +3117,7 @@ void getDateTime(struct dates *d, struct times *t) {
  80015a6:	b009      	add	sp, #36	; 0x24
  80015a8:	bd90      	pop	{r4, r7, pc}
  80015aa:	46c0      	nop			; (mov r8, r8)
- 80015ac:	200001cc 	.word	0x200001cc
+ 80015ac:	200001b8 	.word	0x200001b8
  80015b0:	0000076c 	.word	0x0000076c
 
 080015b4 <peripheralClockConfig>:
@@ -3259,11 +3259,11 @@ int main(void)
  8001660:	f000 fbd8 	bl	8001e14 <updateDisplay>
  8001664:	e7fa      	b.n	800165c <main+0x64>
  8001666:	46c0      	nop			; (mov r8, r8)
- 8001668:	200001f8 	.word	0x200001f8
+ 8001668:	200001e8 	.word	0x200001e8
  800166c:	0000ffff 	.word	0x0000ffff
- 8001670:	20000198 	.word	0x20000198
- 8001674:	200000e8 	.word	0x200000e8
- 8001678:	20000138 	.word	0x20000138
+ 8001670:	20000184 	.word	0x20000184
+ 8001674:	200000e4 	.word	0x200000e4
+ 8001678:	20000124 	.word	0x20000124
 
 0800167c <SystemClock_Config>:
 /**
@@ -3583,7 +3583,7 @@ static void MX_ADC_Init(void)
  800183e:	b002      	add	sp, #8
  8001840:	bd80      	pop	{r7, pc}
  8001842:	46c0      	nop			; (mov r8, r8)
- 8001844:	20000298 	.word	0x20000298
+ 8001844:	20000290 	.word	0x20000290
  8001848:	40012400 	.word	0x40012400
 
 0800184c <MX_LPTIM1_Init>:
@@ -3646,7 +3646,7 @@ static void MX_LPTIM1_Init(void)
  800188a:	46c0      	nop			; (mov r8, r8)
  800188c:	46bd      	mov	sp, r7
  800188e:	bd80      	pop	{r7, pc}
- 8001890:	2000019c 	.word	0x2000019c
+ 8001890:	20000188 	.word	0x20000188
  8001894:	40007c00 	.word	0x40007c00
  8001898:	0000ffff 	.word	0x0000ffff
 
@@ -3892,7 +3892,7 @@ static void MX_RTC_Init(void)
  80019ea:	46bd      	mov	sp, r7
  80019ec:	b010      	add	sp, #64	; 0x40
  80019ee:	bd80      	pop	{r7, pc}
- 80019f0:	200001cc 	.word	0x200001cc
+ 80019f0:	200001b8 	.word	0x200001b8
  80019f4:	40002800 	.word	0x40002800
 
 080019f8 <MX_SPI1_Init>:
@@ -3980,9 +3980,9 @@ static void MX_SPI1_Init(void)
  8001a5e:	46c0      	nop			; (mov r8, r8)
  8001a60:	46bd      	mov	sp, r7
  8001a62:	bd80      	pop	{r7, pc}
- 8001a64:	200001f8 	.word	0x200001f8
+ 8001a64:	200001e8 	.word	0x200001e8
  8001a68:	40013000 	.word	0x40013000
- 8001a6c:	200002f4 	.word	0x200002f4
+ 8001a6c:	200002ec 	.word	0x200002ec
 
 08001a70 <MX_TIM21_Init>:
   * @brief TIM21 Initialization Function
@@ -4171,7 +4171,7 @@ static void MX_TIM21_Init(void)
  8001b7e:	b00a      	add	sp, #40	; 0x28
  8001b80:	bd80      	pop	{r7, pc}
  8001b82:	46c0      	nop			; (mov r8, r8)
- 8001b84:	2000025c 	.word	0x2000025c
+ 8001b84:	20000254 	.word	0x20000254
  8001b88:	40010800 	.word	0x40010800
 
 08001b8c <MX_TIM22_Init>:
@@ -4361,7 +4361,7 @@ static void MX_TIM22_Init(void)
  8001c9a:	b00a      	add	sp, #40	; 0x28
  8001c9c:	bd80      	pop	{r7, pc}
  8001c9e:	46c0      	nop			; (mov r8, r8)
- 8001ca0:	2000015c 	.word	0x2000015c
+ 8001ca0:	20000148 	.word	0x20000148
  8001ca4:	40011400 	.word	0x40011400
 
 08001ca8 <MX_DMA_Init>:
@@ -5107,8 +5107,8 @@ void updateDisplay(SPI_HandleTypeDef *hspi) {
  800218c:	2000      	movs	r0, #0
  800218e:	f7fe ff2f 	bl	8000ff0 <drawTextAt>
  8002192:	e054      	b.n	800223e <updateDisplay+0x42a>
- 8002194:	20000198 	.word	0x20000198
- 8002198:	200000ec 	.word	0x200000ec
+ 8002194:	20000184 	.word	0x20000184
+ 8002198:	200000e8 	.word	0x200000e8
  800219c:	000007ff 	.word	0x000007ff
  80021a0:	08007b10 	.word	0x08007b10
  80021a4:	08007b1c 	.word	0x08007b1c
@@ -5116,8 +5116,8 @@ void updateDisplay(SPI_HandleTypeDef *hspi) {
  80021ac:	08007b28 	.word	0x08007b28
  80021b0:	0000ffe0 	.word	0x0000ffe0
  80021b4:	08007b34 	.word	0x08007b34
- 80021b8:	20000138 	.word	0x20000138
- 80021bc:	200000f0 	.word	0x200000f0
+ 80021b8:	20000124 	.word	0x20000124
+ 80021bc:	200000ec 	.word	0x200000ec
  80021c0:	08007b40 	.word	0x08007b40
  80021c4:	08007b4c 	.word	0x08007b4c
  80021c8:	08007b54 	.word	0x08007b54
@@ -5125,26 +5125,26 @@ void updateDisplay(SPI_HandleTypeDef *hspi) {
  80021d0:	20000000 	.word	0x20000000
  80021d4:	08007b60 	.word	0x08007b60
  80021d8:	08007b74 	.word	0x08007b74
- 80021dc:	200000f4 	.word	0x200000f4
+ 80021dc:	200000f0 	.word	0x200000f0
  80021e0:	08008114 	.word	0x08008114
  80021e4:	08007b80 	.word	0x08007b80
  80021e8:	08007b88 	.word	0x08007b88
  80021ec:	08007b90 	.word	0x08007b90
  80021f0:	08007b98 	.word	0x08007b98
  80021f4:	08007ba0 	.word	0x08007ba0
- 80021f8:	20000134 	.word	0x20000134
+ 80021f8:	20000120 	.word	0x20000120
  80021fc:	08007ba8 	.word	0x08007ba8
- 8002200:	20000254 	.word	0x20000254
+ 8002200:	2000024c 	.word	0x2000024c
  8002204:	08007bb4 	.word	0x08007bb4
- 8002208:	200001f4 	.word	0x200001f4
- 800220c:	200000f8 	.word	0x200000f8
- 8002210:	20000250 	.word	0x20000250
+ 8002208:	200001e4 	.word	0x200001e4
+ 800220c:	20000240 	.word	0x20000240
+ 8002210:	20000244 	.word	0x20000244
  8002214:	08007bc8 	.word	0x08007bc8
- 8002218:	20000100 	.word	0x20000100
+ 8002218:	200001e0 	.word	0x200001e0
  800221c:	08007bd4 	.word	0x08007bd4
  8002220:	08007be0 	.word	0x08007be0
- 8002224:	20000128 	.word	0x20000128
- 8002228:	200000fc 	.word	0x200000fc
+ 8002224:	20000114 	.word	0x20000114
+ 8002228:	20000248 	.word	0x20000248
  800222c:	08007bec 	.word	0x08007bec
 					case 3: drawTextAt(0, 10, "hr   ", hspi); break;
  8002230:	687b      	ldr	r3, [r7, #4]
@@ -5475,28 +5475,28 @@ void updateDisplay(SPI_HandleTypeDef *hspi) {
  800248c:	bdf0      	pop	{r4, r5, r6, r7, pc}
  800248e:	46c0      	nop			; (mov r8, r8)
  8002490:	08007b88 	.word	0x08007b88
- 8002494:	20000128 	.word	0x20000128
+ 8002494:	20000114 	.word	0x20000114
  8002498:	08007b54 	.word	0x08007b54
- 800249c:	200000ec 	.word	0x200000ec
- 80024a0:	20000130 	.word	0x20000130
- 80024a4:	20000104 	.word	0x20000104
+ 800249c:	200000e8 	.word	0x200000e8
+ 80024a0:	2000011c 	.word	0x2000011c
+ 80024a4:	200000f4 	.word	0x200000f4
  80024a8:	08007b4c 	.word	0x08007b4c
- 80024ac:	2000010c 	.word	0x2000010c
+ 80024ac:	200000fc 	.word	0x200000fc
  80024b0:	08007bd4 	.word	0x08007bd4
  80024b4:	08007bf4 	.word	0x08007bf4
  80024b8:	08007be0 	.word	0x08007be0
- 80024bc:	2000014c 	.word	0x2000014c
+ 80024bc:	20000138 	.word	0x20000138
  80024c0:	20000000 	.word	0x20000000
  80024c4:	08007c04 	.word	0x08007c04
  80024c8:	08007b74 	.word	0x08007b74
- 80024cc:	20000108 	.word	0x20000108
+ 80024cc:	200000f8 	.word	0x200000f8
  80024d0:	08007bec 	.word	0x08007bec
  80024d4:	08007b80 	.word	0x08007b80
  80024d8:	08007ba0 	.word	0x08007ba0
- 80024dc:	20000154 	.word	0x20000154
- 80024e0:	20000137 	.word	0x20000137
- 80024e4:	2000012c 	.word	0x2000012c
- 80024e8:	20000110 	.word	0x20000110
+ 80024dc:	20000140 	.word	0x20000140
+ 80024e0:	20000123 	.word	0x20000123
+ 80024e4:	20000118 	.word	0x20000118
+ 80024e8:	20000100 	.word	0x20000100
 
 080024ec <HAL_GPIO_EXTI_Callback>:
 
@@ -5950,21 +5950,21 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
  80027f0:	e021      	b.n	8002836 <HAL_GPIO_EXTI_Callback+0x34a>
  80027f2:	46c0      	nop			; (mov r8, r8)
  80027f4:	50000800 	.word	0x50000800
- 80027f8:	200000ec 	.word	0x200000ec
+ 80027f8:	200000e8 	.word	0x200000e8
  80027fc:	80000003 	.word	0x80000003
- 8002800:	20000198 	.word	0x20000198
- 8002804:	20000138 	.word	0x20000138
- 8002808:	200000f0 	.word	0x200000f0
- 800280c:	200000f4 	.word	0x200000f4
+ 8002800:	20000184 	.word	0x20000184
+ 8002804:	20000124 	.word	0x20000124
+ 8002808:	200000ec 	.word	0x200000ec
+ 800280c:	200000f0 	.word	0x200000f0
  8002810:	0800812c 	.word	0x0800812c
- 8002814:	20000134 	.word	0x20000134
- 8002818:	20000254 	.word	0x20000254
+ 8002814:	20000120 	.word	0x20000120
+ 8002818:	2000024c 	.word	0x2000024c
  800281c:	08008144 	.word	0x08008144
- 8002820:	200001f4 	.word	0x200001f4
- 8002824:	20000100 	.word	0x20000100
- 8002828:	200000f8 	.word	0x200000f8
- 800282c:	200000fc 	.word	0x200000fc
- 8002830:	20000128 	.word	0x20000128
+ 8002820:	200001e4 	.word	0x200001e4
+ 8002824:	200001e0 	.word	0x200001e0
+ 8002828:	20000240 	.word	0x20000240
+ 800282c:	20000248 	.word	0x20000248
+ 8002830:	20000114 	.word	0x20000114
 				}
  8002834:	46c0      	nop			; (mov r8, r8)
 			if (GPIO_Pin == BUTTON3) {
@@ -6407,21 +6407,21 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
  8002b2c:	f000 fa72 	bl	8003014 <runStopwatch>
  8002b30:	e023      	b.n	8002b7a <HAL_GPIO_EXTI_Callback+0x68e>
  8002b32:	46c0      	nop			; (mov r8, r8)
- 8002b34:	200000fc 	.word	0x200000fc
+ 8002b34:	20000248 	.word	0x20000248
  8002b38:	80000003 	.word	0x80000003
- 8002b3c:	200000f8 	.word	0x200000f8
- 8002b40:	20000128 	.word	0x20000128
- 8002b44:	20000100 	.word	0x20000100
- 8002b48:	20000250 	.word	0x20000250
- 8002b4c:	200001cc 	.word	0x200001cc
- 8002b50:	200000ec 	.word	0x200000ec
- 8002b54:	20000130 	.word	0x20000130
- 8002b58:	2000010c 	.word	0x2000010c
- 8002b5c:	20000104 	.word	0x20000104
- 8002b60:	20000108 	.word	0x20000108
- 8002b64:	20000154 	.word	0x20000154
- 8002b68:	20000137 	.word	0x20000137
- 8002b6c:	20000110 	.word	0x20000110
+ 8002b3c:	20000240 	.word	0x20000240
+ 8002b40:	20000114 	.word	0x20000114
+ 8002b44:	200001e0 	.word	0x200001e0
+ 8002b48:	20000244 	.word	0x20000244
+ 8002b4c:	200001b8 	.word	0x200001b8
+ 8002b50:	200000e8 	.word	0x200000e8
+ 8002b54:	2000011c 	.word	0x2000011c
+ 8002b58:	200000fc 	.word	0x200000fc
+ 8002b5c:	200000f4 	.word	0x200000f4
+ 8002b60:	200000f8 	.word	0x200000f8
+ 8002b64:	20000140 	.word	0x20000140
+ 8002b68:	20000123 	.word	0x20000123
+ 8002b6c:	20000100 	.word	0x20000100
 				stopwatchRunning = 0;
  8002b70:	4b10      	ldr	r3, [pc, #64]	; (8002bb4 <HAL_GPIO_EXTI_Callback+0x6c8>)
  8002b72:	2200      	movs	r2, #0
@@ -6463,10 +6463,10 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
  8002bae:	46bd      	mov	sp, r7
  8002bb0:	b006      	add	sp, #24
  8002bb2:	bdb0      	pop	{r4, r5, r7, pc}
- 8002bb4:	20000110 	.word	0x20000110
- 8002bb8:	20000150 	.word	0x20000150
- 8002bbc:	200001f0 	.word	0x200001f0
- 8002bc0:	2000012c 	.word	0x2000012c
+ 8002bb4:	20000100 	.word	0x20000100
+ 8002bb8:	2000013c 	.word	0x2000013c
+ 8002bbc:	200001dc 	.word	0x200001dc
+ 8002bc0:	20000118 	.word	0x20000118
 
 08002bc4 <HAL_MspInit>:
 /* USER CODE END 0 */
@@ -6863,7 +6863,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
  8002dc6:	bd80      	pop	{r7, pc}
  8002dc8:	40013000 	.word	0x40013000
  8002dcc:	40021000 	.word	0x40021000
- 8002dd0:	200002f4 	.word	0x200002f4
+ 8002dd0:	200002ec 	.word	0x200002ec
  8002dd4:	40020030 	.word	0x40020030
 
 08002dd8 <HAL_TIM_Base_MspInit>:
@@ -7061,7 +7061,7 @@ void RTC_IRQHandler(void)
  8002e86:	46bd      	mov	sp, r7
  8002e88:	bd80      	pop	{r7, pc}
  8002e8a:	46c0      	nop			; (mov r8, r8)
- 8002e8c:	200001cc 	.word	0x200001cc
+ 8002e8c:	200001b8 	.word	0x200001b8
 
 08002e90 <EXTI2_3_IRQHandler>:
 
@@ -7145,7 +7145,7 @@ void DMA1_Channel2_3_IRQHandler(void)
  8002ed6:	46bd      	mov	sp, r7
  8002ed8:	bd80      	pop	{r7, pc}
  8002eda:	46c0      	nop			; (mov r8, r8)
- 8002edc:	200002f4 	.word	0x200002f4
+ 8002edc:	200002ec 	.word	0x200002ec
 
 08002ee0 <LPTIM1_IRQHandler>:
 
@@ -7171,7 +7171,7 @@ void LPTIM1_IRQHandler(void)
  8002eee:	46bd      	mov	sp, r7
  8002ef0:	bd80      	pop	{r7, pc}
  8002ef2:	46c0      	nop			; (mov r8, r8)
- 8002ef4:	2000019c 	.word	0x2000019c
+ 8002ef4:	20000188 	.word	0x20000188
 
 08002ef8 <TIM21_IRQHandler>:
 
@@ -7197,7 +7197,7 @@ void TIM21_IRQHandler(void)
  8002f06:	46bd      	mov	sp, r7
  8002f08:	bd80      	pop	{r7, pc}
  8002f0a:	46c0      	nop			; (mov r8, r8)
- 8002f0c:	2000025c 	.word	0x2000025c
+ 8002f0c:	20000254 	.word	0x20000254
 
 08002f10 <TIM22_IRQHandler>:
 
@@ -7223,7 +7223,7 @@ void TIM22_IRQHandler(void)
  8002f1e:	46bd      	mov	sp, r7
  8002f20:	bd80      	pop	{r7, pc}
  8002f22:	46c0      	nop			; (mov r8, r8)
- 8002f24:	2000015c 	.word	0x2000015c
+ 8002f24:	20000148 	.word	0x20000148
 
 08002f28 <SPI1_IRQHandler>:
 
@@ -7249,7 +7249,7 @@ void SPI1_IRQHandler(void)
  8002f36:	46bd      	mov	sp, r7
  8002f38:	bd80      	pop	{r7, pc}
  8002f3a:	46c0      	nop			; (mov r8, r8)
- 8002f3c:	200001f8 	.word	0x200001f8
+ 8002f3c:	200001e8 	.word	0x200001e8
 
 08002f40 <_sbrk>:
 /**
@@ -7315,8 +7315,8 @@ caddr_t _sbrk(int incr)
  8002f8a:	46bd      	mov	sp, r7
  8002f8c:	b004      	add	sp, #16
  8002f8e:	bd80      	pop	{r7, pc}
- 8002f90:	20000114 	.word	0x20000114
- 8002f94:	20000348 	.word	0x20000348
+ 8002f90:	20000104 	.word	0x20000104
+ 8002f94:	20000340 	.word	0x20000340
 
 08002f98 <SystemInit>:
   * @brief  Setup the microcontroller system.
@@ -7430,7 +7430,7 @@ void runStopwatch() {
  8003026:	46c0      	nop			; (mov r8, r8)
  8003028:	46bd      	mov	sp, r7
  800302a:	bd80      	pop	{r7, pc}
- 800302c:	2000019c 	.word	0x2000019c
+ 800302c:	20000188 	.word	0x20000188
 
 08003030 <pauseStopwatch>:
 
@@ -7449,7 +7449,7 @@ void pauseStopwatch() {
  800303e:	46bd      	mov	sp, r7
  8003040:	bd80      	pop	{r7, pc}
  8003042:	46c0      	nop			; (mov r8, r8)
- 8003044:	2000019c 	.word	0x2000019c
+ 8003044:	20000188 	.word	0x20000188
 
 08003048 <clearStopwatch>:
 
@@ -7466,7 +7466,7 @@ void clearStopwatch() {
  8003056:	46c0      	nop			; (mov r8, r8)
  8003058:	46bd      	mov	sp, r7
  800305a:	bd80      	pop	{r7, pc}
- 800305c:	2000012c 	.word	0x2000012c
+ 800305c:	20000118 	.word	0x20000118
 
 08003060 <HAL_LPTIM_AutoReloadMatchCallback>:
 // increment variable for stopwatch counting.
@@ -7502,8 +7502,8 @@ void HAL_LPTIM_AutoReloadMatchCallback(LPTIM_HandleTypeDef *hlptim) {
  8003088:	bd80      	pop	{r7, pc}
  800308a:	46c0      	nop			; (mov r8, r8)
  800308c:	50000400 	.word	0x50000400
- 8003090:	2000012c 	.word	0x2000012c
- 8003094:	20000137 	.word	0x20000137
+ 8003090:	20000118 	.word	0x20000118
+ 8003094:	20000123 	.word	0x20000123
 
 08003098 <runTimerDisplay>:
 // ---- also including clock functions that use the timer ----
@@ -7523,7 +7523,7 @@ void runTimerDisplay() {
  80030a6:	46bd      	mov	sp, r7
  80030a8:	bd80      	pop	{r7, pc}
  80030aa:	46c0      	nop			; (mov r8, r8)
- 80030ac:	2000025c 	.word	0x2000025c
+ 80030ac:	20000254 	.word	0x20000254
 
 080030b0 <stopTimerDisplay>:
 
@@ -7539,7 +7539,7 @@ void stopTimerDisplay() {
  80030be:	46bd      	mov	sp, r7
  80030c0:	bd80      	pop	{r7, pc}
  80030c2:	46c0      	nop			; (mov r8, r8)
- 80030c4:	2000025c 	.word	0x2000025c
+ 80030c4:	20000254 	.word	0x20000254
 
 080030c8 <runClockDisplay>:
 
@@ -7555,7 +7555,7 @@ void runClockDisplay() {
  80030d6:	46bd      	mov	sp, r7
  80030d8:	bd80      	pop	{r7, pc}
  80030da:	46c0      	nop			; (mov r8, r8)
- 80030dc:	2000015c 	.word	0x2000015c
+ 80030dc:	20000148 	.word	0x20000148
 
 080030e0 <HAL_TIM_PeriodElapsedCallback>:
 
@@ -7628,11 +7628,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
  8003134:	bd80      	pop	{r7, pc}
  8003136:	46c0      	nop			; (mov r8, r8)
  8003138:	40010800 	.word	0x40010800
- 800313c:	200001f4 	.word	0x200001f4
- 8003140:	20000250 	.word	0x20000250
- 8003144:	20000118 	.word	0x20000118
+ 800313c:	200001e4 	.word	0x200001e4
+ 8003140:	20000244 	.word	0x20000244
+ 8003144:	200001e0 	.word	0x200001e0
  8003148:	40011400 	.word	0x40011400
- 800314c:	20000138 	.word	0x20000138
+ 800314c:	20000124 	.word	0x20000124
 
 08003150 <Reset_Handler>:
 
@@ -7728,7 +7728,7 @@ LoopForever:
   ldr  r2, =_sbss
  8003198:	200000bc 	.word	0x200000bc
   ldr  r3, = _ebss
- 800319c:	20000344 	.word	0x20000344
+ 800319c:	2000033c 	.word	0x2000033c
 
 080031a0 <ADC1_COMP_IRQHandler>:
  * @retval : None
@@ -7883,7 +7883,7 @@ __weak void HAL_IncTick(void)
  8003246:	46c0      	nop			; (mov r8, r8)
  8003248:	46bd      	mov	sp, r7
  800324a:	bd80      	pop	{r7, pc}
- 800324c:	2000033c 	.word	0x2000033c
+ 800324c:	20000334 	.word	0x20000334
 
 08003250 <HAL_GetTick>:
   * @note This function is declared as __weak to be overwritten in case of other
@@ -7902,7 +7902,7 @@ __weak uint32_t HAL_GetTick(void)
  800325a:	46bd      	mov	sp, r7
  800325c:	bd80      	pop	{r7, pc}
  800325e:	46c0      	nop			; (mov r8, r8)
- 8003260:	2000033c 	.word	0x2000033c
+ 8003260:	20000334 	.word	0x20000334
 
 08003264 <HAL_Delay>:
   *       implementations in user file.
@@ -21031,7 +21031,7 @@ HAL_StatusTypeDef HAL_TIMEx_RemapConfig(TIM_HandleTypeDef *htim, uint32_t Remap)
  800789e:	605c      	str	r4, [r3, #4]
  80078a0:	e7ca      	b.n	8007838 <_free_r+0x24>
  80078a2:	46c0      	nop			; (mov r8, r8)
- 80078a4:	2000011c 	.word	0x2000011c
+ 80078a4:	20000108 	.word	0x20000108
 
 080078a8 <_malloc_r>:
  80078a8:	2303      	movs	r3, #3
@@ -21118,8 +21118,8 @@ HAL_StatusTypeDef HAL_TIMEx_RemapConfig(TIM_HandleTypeDef *htim, uint32_t Remap)
  8007956:	d1db      	bne.n	8007910 <_malloc_r+0x68>
  8007958:	e7c7      	b.n	80078ea <_malloc_r+0x42>
  800795a:	46c0      	nop			; (mov r8, r8)
- 800795c:	2000011c 	.word	0x2000011c
- 8007960:	20000120 	.word	0x20000120
+ 800795c:	20000108 	.word	0x20000108
+ 8007960:	2000010c 	.word	0x2000010c
 
 08007964 <_realloc_r>:
  8007964:	b5f8      	push	{r3, r4, r5, r6, r7, lr}
@@ -21171,7 +21171,7 @@ HAL_StatusTypeDef HAL_TIMEx_RemapConfig(TIM_HandleTypeDef *htim, uint32_t Remap)
  80079ca:	602b      	str	r3, [r5, #0]
  80079cc:	bd70      	pop	{r4, r5, r6, pc}
  80079ce:	46c0      	nop			; (mov r8, r8)
- 80079d0:	20000340 	.word	0x20000340
+ 80079d0:	20000338 	.word	0x20000338
 
 080079d4 <__malloc_lock>:
  80079d4:	4770      	bx	lr

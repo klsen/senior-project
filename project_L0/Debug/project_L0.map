@@ -84,9 +84,12 @@ updateFace          0x1               Core/Src/clocks.o
 hlptim1             0x30              Core/Src/clocks.o
 hrtc                0x24              Core/Src/clocks.o
 lapPrev             0x4               Core/Src/clocks.o
+timerRunning        0x4               Core/Src/clocks.o
 updateTimer         0x1               Core/Src/clocks.o
 hspi1               0x58              Core/Src/clocks.o
+timerSet            0x4               Core/Src/clocks.o
 watchTimerSeconds   0x4               Core/Src/clocks.o
+timerField          0x4               Core/Src/clocks.o
 tempClockDate       0x6               Core/Src/clocks.o
 hadc                0x5c              Core/Src/main.o
 hdma_spi1_tx        0x48              Core/Src/main.o
@@ -364,9 +367,6 @@ Discarded input sections
  .bss.clockSet  0x0000000000000000        0x4 Core/Src/clocks.o
  .bss.clockField
                 0x0000000000000000        0x4 Core/Src/clocks.o
- .bss.timerSet  0x0000000000000000        0x4 Core/Src/clocks.o
- .bss.timerField
-                0x0000000000000000        0x4 Core/Src/clocks.o
  .bss.alarmSet  0x0000000000000000        0x4 Core/Src/clocks.o
  .bss.alarmField
                 0x0000000000000000        0x4 Core/Src/clocks.o
@@ -513,11 +513,6 @@ Discarded input sections
                 0x0000000000000000        0x4 Core/Src/main.o
  .bss.clockSet  0x0000000000000000        0x4 Core/Src/main.o
  .bss.clockField
-                0x0000000000000000        0x4 Core/Src/main.o
- .bss.timerSet  0x0000000000000000        0x4 Core/Src/main.o
- .bss.timerField
-                0x0000000000000000        0x4 Core/Src/main.o
- .bss.timerRunning
                 0x0000000000000000        0x4 Core/Src/main.o
  .bss.alarmSet  0x0000000000000000        0x4 Core/Src/main.o
  .bss.alarmField
@@ -818,11 +813,6 @@ Discarded input sections
  .bss.clockSet  0x0000000000000000        0x4 Core/Src/stm32l0xx_hal_msp.o
  .bss.clockField
                 0x0000000000000000        0x4 Core/Src/stm32l0xx_hal_msp.o
- .bss.timerSet  0x0000000000000000        0x4 Core/Src/stm32l0xx_hal_msp.o
- .bss.timerField
-                0x0000000000000000        0x4 Core/Src/stm32l0xx_hal_msp.o
- .bss.timerRunning
-                0x0000000000000000        0x4 Core/Src/stm32l0xx_hal_msp.o
  .bss.alarmSet  0x0000000000000000        0x4 Core/Src/stm32l0xx_hal_msp.o
  .bss.alarmField
                 0x0000000000000000        0x4 Core/Src/stm32l0xx_hal_msp.o
@@ -987,11 +977,6 @@ Discarded input sections
  .bss.face      0x0000000000000000        0x4 Core/Src/stm32l0xx_it.o
  .bss.clockSet  0x0000000000000000        0x4 Core/Src/stm32l0xx_it.o
  .bss.clockField
-                0x0000000000000000        0x4 Core/Src/stm32l0xx_it.o
- .bss.timerSet  0x0000000000000000        0x4 Core/Src/stm32l0xx_it.o
- .bss.timerField
-                0x0000000000000000        0x4 Core/Src/stm32l0xx_it.o
- .bss.timerRunning
                 0x0000000000000000        0x4 Core/Src/stm32l0xx_it.o
  .bss.alarmSet  0x0000000000000000        0x4 Core/Src/stm32l0xx_it.o
  .bss.alarmField
@@ -1426,9 +1411,6 @@ Discarded input sections
  .bss.face      0x0000000000000000        0x4 Core/Src/timers.o
  .bss.clockSet  0x0000000000000000        0x4 Core/Src/timers.o
  .bss.clockField
-                0x0000000000000000        0x4 Core/Src/timers.o
- .bss.timerSet  0x0000000000000000        0x4 Core/Src/timers.o
- .bss.timerField
                 0x0000000000000000        0x4 Core/Src/timers.o
  .bss.alarmSet  0x0000000000000000        0x4 Core/Src/timers.o
  .bss.alarmField
@@ -5203,7 +5185,7 @@ LOAD c:/st/stm32cubeide_1.0.2/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.exte
  .igot.plt      0x00000000200000bc        0x0 c:/st/stm32cubeide_1.0.2/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.0.0.201904181610/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/thumb/v6-m/crtbegin.o
                 0x00000000200000bc                . = ALIGN (0x4)
 
-.bss            0x00000000200000bc      0x288 load address 0x000000000800826c
+.bss            0x00000000200000bc      0x280 load address 0x000000000800826c
                 0x00000000200000bc                _sbss = .
                 0x00000000200000bc                __bss_start__ = _sbss
  *(.bss)
@@ -5216,85 +5198,79 @@ LOAD c:/st/stm32cubeide_1.0.2/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.exte
  .bss.textColor
                 0x00000000200000dc        0x2 Core/Src/TFT_display.o
  *fill*         0x00000000200000de        0x2 
- .bss.timerRunning
+ .bss.alarmRunning
                 0x00000000200000e0        0x4 Core/Src/clocks.o
- .bss.alarmRunning
-                0x00000000200000e4        0x4 Core/Src/clocks.o
- .bss.face      0x00000000200000e8        0x4 Core/Src/main.o
- .bss.face      0x00000000200000ec        0x4 Core/Src/navigation.o
- .bss.clockSet  0x00000000200000f0        0x4 Core/Src/navigation.o
+ .bss.face      0x00000000200000e4        0x4 Core/Src/main.o
+ .bss.face      0x00000000200000e8        0x4 Core/Src/navigation.o
+ .bss.clockSet  0x00000000200000ec        0x4 Core/Src/navigation.o
  .bss.clockField
-                0x00000000200000f4        0x4 Core/Src/navigation.o
- .bss.timerSet  0x00000000200000f8        0x4 Core/Src/navigation.o
- .bss.timerField
-                0x00000000200000fc        0x4 Core/Src/navigation.o
- .bss.timerRunning
-                0x0000000020000100        0x4 Core/Src/navigation.o
- .bss.alarmSet  0x0000000020000104        0x4 Core/Src/navigation.o
+                0x00000000200000f0        0x4 Core/Src/navigation.o
+ .bss.alarmSet  0x00000000200000f4        0x4 Core/Src/navigation.o
  .bss.alarmField
-                0x0000000020000108        0x4 Core/Src/navigation.o
+                0x00000000200000f8        0x4 Core/Src/navigation.o
  .bss.alarmRunning
-                0x000000002000010c        0x4 Core/Src/navigation.o
+                0x00000000200000fc        0x4 Core/Src/navigation.o
  .bss.stopwatchRunning
-                0x0000000020000110        0x4 Core/Src/navigation.o
+                0x0000000020000100        0x4 Core/Src/navigation.o
  .bss.heap_end.5149
-                0x0000000020000114        0x4 Core/Src/sysmem.o
- .bss.timerRunning
-                0x0000000020000118        0x4 Core/Src/timers.o
+                0x0000000020000104        0x4 Core/Src/sysmem.o
  .bss.__malloc_free_list
-                0x000000002000011c        0x4 c:/st/stm32cubeide_1.0.2/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.0.0.201904181610/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc_nano.a(lib_a-nano-mallocr.o)
-                0x000000002000011c                __malloc_free_list
+                0x0000000020000108        0x4 c:/st/stm32cubeide_1.0.2/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.0.0.201904181610/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc_nano.a(lib_a-nano-mallocr.o)
+                0x0000000020000108                __malloc_free_list
  .bss.__malloc_sbrk_start
-                0x0000000020000120        0x4 c:/st/stm32cubeide_1.0.2/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.0.0.201904181610/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc_nano.a(lib_a-nano-mallocr.o)
-                0x0000000020000120                __malloc_sbrk_start
+                0x000000002000010c        0x4 c:/st/stm32cubeide_1.0.2/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.0.0.201904181610/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc_nano.a(lib_a-nano-mallocr.o)
+                0x000000002000010c                __malloc_sbrk_start
  *(COMMON)
- COMMON         0x0000000020000124        0x2 Core/Src/TFT_display.o
-                0x0000000020000124                bg
- *fill*         0x0000000020000126        0x2 
- COMMON         0x0000000020000128      0x170 Core/Src/clocks.o
-                0x0000000020000128                tempTimer
-                0x000000002000012c                stopwatchCNT
-                0x0000000020000130                updateAlarm
-                0x0000000020000134                tempClockTimes
-                0x0000000020000137                updateStopwatch
-                0x0000000020000138                updateClock
-                0x000000002000013c                tempStopwatch
-                0x000000002000014c                watchAlarm
-                0x0000000020000150                lapCurrent
-                0x0000000020000154                tempAlarm
-                0x0000000020000158                watchTimer
-                0x000000002000015c                htim22
-                0x0000000020000198                updateFace
-                0x000000002000019c                hlptim1
-                0x00000000200001cc                hrtc
-                0x00000000200001f0                lapPrev
-                0x00000000200001f4                updateTimer
-                0x00000000200001f8                hspi1
-                0x0000000020000250                watchTimerSeconds
-                0x0000000020000254                tempClockDate
-                0x000000002000025c                htim21
- COMMON         0x0000000020000298       0xa4 Core/Src/main.o
-                0x0000000020000298                hadc
-                0x00000000200002f4                hdma_spi1_tx
- COMMON         0x000000002000033c        0x4 Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal.o
-                0x000000002000033c                uwTick
- COMMON         0x0000000020000340        0x4 c:/st/stm32cubeide_1.0.2/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.0.0.201904181610/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc_nano.a(lib_a-reent.o)
-                0x0000000020000340                errno
-                0x0000000020000344                . = ALIGN (0x4)
-                0x0000000020000344                _ebss = .
-                0x0000000020000344                __bss_end__ = _ebss
+ COMMON         0x0000000020000110        0x2 Core/Src/TFT_display.o
+                0x0000000020000110                bg
+ *fill*         0x0000000020000112        0x2 
+ COMMON         0x0000000020000114      0x17c Core/Src/clocks.o
+                0x0000000020000114                tempTimer
+                0x0000000020000118                stopwatchCNT
+                0x000000002000011c                updateAlarm
+                0x0000000020000120                tempClockTimes
+                0x0000000020000123                updateStopwatch
+                0x0000000020000124                updateClock
+                0x0000000020000128                tempStopwatch
+                0x0000000020000138                watchAlarm
+                0x000000002000013c                lapCurrent
+                0x0000000020000140                tempAlarm
+                0x0000000020000144                watchTimer
+                0x0000000020000148                htim22
+                0x0000000020000184                updateFace
+                0x0000000020000188                hlptim1
+                0x00000000200001b8                hrtc
+                0x00000000200001dc                lapPrev
+                0x00000000200001e0                timerRunning
+                0x00000000200001e4                updateTimer
+                0x00000000200001e8                hspi1
+                0x0000000020000240                timerSet
+                0x0000000020000244                watchTimerSeconds
+                0x0000000020000248                timerField
+                0x000000002000024c                tempClockDate
+                0x0000000020000254                htim21
+ COMMON         0x0000000020000290       0xa4 Core/Src/main.o
+                0x0000000020000290                hadc
+                0x00000000200002ec                hdma_spi1_tx
+ COMMON         0x0000000020000334        0x4 Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal.o
+                0x0000000020000334                uwTick
+ COMMON         0x0000000020000338        0x4 c:/st/stm32cubeide_1.0.2/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.0.0.201904181610/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v6-m\libc_nano.a(lib_a-reent.o)
+                0x0000000020000338                errno
+                0x000000002000033c                . = ALIGN (0x4)
+                0x000000002000033c                _ebss = .
+                0x000000002000033c                __bss_end__ = _ebss
 
 ._user_heap_stack
-                0x0000000020000344      0x604 load address 0x000000000800826c
-                0x0000000020000348                . = ALIGN (0x8)
- *fill*         0x0000000020000344        0x4 
-                0x0000000020000348                PROVIDE (end = .)
+                0x000000002000033c      0x604 load address 0x000000000800826c
+                0x0000000020000340                . = ALIGN (0x8)
+ *fill*         0x000000002000033c        0x4 
+                0x0000000020000340                PROVIDE (end = .)
                 [!provide]                        PROVIDE (_end = .)
-                0x0000000020000548                . = (. + _Min_Heap_Size)
- *fill*         0x0000000020000348      0x200 
-                0x0000000020000948                . = (. + _Min_Stack_Size)
- *fill*         0x0000000020000548      0x400 
-                0x0000000020000948                . = ALIGN (0x8)
+                0x0000000020000540                . = (. + _Min_Heap_Size)
+ *fill*         0x0000000020000340      0x200 
+                0x0000000020000940                . = (. + _Min_Stack_Size)
+ *fill*         0x0000000020000540      0x400 
+                0x0000000020000940                . = ALIGN (0x8)
 
 /DISCARD/
  libc.a(*)
