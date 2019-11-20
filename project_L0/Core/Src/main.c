@@ -138,7 +138,7 @@ int main(void)
 //	runStopwatch(&hlptim1);
 //	runTimerDisplay();
 //	alarmTest();
-	timerTest();
+//	timerTest();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -163,7 +163,7 @@ int main(void)
 //	  textTest(bg, &hspi1);
 
 	  // ui/nav tests or full run. uncomment when ready
-//	  updateDisplay(&hspi1);
+	  updateDisplay(&hspi1);
   }
   /* USER CODE END 3 */
 }

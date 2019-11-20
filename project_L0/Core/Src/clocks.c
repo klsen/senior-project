@@ -99,20 +99,34 @@ void setTimer(struct times *t_in) {
 	struct times t;
 	getDateTime(&d, &t);
 
-	struct alarmTimes a;
+	struct alarmTimes a = {0};
+	uint8_t s,m,h,w;
 
 	// adding timer value to current time so we can set an alarm time
 	// REDO THIS ADDER BC ITS NOT RIGHT
-	if (t.sec + t_in->sec > 60) {		// adding seconds
-		if (t.min + t_in->min > 60) {		// adding minutes
-			if (t.hr + t_in->hr > 24) {			// adding hours
-				a.weekday = ((d.weekday + t_in->hr/24) % 7) + 1;		// bc weekday count starts from 1
-			}
-			a.hr = (t.hr + t_in->hr) % 24;
-		}
-		a.min = (t.min + t_in->min) % 60;
-	}
-	a.sec = (t.sec + t_in->sec) % 60;
+//	if (t.sec + t_in->sec > 60) {		// adding seconds
+//		if (t.min + t_in->min > 60) {		// adding minutes
+//			if (t.hr + t_in->hr > 24) {			// adding hours
+//				a.weekday = ((d.weekday + t_in->hr/24) % 7) + 1;		// bc weekday count starts from 1
+//			}
+//			a.hr = (t.hr + t_in->hr) % 24;
+//		}
+//		a.min = (t.min + t_in->min) % 60;
+//	}
+//	a.sec = (t.sec + t_in->sec) % 60;
+//
+	s = t.sec + t_in->sec;
+	m = t.min + t_in->min + s/60;
+	h = t.hr + t_in->hr + m/60;
+	w = d.weekday + h/24;
+	a.sec = s % 60;
+	a.min = m % 60;
+	a.hr = h % 24;
+	a.weekday = (w-1) % 7 + 1;
+//	a.sec = t_in->sec;
+//	a.min = t_in->min;
+//	a.hr = t_in->hr;
+//	a.weekday = d.weekday;
 
 	// setting RTC parameters
 	salarmtime.Hours = a.hr;

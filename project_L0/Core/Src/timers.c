@@ -73,6 +73,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 		else {
 			stopTimerDisplay();
 			timerRunning = 0;
+			updateTimer = 1;
 		}
 	}
 	else if (htim->Instance == TIM22) {

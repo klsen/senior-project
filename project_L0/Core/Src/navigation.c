@@ -120,8 +120,8 @@ void updateDisplay(SPI_HandleTypeDef *hspi) {
 					drawTextAt(0, 0, "running    ", hspi);
 					sprintf(str, "%2u:%2u:%2u", tempTimer.hr, tempTimer.min, tempTimer.sec);
 					drawTextAt(0, 50, str, hspi);
-					sprintf(str, " %lu", watchTimerSeconds);
-					drawTextAt(0, 70, str, hspi);
+//					sprintf(str, " %lu", watchTimerSeconds);
+//					drawTextAt(0, 70, str, hspi);
 				}
 			}
 			else if (timerSet == 1) {
@@ -304,6 +304,9 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 			if (GPIO_Pin == BUTTON3) {
 				// stop and clear timer hw
 				timerRunning = 0;
+				stopTimerDisplay();
+				watchTimerSeconds = 0;
+				HAL_RTC_DeactivateAlarm(&hrtc, RTC_ALARM_B);
 			}
 		}
 	}
