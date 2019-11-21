@@ -99,19 +99,34 @@ void setTimer(struct times *t_in) {
 	struct times t;
 	getDateTime(&d, &t);
 
-	struct alarmTimes a;
+	struct alarmTimes a = {0};
+	uint8_t s,m,h,w;
 
 	// adding timer value to current time so we can set an alarm time
-	if (t.sec + t_in->sec > 60) {		// adding seconds
-		if (t.min + t_in->min > 60) {		// adding minutes
-			if (t.hr + t_in->hr > 24) {			// adding hours
-				a.weekday = ((d.weekday + t_in->hr/24) % 7) + 1;		// bc weekday count starts from 1
-			}
-			a.hr = (t.hr + t_in->hr) % 24;
-		}
-		a.min = (t.min + t_in->min) % 60;
-	}
-	a.sec = (t.sec + t_in->sec) % 60;
+	// REDO THIS ADDER BC ITS NOT RIGHT
+//	if (t.sec + t_in->sec > 60) {		// adding seconds
+//		if (t.min + t_in->min > 60) {		// adding minutes
+//			if (t.hr + t_in->hr > 24) {			// adding hours
+//				a.weekday = ((d.weekday + t_in->hr/24) % 7) + 1;		// bc weekday count starts from 1
+//			}
+//			a.hr = (t.hr + t_in->hr) % 24;
+//		}
+//		a.min = (t.min + t_in->min) % 60;
+//	}
+//	a.sec = (t.sec + t_in->sec) % 60;
+//
+	s = t.sec + t_in->sec;
+	m = t.min + t_in->min + s/60;
+	h = t.hr + t_in->hr + m/60;
+	w = d.weekday + h/24;
+	a.sec = s % 60;
+	a.min = m % 60;
+	a.hr = h % 24;
+	a.weekday = (w-1) % 7 + 1;
+//	a.sec = t_in->sec;
+//	a.min = t_in->min;
+//	a.hr = t_in->hr;
+//	a.weekday = d.weekday;
 
 	// setting RTC parameters
 	salarmtime.Hours = a.hr;
@@ -142,7 +157,7 @@ void setTimer(struct times *t_in) {
 void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc) {
 	// change pin to whatever's accessible
 	// using PC0
-	HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_1);
+	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_0);
 	HAL_RTC_DeactivateAlarm(hrtc, RTC_ALARM_A);
 	alarmRunning = 0;
 	updateAlarm = 1;
@@ -153,7 +168,7 @@ void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc) {
 
 void HAL_RTCEx_AlarmBEventCallback(RTC_HandleTypeDef *hrtc) {
 	// toggles pin on end of timer. clears alarm
-	HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_1);
+	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_1);
 	HAL_RTC_DeactivateAlarm(hrtc, RTC_ALARM_B);
 	timerRunning = 0;
 	updateTimer = 1;
@@ -305,7 +320,22 @@ void alarmTest() {
 
 	setAlarm(&a);
 
-	HAL_Delay(60000);
+	HAL_Delay(30000);
+	getDateTime(&d, &t);
+	sprintf(str, "%2u:%2u:%2u %2u", t.hr, t.min, t.sec, d.weekday);
+	drawTextAt(0, 0, str, &hspi1);
+
+	a.sec += 20;
+	clearScreen(ST77XX_WHITE, &hspi1);
+	setTextColor(ST77XX_BLACK);
+	sprintf(str, "%2u:%2u:%2u %2u", t.hr, t.min, t.sec, d.weekday);
+	drawTextAt(0, 0, str, &hspi1);
+	sprintf(str, "%2u:%2u:%2u %2u", a.hr, a.min, a.sec, a.weekday);
+	drawTextAt(0, 10, str, &hspi1);
+
+	setAlarm(&a);
+
+	HAL_Delay(30000);
 	getDateTime(&d, &t);
 	sprintf(str, "%2u:%2u:%2u %2u", t.hr, t.min, t.sec, d.weekday);
 	drawTextAt(0, 0, str, &hspi1);
@@ -330,7 +360,28 @@ void timerTest() {
 	sprintf(str, "timer: %2u:%2u:%2u", timerTime.hr, timerTime.min, timerTime.sec);
 	drawTextAt(0, 20, str, &hspi1);
 
-	HAL_Delay(10000);
+	HAL_Delay(20000);
+	getDateTime(&currentDate, &currentTime);
+	sprintf(str, "current: %2u:%2u:%2u", currentTime.hr, currentTime.min, currentTime.sec);
+	drawTextAt(0, 0, str, &hspi1);
+	sprintf(str, "       : %2u:%2u:%2u", currentDate.month, currentDate.date, currentDate.yr);
+	drawTextAt(0, 10, str, &hspi1);
+
+
+	timerTime.sec+=20;
+	setTimer(&timerTime);
+
+	// print current time and timer value set
+	getDateTime(&currentDate, &currentTime);
+
+	sprintf(str, "current: %2u:%2u:%2u", currentTime.hr, currentTime.min, currentTime.sec);
+	drawTextAt(0, 0, str, &hspi1);
+	sprintf(str, "       : %2u:%2u:%2u", currentDate.month, currentDate.date, currentDate.yr);
+	drawTextAt(0, 10, str, &hspi1);
+	sprintf(str, "timer: %2u:%2u:%2u", timerTime.hr, timerTime.min, timerTime.sec);
+	drawTextAt(0, 20, str, &hspi1);
+
+	HAL_Delay(40000);
 	getDateTime(&currentDate, &currentTime);
 	sprintf(str, "current: %2u:%2u:%2u", currentTime.hr, currentTime.min, currentTime.sec);
 	drawTextAt(0, 0, str, &hspi1);

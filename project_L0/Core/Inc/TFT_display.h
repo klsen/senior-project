@@ -149,7 +149,7 @@ static uint8_t cursorX;
 static uint8_t cursorY;
 static uint8_t textSize;
 static uint16_t textColor;
-static uint16_t bg;
+volatile uint16_t bg;
 
 void drawChar(uint8_t ch, SPI_HandleTypeDef *hspi);
 void drawText(char *str, SPI_HandleTypeDef *hspi);

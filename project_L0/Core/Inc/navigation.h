@@ -48,26 +48,26 @@ volatile uint8_t updateStopwatch;
 static volatile int face;
 
 // for clock
-static volatile int clockSet;
-static volatile int clockField;
+volatile int clockSet;
+volatile int clockField;
 struct dates tempClockDate;
 struct times tempClockTimes;
 
 // for timer
-static volatile int timerSet;
-static volatile int timerField;
-static volatile int timerRunning;
-struct times tempTimer;
+volatile int timerSet;
+volatile int timerField;
+volatile int timerRunning;
+volatile struct times tempTimer;
 
 // for alarm
-static volatile int alarmSet;
-static volatile int alarmField;
-static volatile int alarmRunning;
+volatile int alarmSet;
+volatile int alarmField;
+volatile int alarmRunning;
 volatile struct alarmTimes tempAlarm;
 
 // for stopwatch
-static volatile int stopwatchRunning;
-uint32_t lapPrev, lapCurrent;
+volatile int stopwatchRunning;
+volatile uint32_t lapPrev, lapCurrent;
 int tempStopwatch[NUM_STOPWATCHFIELDS];
 
 // enum for different faces used (clock, timer, alarm, stopwatch)

@@ -364,7 +364,7 @@ void drawChar(uint8_t ch, SPI_HandleTypeDef *hspi) {
 		for (int8_t j=0; j<8; j++, line >>= 1) {
 			if (line & 1) {
 				if (textSize == 1) {
-					buffer[i+j*6] = textColor;
+					buffer[i+j*6] = colorFixer(textColor);
 				}
 				else {
 					for (int8_t k = 0; k < textSize; k++) {
@@ -372,14 +372,14 @@ void drawChar(uint8_t ch, SPI_HandleTypeDef *hspi) {
 						for (int8_t l = 0; l < textSize; l++) {
 							address = (textSize*textSize*j*6)+(i*textSize);
 							address += rowOffset*k+l;
-							buffer[address] = textColor;
+							buffer[address] = colorFixer(textColor);
 						}
 					}
 //					fillRect(cursorX+i*textSize, cursorY+j*textSize, textSize, textSize, textColor, hspi);
 				}
 			} else if (bg != textColor) {
 				if (textSize == 1) {
-					buffer[i+j*6] = bg;
+					buffer[i+j*6] = colorFixer(bg);
 				}
 				else {
 					for (int8_t k = 0; k < textSize; k++) {
@@ -387,7 +387,7 @@ void drawChar(uint8_t ch, SPI_HandleTypeDef *hspi) {
 						for (int8_t l = 0; l < textSize; l++) {
 							address = (textSize*textSize*j*6)+(i*textSize);
 							address += rowOffset*k+l;
-							buffer[address] = bg;
+							buffer[address] = colorFixer(bg);
 						}
 					}
 //					fillRect(cursorX+i*textSize, cursorY+j*textSize, textSize, textSize, bg, hspi);
@@ -399,14 +399,14 @@ void drawChar(uint8_t ch, SPI_HandleTypeDef *hspi) {
 	if (bg != textColor) { // If opaque, draw vertical line for last column
 		for (int8_t j = 0; j < 8; j++) {
 			if (textSize == 1) {
-				buffer[5+j*6] = bg;
+				buffer[5+j*6] = colorFixer(bg);
 			}
 			else {
 				for (int8_t k = 0; k < textSize; k++) {
 					for (int8_t l = 0; l < textSize; l++) {
 						address = (textSize*textSize*j*6)+(5*textSize);
 						address += rowOffset*k+l;
-						buffer[address] = bg;
+						buffer[address] = colorFixer(bg);
 					}
 				}
 			}
@@ -415,7 +415,7 @@ void drawChar(uint8_t ch, SPI_HandleTypeDef *hspi) {
 	}
 
 	drawBuffer(cursorX, cursorY, 6*textSize, 8*textSize, buffer, bufferSize, hspi);
-	setCursor(cursorX+6*textSize, cursorY);
+//	setCursor(cursorX+6, cursorY);
 }
 
 // this function is slow, and you can definitely see a scrolling speed thing going on

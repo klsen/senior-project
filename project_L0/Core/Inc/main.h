@@ -36,6 +36,7 @@ extern "C" {
 #include "TFT_display.h"
 #include "TFT_display_test.h"
 #include "clocks.h"
+#include "timers.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/

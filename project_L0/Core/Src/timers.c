@@ -67,10 +67,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 //		HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_1);
 		// should toggle pin every 1s. change pin
 		if (watchTimerSeconds != 0) {
-			HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_1);
+//			HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_1);
 			watchTimerSeconds--;
 		}
-//		else stopTimerDisplay();
+		else {
+			stopTimerDisplay();
+			timerRunning = 0;
+			updateTimer = 1;
+		}
 	}
 	else if (htim->Instance == TIM22) {
 		updateClock = 1;
