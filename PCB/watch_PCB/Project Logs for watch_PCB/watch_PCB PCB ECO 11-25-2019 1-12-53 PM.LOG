@@ -1,0 +1,7 @@
+Removed Pin From Net: NetName=NetS7_1 Pin=S7-2
+Removed Pin From Net: NetName=Vbat Pin=S7-3
+Removed Pin From Net: NetName=Vbat Pin=S7-4
+Change Component Footprint: Designator=U2 Old Footprint=STM-LQFP64_L New Footprint=STM-LQFP64_M
+Change Component Designator: OldDesignator=LSE NewDesignator=LSE_Osc1
+Added Pin To Net: NetName=Vbat Pin=S7-2
+Added Member To Class: ClassName=MCU_Connections Member=Component U2 STM32L073RZT6

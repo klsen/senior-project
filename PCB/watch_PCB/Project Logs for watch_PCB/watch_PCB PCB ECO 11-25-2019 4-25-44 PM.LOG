@@ -1,0 +1,78 @@
+Added Component: Designator=S1(PCBComponent_1)
+Add component. Clean all parameters for all variants
+Add component (AddParameter): Name = "LatestRevisionDate"; Value = "17-Jul-2002"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "LatestRevisionNote"; Value = "Re-released for DXP Platform."; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "PackageDescription"; Value = "Switch; 4 Leads"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "PackageReference"; Value = "DPST-4"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Published"; Value = "24-Mar-1999"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Publisher"; Value = "Altium Limited"; VariantName = "[No Variations]"
+Added Component: Designator=S2(PCBComponent_1)
+Add component. Clean all parameters for all variants
+Add component (AddParameter): Name = "LatestRevisionDate"; Value = "17-Jul-2002"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "LatestRevisionNote"; Value = "Re-released for DXP Platform."; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "PackageDescription"; Value = "Switch; 4 Leads"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "PackageReference"; Value = "DPST-4"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Published"; Value = "24-Mar-1999"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Publisher"; Value = "Altium Limited"; VariantName = "[No Variations]"
+Added Component: Designator=S3(PCBComponent_1)
+Add component. Clean all parameters for all variants
+Add component (AddParameter): Name = "LatestRevisionDate"; Value = "17-Jul-2002"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "LatestRevisionNote"; Value = "Re-released for DXP Platform."; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "PackageDescription"; Value = "Switch; 4 Leads"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "PackageReference"; Value = "DPST-4"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Published"; Value = "24-Mar-1999"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Publisher"; Value = "Altium Limited"; VariantName = "[No Variations]"
+Added Component: Designator=S4(PCBComponent_1)
+Add component. Clean all parameters for all variants
+Add component (AddParameter): Name = "LatestRevisionDate"; Value = "17-Jul-2002"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "LatestRevisionNote"; Value = "Re-released for DXP Platform."; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "PackageDescription"; Value = "Switch; 4 Leads"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "PackageReference"; Value = "DPST-4"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Published"; Value = "24-Mar-1999"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Publisher"; Value = "Altium Limited"; VariantName = "[No Variations]"
+Added Component: Designator=S6(PCBComponent_1)
+Add component. Clean all parameters for all variants
+Add component (AddParameter): Name = "LatestRevisionDate"; Value = "17-Jul-2002"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "LatestRevisionNote"; Value = "Re-released for DXP Platform."; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "PackageDescription"; Value = "Switch; 4 Leads"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "PackageReference"; Value = "DPST-4"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Published"; Value = "24-Mar-1999"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Publisher"; Value = "Altium Limited"; VariantName = "[No Variations]"
+Added Component: Designator=S7(PCBComponent_1)
+Add component. Clean all parameters for all variants
+Add component (AddParameter): Name = "LatestRevisionDate"; Value = "17-Jul-2002"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "LatestRevisionNote"; Value = "Re-released for DXP Platform."; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "PackageDescription"; Value = "Switch; 4 Leads"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "PackageReference"; Value = "DPST-4"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Published"; Value = "24-Mar-1999"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Publisher"; Value = "Altium Limited"; VariantName = "[No Variations]"
+Added Pin To Net: NetName=NetC1_2 Pin=S1-1
+Added Pin To Net: NetName=NetR1_1 Pin=S1-2
+Added Pin To Net: NetName=NetC1_2 Pin=S1-3
+Added Pin To Net: NetName=NetR1_1 Pin=S1-4
+Added Pin To Net: NetName=NetC2_2 Pin=S2-1
+Added Pin To Net: NetName=NetR2_1 Pin=S2-2
+Added Pin To Net: NetName=NetC2_2 Pin=S2-3
+Added Pin To Net: NetName=NetR2_1 Pin=S2-4
+Added Pin To Net: NetName=NetC3_2 Pin=S3-1
+Added Pin To Net: NetName=NetR3_1 Pin=S3-2
+Added Pin To Net: NetName=NetC3_2 Pin=S3-3
+Added Pin To Net: NetName=NetR3_1 Pin=S3-4
+Added Pin To Net: NetName=NetC4_2 Pin=S4-1
+Added Pin To Net: NetName=NetR4_1 Pin=S4-2
+Added Pin To Net: NetName=NetC4_2 Pin=S4-3
+Added Pin To Net: NetName=NetR4_1 Pin=S4-4
+Added Pin To Net: NetName=NRST Pin=S6-1
+Added Pin To Net: NetName=GND Pin=S6-2
+Added Pin To Net: NetName=NRST Pin=S6-3
+Added Pin To Net: NetName=GND Pin=S6-4
+Added Pin To Net: NetName=NetS7_1 Pin=S7-1
+Added Pin To Net: NetName=Vbat Pin=S7-2
+Added Pin To Net: NetName=NetS7_1 Pin=S7-3
+Added Pin To Net: NetName=Vbat Pin=S7-4
+Added Member To Class: ClassName=Button_connections Member=Component S1 SW-DPST
+Added Member To Class: ClassName=Button_connections Member=Component S2 SW-DPST
+Added Member To Class: ClassName=Button_connections Member=Component S3 SW-DPST
+Added Member To Class: ClassName=Button_connections Member=Component S4 SW-DPST
+Added Member To Class: ClassName=MCU_Connections Member=Component S6 SW-DPST
+Added Member To Class: ClassName=power_supply Member=Component S7 SW-DPST

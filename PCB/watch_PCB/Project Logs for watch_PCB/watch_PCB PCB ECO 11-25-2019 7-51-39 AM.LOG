@@ -1,0 +1,47 @@
+Change Component Footprint: Designator=L1 Old Footprint=0603 New Footprint=C1206
+Change Component Designator: OldDesignator=L1 NewDesignator=L2
+Added Component: Designator=L1(C0805)
+Add component. Clean all parameters for all variants
+Add component (AddParameter): Name = "Code_IEC"; Value = "1005"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Code_JEITA"; Value = "0402"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "LatestRevisionDate"; Value = "29-May-2009"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "LatestRevisionNote"; Value = "IPC-7351 Footprint Added."; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "PackageDescription"; Value = "Chip Inductor"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "PackageReference"; Value = "0402-A"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Published"; Value = "8-Jun-2000"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Publisher"; Value = "Altium Limited"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Value"; Value = ""; VariantName = "[No Variations]"
+Added Component: Designator=L3(LIRD-35F0121-0SR-10_V)
+Add component. Clean all parameters for all variants
+Add component (AddParameter): Name = "Catalog Drawings"; Value = "(28,35)F0121-0SR-10"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Category"; Value = "Filters"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Current Rating (Max)"; Value = "10A"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Datasheet URL"; Value = "https://assets.lairdtech.com/home/brandworld/files/35F0121-0SR-10.pdf"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Datasheet Version"; Value = "Rev. F, 04/2015"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "DC Resistance (DCR) (Max)"; Value = "0.75mOhm"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Family"; Value = "FerriteBeadsandChips"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Filter Type"; Value = "PowerLine"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Impedance @ Frequency"; Value = "41Ohm@100MHz"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Kits"; Value = "240-2227-ND-KITEMIFERRITEBEADCHIPSMD"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Manufacturer"; Value = "Laird"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Manufacturer URL"; Value = "https://www.lairdtech.com/"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Mounting Technology"; Value = "SurfaceMount"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Mounting Type"; Value = "SurfaceMount"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Number of Lines"; Value = "1"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Online Catalog"; Value = "ChipBeads-PowerFiltering"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Operating Temperature"; Value = "-40°C~125°C"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Other Names"; Value = "240-2520-1"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Package / Case"; Value = "2-SMD,J-Lead"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Package Description"; Value = "2-Pin Surface Mount Device, Body 4.06 x 3.05 mm"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Package Reference"; Value = "35F0121-0SR-10"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Package URL"; Value = "http://cdn.lairdtech.com/home/brandworld/files/35F0121-0SR-10.pdf"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Packaging"; Value = "CutTape(CT)  "; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Ratings"; Value = "-"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Series"; Value = "35"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Standard Package"; Value = "1"; VariantName = "[No Variations]"
+Added Pin To Net: NetName=3v3 Pin=L1-1
+Added Pin To Net: NetName=VDD Pin=L1-2
+Added Pin To Net: NetName=3v3 Pin=L3-1
+Added Pin To Net: NetName=VDD Pin=L3-2
+Added Member To Class: ClassName=MCU_Connections Member=Component L2 
+Added Member To Class: ClassName=MCU_Connections Member=Component L3 35F0121-0SR-10

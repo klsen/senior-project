@@ -1,0 +1,5 @@
+Change Component Footprint: Designator=U4 Old Footprint=SOT23-5L_M New Footprint=SOT23-5L_N
+Added Room: Name=Button_connections
+Added Room: Name=MCU_Connections
+Added Room: Name=Motor_Driver_Schematic
+Added Room: Name=power_supply

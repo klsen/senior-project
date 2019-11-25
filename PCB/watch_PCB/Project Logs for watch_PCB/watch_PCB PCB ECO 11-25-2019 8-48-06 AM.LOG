@@ -1,0 +1,77 @@
+Removed Pin From Net: NetName=NetS7_1 Pin=S7-3
+Removed Pin From Net: NetName=Vbat Pin=S7-4
+Change Component Footprint: Designator=S7 Old Footprint=DPST-4 New Footprint=PCBComponent_1
+Change Component Comment : Designator=S7 Old Comment=SW-DPST New Comment=SW-PB
+Change component parameters: Designator = "S7"; Footprint = "PCBComponent_1"; UniqueID = "\KDQEYHTD"
+Change component parameters. Clean all parameters for all variants
+Change component parameters (AddParameter): Name = "LatestRevisionDate"; Value = "17-Jul-2002"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "LatestRevisionNote"; Value = "Re-released for DXP Platform."; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "PackageDescription"; Value = "Switch; 2 Leads"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "PackageReference"; Value = "SPST-2"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Published"; Value = "24-Mar-1999"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Publisher"; Value = "Altium Limited"; VariantName = "[No Variations]"
+Added Member To Class: ClassName=power_supply Member=Component 1 SMAJ5.0A-E3/5A
+Added Member To Class: ClassName=Motor_Driver_Schematic Member=Component B1 Motor: 316040004
+Added Member To Class: ClassName=Button_connections Member=Component C1 Cap
+Added Member To Class: ClassName=Button_connections Member=Component C2 Cap
+Added Member To Class: ClassName=Button_connections Member=Component C3 Cap
+Added Member To Class: ClassName=Button_connections Member=Component C4 Cap
+Added Member To Class: ClassName=MCU_Connections Member=Component C5 Cap
+Added Member To Class: ClassName=MCU_Connections Member=Component C6 Cap
+Added Member To Class: ClassName=MCU_Connections Member=Component C7 Cap
+Added Member To Class: ClassName=MCU_Connections Member=Component C8 Cap
+Added Member To Class: ClassName=MCU_Connections Member=Component C9 Cap
+Added Member To Class: ClassName=MCU_Connections Member=Component C10 Cap
+Added Member To Class: ClassName=MCU_Connections Member=Component C11 Cap
+Added Member To Class: ClassName=MCU_Connections Member=Component C12 Cap
+Added Member To Class: ClassName=MCU_Connections Member=Component C13 Cap
+Added Member To Class: ClassName=MCU_Connections Member=Component C14 Cap
+Added Member To Class: ClassName=MCU_Connections Member=Component C15 Cap
+Added Member To Class: ClassName=Motor_Driver_Schematic Member=Component C16 Cap
+Added Member To Class: ClassName=Motor_Driver_Schematic Member=Component C17 Cap
+Added Member To Class: ClassName=power_supply Member=Component C18 Cap
+Added Member To Class: ClassName=power_supply Member=Component C19 Cap
+Added Member To Class: ClassName=power_supply Member=Component C20 Cap
+Added Member To Class: ClassName=power_supply Member=Component C21 Cap
+Added Member To Class: ClassName=MCU_Connections Member=Component CL1 Cap
+Added Member To Class: ClassName=MCU_Connections Member=Component CL2 Cap
+Added Member To Class: ClassName=power_supply Member=Component D1 Orange LED
+Added Member To Class: ClassName=power_supply Member=Component D2 Green LED
+Added Member To Class: ClassName=power_supply Member=Component J1 10118193-0001LF
+Added Member To Class: ClassName=MCU_Connections Member=Component L1 
+Added Member To Class: ClassName=MCU_Connections Member=Component L2 
+Added Member To Class: ClassName=MCU_Connections Member=Component L3 35F0121-0SR-10
+Added Member To Class: ClassName=MCU_Connections Member=Component LSE_Osc1 CM315D32768HZFT
+Added Member To Class: ClassName=MCU_Connections Member=Component P1 LCD receptile
+Added Member To Class: ClassName=MCU_Connections Member=Component P2 SWD connecctor
+Added Member To Class: ClassName=power_supply Member=Component P3 Header 2
+Added Member To Class: ClassName=power_supply Member=Component P4 JST-PH connector
+Added Member To Class: ClassName=Button_connections Member=Component R1 Res3
+Added Member To Class: ClassName=Button_connections Member=Component R2 Res3
+Added Member To Class: ClassName=Button_connections Member=Component R3 Res3
+Added Member To Class: ClassName=Button_connections Member=Component R4 Res3
+Added Member To Class: ClassName=Button_connections Member=Component R5 Res3
+Added Member To Class: ClassName=Button_connections Member=Component R6 Res3
+Added Member To Class: ClassName=Button_connections Member=Component R7 Res3
+Added Member To Class: ClassName=Button_connections Member=Component R8 Res3
+Added Member To Class: ClassName=Button_connections Member=Component R9 Res3
+Added Member To Class: ClassName=Button_connections Member=Component R10 Res3
+Added Member To Class: ClassName=Button_connections Member=Component R11 Res3
+Added Member To Class: ClassName=Button_connections Member=Component R12 Res3
+Added Member To Class: ClassName=MCU_Connections Member=Component R13 Res3
+Added Member To Class: ClassName=MCU_Connections Member=Component R14 Res3
+Added Member To Class: ClassName=power_supply Member=Component R15 Res3
+Added Member To Class: ClassName=power_supply Member=Component R16 Res3
+Added Member To Class: ClassName=power_supply Member=Component R17 Res3
+Added Member To Class: ClassName=Button_connections Member=Component S1 SW-PB
+Added Member To Class: ClassName=Button_connections Member=Component S2 SW-PB
+Added Member To Class: ClassName=Button_connections Member=Component S3 SW-PB
+Added Member To Class: ClassName=Button_connections Member=Component S4 SW-PB
+Added Member To Class: ClassName=MCU_Connections Member=Component S5 SW-SPDT
+Added Member To Class: ClassName=MCU_Connections Member=Component S6 SW-PB
+Added Member To Class: ClassName=power_supply Member=Component S7 SW-PB
+Added Member To Class: ClassName=MCU_Connections Member=Component U1 TPS22860DBVR
+Added Member To Class: ClassName=MCU_Connections Member=Component U2 STM32L073RZT6
+Added Member To Class: ClassName=Motor_Driver_Schematic Member=Component U3 TPS22860DBVR
+Added Member To Class: ClassName=power_supply Member=Component U4 LD39015M33R
+Added Member To Class: ClassName=power_supply Member=Component U5 MCP73831T-2ATI/OT

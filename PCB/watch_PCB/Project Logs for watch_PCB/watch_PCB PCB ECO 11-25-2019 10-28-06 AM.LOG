@@ -1,0 +1,4 @@
+Removed Pin From Net: NetName=Backlight Pin=U2-24
+Removed Pin From Net: NetName=D/C Pin=U2-41
+Added Pin To Net: NetName=D/C Pin=U2-24
+Added Pin To Net: NetName=Backlight Pin=U2-25
