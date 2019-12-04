@@ -73,7 +73,6 @@ void setAlarm(struct alarmTimes *a) {
 	salarmtime.StoreOperation = RTC_STOREOPERATION_RESET;
 
 	salarm.AlarmTime = salarmtime;
-//	salarm.AlarmMask = RTC_ALARMMASK_ALL;
 	salarm.AlarmMask = RTC_ALARMMASK_NONE;
 	salarm.AlarmSubSecondMask = RTC_ALARMSUBSECONDMASK_ALL;
 	salarm.AlarmDateWeekDaySel = RTC_ALARMDATEWEEKDAYSEL_WEEKDAY;
@@ -228,6 +227,19 @@ void getDateTime(struct dates *d, struct times *t) {
 	t->sec = stime.Seconds;
 }
 // ---- end of clock get functions ----
+
+// converters
+uint32_t timeToSeconds(struct times *t) {
+	return t->sec + t->min*60 + t->hr*3600;
+}
+
+void secondsToTime(struct times *t, uint32_t seconds) {
+	t->hr = seconds / 3600;
+	seconds %= 3600;
+	t->min = seconds / 60;
+	seconds %= 60;
+	t->sec = seconds;
+}
 
 // ---- clock print functions ----
 // print functions for RTC

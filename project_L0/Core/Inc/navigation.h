@@ -15,10 +15,10 @@
 
 // uses gpio external interrupts. interrupt handler/callback function
 // ignores ports, so only pin number is needed.
-#define BUTTON0 GPIO_PIN_2
-#define BUTTON1 GPIO_PIN_13
-#define BUTTON2 GPIO_PIN_14
-#define BUTTON3 GPIO_PIN_15
+#define BUTTON1 GPIO_PIN_2
+#define BUTTON2 GPIO_PIN_13
+#define BUTTON3 GPIO_PIN_14
+#define BUTTON4 GPIO_PIN_15
 
 // defines to help with flags
 #define NUM_FACES 4
@@ -27,48 +27,104 @@
 #define NUM_ALARMFIELDS 4		// sec, min, hr, day of week
 #define NUM_STOPWATCHFIELDS 4	// ms, sec, min, hr
 
-// flag idea: software toggle a pin connected to edge detector to trigger
-// hardware interrupt from software lmao
-
 // variables to track state of apps, set in callback/interrupt
 // straight global instead of static/scope in file only?
 // need volatile keyword?
 
-static volatile int faceChange;		// flag set and cleared in different places, careful
+// structs to hold related flags/variables together.
+// maybe change to not use these? they're starting to get really annoying to use. or keep for the organization?
+struct faceFlags {
+//	uint8_t face;			// change to static, others global
+	uint8_t clock;
+	uint8_t timer;
+	uint8_t alarm;
+	uint8_t stopwatch;
+};
 
-// ---- buncha flags ----
-volatile uint8_t updateFace;
-volatile uint8_t updateClock;
-volatile uint8_t updateTimer;
-volatile uint8_t updateAlarm;
-volatile uint8_t updateStopwatch;
-// ---- end of flags ----
+struct clockVariables {
+	uint8_t isBeingSet;
+	uint8_t fieldBeingSet;
+	struct dates dateToSet;
+	struct times timeToSet;
+};
 
-// for face on screen
-static volatile int face;
+struct timerVariables {
+	uint8_t isBeingSet;
+	uint8_t fieldBeingSet;
+	uint8_t isSet;
+//	uint8_t isRunning;			// global
+	struct times timeToSet;
+};
 
-// for clock
-volatile int clockSet;
-volatile int clockField;
-struct dates tempClockDate;
-struct times tempClockTimes;
+struct alarmVariables {
+	uint8_t isBeingSet;
+	uint8_t fieldBeingSet;
+//	uint8_t isRunning;				// global
+	struct alarmTimes alarmToSet;
+};
 
-// for timer
-volatile int timerSet;
-volatile int timerField;
-volatile int timerRunning;
-volatile struct times tempTimer;
+struct stopwatchVariables {
+//	uint8_t isRunning;			// global
+	uint32_t lapPrev;
+	uint32_t lapCurrent;
+};
 
-// for alarm
-volatile int alarmSet;
-volatile int alarmField;
-volatile int alarmRunning;
-volatile struct alarmTimes tempAlarm;
+struct buttonFlags {
+	uint8_t is1Pressed;
+	uint8_t is2Pressed;
+	uint8_t is3Pressed;
+	uint8_t is4Pressed;
+};
 
-// for stopwatch
-volatile int stopwatchRunning;
-volatile uint32_t lapPrev, lapCurrent;
-int tempStopwatch[NUM_STOPWATCHFIELDS];
+// volatile and global since other files need to use/see in their callbacks
+volatile struct buttonFlags buttons;
+volatile struct faceFlags updateFace;
+volatile uint8_t isTimerRunning;
+volatile uint8_t isAlarmRunning;
+volatile uint8_t isStopwatchRunning;
+
+// use static for timer/alarm/stopwatch variables, changeface, and face used.
+// needed only in updatedisplay/buttons, but each func shares these variables
+static struct clockVariables clockVars;
+static struct timerVariables timerVars;
+static struct alarmVariables alarmVars;
+static struct stopwatchVariables stopwatchVars;
+static uint8_t isFaceBeingChanged;
+static uint8_t faceOnDisplay;
+
+//// ---- buncha flags ----
+//volatile uint8_t updateFace;
+//volatile uint8_t updateClock;
+//volatile uint8_t updateTimer;
+//volatile uint8_t updateAlarm;
+//volatile uint8_t updateStopwatch;
+//// ---- end of flags ----
+//
+//// for face on screen
+//static volatile int face;
+//
+//// for clock
+//volatile int clockSet;
+//volatile int clockField;
+//struct dates tempClockDate;
+//struct times tempClockTimes;
+//
+//// for timer
+//volatile int timerSet;
+//volatile int timerField;
+//volatile int timerRunning;
+//volatile struct times tempTimer;
+//
+//// for alarm
+//volatile int alarmSet;
+//volatile int alarmField;
+//volatile int alarmRunning;
+//volatile struct alarmTimes tempAlarm;
+//
+//// for stopwatch
+//volatile int stopwatchRunning;
+//volatile uint32_t lapPrev, lapCurrent;
+//int tempStopwatch[NUM_STOPWATCHFIELDS];
 
 // enum for different faces used (clock, timer, alarm, stopwatch)
 // probably not needed
@@ -82,6 +138,9 @@ enum displayFaces {
 const char* weekdayNames[8];
 const char* monthNames[13];
 
+void updateWithButtons();	// might need hw timer and rtc handles but not if they're kept global
 void updateDisplay(SPI_HandleTypeDef *hspi);
+
+uint8_t maxDaysInMonth(uint8_t month, uint16_t year);
 
 #endif
