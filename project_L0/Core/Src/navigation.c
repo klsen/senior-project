@@ -484,7 +484,6 @@ void updateDisplay(SPI_HandleTypeDef *hspi) {
 }
 
 void updateClockDisplay(SPI_HandleTypeDef *hspi) {
-	char str[40];
 	struct dates *currentDate;
 	struct times *currentTime;
 
@@ -660,21 +659,21 @@ void drawTitle(char *str, SPI_HandleTypeDef *hspi) {
 	// drawing title
 	if (12*strSize < WIDTH) {		// about string size = 10 for width = 128
 		setTextSize(2);
-		clearTextLine(y, hspi);
+		clearTextLine(10, hspi);
 		setCursor((WIDTH-12*strSize)/2, 10);
 		setTextColor(ST77XX_BLACK);
 		drawText(str, hspi);
 	}
 	else if (6*strSize < WIDTH) {	// about string size = 21 for width = 128
 		setTextSize(1);
-		clearTextLine(y, hspi);
+		clearTextLine(10, hspi);
 		setCursor((WIDTH-6*strSize)/2, 10);
 		setTextColor(ST77XX_BLACK);
 		drawText(str, hspi);
 	}
 	else {
 		setTextSize(1);
-		clearTextLine(y, hspi);
+		clearTextLine(10, hspi);
 		setCursor((WIDTH-6*15)/2, 10);
 		setTextColor(ST77XX_BLACK);
 		drawText("shit's too long", hspi);
@@ -702,14 +701,14 @@ void drawClock(struct dates *d, struct times *t, SPI_HandleTypeDef *hspi) {
 
 	// drawing AM/PM text
 	setTextSize(1);
-	if (hr < 12) drawCenteredText(103, 60, "AM", hspi);
+	if (t->hr < 12) drawCenteredText(103, 60, "AM", hspi);
 	else drawCenteredText(103, 60, "PM", hspi);
 
 	// drawing date
 	setTextSize(2);
 	clearTextLine(84, hspi);
 	setTextSize(1);
-	sprintf(str, "%s %2d %04d", monthNames[d->month], d->date, d->year);
+	sprintf(str, "%s %2d %04d", monthNames[d->month], d->date, d->yr);
 	drawCenteredText(WIDTH/2, 84, str, hspi);
 
 	// drawing weekday
@@ -744,38 +743,30 @@ void drawAlarm(struct alarmTimes *a, SPI_HandleTypeDef *hspi) {
 }
 
 void drawStopwatch(uint32_t seconds, SPI_HandleTypeDef *hspi) {
-	uint8_t hr, min, sec;
+	struct times *t;
 	char str[40];
 
-	hr = seconds / 3600;
-	seconds %= 3600;
-	min = seconds / 60;
-	seconds %= 60;
-	sec = seconds;
+	secondsToTime(t, seconds);
 
 	// drawing hr:min:sec
 	setTextSize(2);
 	clearTextLine(68, hspi);
-	sprintf(str, "%2d:%2d:%2d", hr, min, sec);
+	sprintf(str, "%2d:%2d:%2d", t->hr, t->min, t->sec);
 	drawCenteredText(WIDTH/2, 68, str, hspi);
 
 	// leaving room for lap
 }
 
 void drawStopwatchLap(uint32_t seconds, SPI_HandleTypeDef *hspi) {
-	uint8_t hr, min, sec;
+	struct times *t;
 	char str[40];
 
-	hr = seconds / 3600;
-	seconds %= 3600;
-	min = seconds / 60;
-	seconds %= 60;
-	sec = seconds;
+	secondsToTime(t, seconds);
 
 	// drawing hr:min:sec
 	setTextSize(1);
 	clearTextLine(84, hspi);
-	sprintf(str, "%2d:%2d:%2d", hr, min, sec);
+	sprintf(str, "%2d:%2d:%2d", t->hr, t->min, t->sec);
 	drawCenteredText(WIDTH/2, 84, str, hspi);
 }
 

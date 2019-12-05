@@ -320,7 +320,7 @@ void fillScreen(uint16_t color, SPI_HandleTypeDef *hspi) {
 // ---- end of basic shapes and lines ----
 
 // ---- start of more complicated graphics ----
-void drawCenteredText(uint8_t x_center, uint8_t y, char *str, SPI_HandleTypeDef *hspi) {
+void drawCenteredText(uint8_t x_center, uint8_t y, const char *str, SPI_HandleTypeDef *hspi) {
 	uint8_t strSize = strlen(str);
 	// bounds checking. text box needed to print text should not end up ouf of bounds
 	if (y+textSize*8 > HEIGHT) return;
@@ -406,14 +406,14 @@ void drawChar(uint8_t ch, SPI_HandleTypeDef *hspi) {
 // this function is slow, and you can definitely see a scrolling speed thing going on
 // how to remove this so it prints near instantly?
 // maybe not needed if all we're doing is printing time (very few characters)
-void drawText(char *str, SPI_HandleTypeDef *hspi) {
+void drawText(const char *str, SPI_HandleTypeDef *hspi) {
 	// add text wrap
 	for (int i = 0; str[i] != '\0'; i++) {
 		drawChar(str[i], hspi);
 	}
 }
 
-void drawTextAt(uint8_t x, uint8_t y, char *str, SPI_HandleTypeDef *hspi) {
+void drawTextAt(uint8_t x, uint8_t y, const char *str, SPI_HandleTypeDef *hspi) {
 	// add text wrap
 	int i = 0;
 	setCursor(x,y);

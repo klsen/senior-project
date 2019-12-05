@@ -144,14 +144,14 @@ void fillScreen(uint16_t color, SPI_HandleTypeDef* hspi);
 
 // ---- other more complicated graphics ----
 // pls sort this garbage. move some funcs to nav?
-void drawCenteredText(uint8_t x_center, uint8_t y, uint8_t size, char *str, SPI_HandleTypeDef *hspi);
+void drawCenteredText(uint8_t x_center, uint8_t y, const char *str, SPI_HandleTypeDef *hspi);
 void clearTextLine(uint8_t y, SPI_HandleTypeDef *hspi);
 // ---- end of other stuff ----
 
 // ---- text functions ----
 void drawChar(uint8_t ch, SPI_HandleTypeDef *hspi);
-void drawText(char *str, SPI_HandleTypeDef *hspi);
-void drawTextAt(uint8_t x, uint8_t y, char *str, SPI_HandleTypeDef *hspi);
+void drawText(const char *str, SPI_HandleTypeDef *hspi);
+void drawTextAt(uint8_t x, uint8_t y, const char *str, SPI_HandleTypeDef *hspi);
 void setBackgroundColor(uint16_t color);
 void setCursor(uint8_t x, uint8_t y);
 void setTextSize(uint8_t size);
