@@ -16,30 +16,38 @@ static uint8_t faceOnDisplay;
 
 const char* weekdayNames[8] = {
 	"",			// padding so i can avoid dealing with out-of-bounds access
-	"mon  ",
-	"tues ",
-	"wed  ",
-	"thurs",
-	"fri  ",
-	"sat  ",
-	"sun  "
+	"Monday",	// hal weekday indexing is 1-based
+	"Tuesday",
+	"Wednesday",
+	"Thursday",
+	"Friday",
+	"Saturday",
+	"Sunday"
 };
 
 const char* monthNames[13] = {
 	"",			// month names also start with 1
-	"jan ",
-	"feb ",
-	"mar ",
-	"apr ",
-	"may ",
-	"jun ",
-	"jul ",
-	"aug ",
-	"sept",
-	"oct ",
-	"nov ",
-	"dec "
+	"Jan",
+	"Feb",
+	"Mar",
+	"Apr",
+	"May",
+	"Jun",
+	"Jul",
+	"Aug",
+	"Sept",
+	"Oct",
+	"Nov",
+	"Dec"
 };
+
+// button interrupt(s)
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+	if (GPIO_Pin == BUTTON1) buttons.is1Pressed = 1;
+	if (GPIO_Pin == BUTTON2) buttons.is2Pressed = 1;
+	if (GPIO_Pin == BUTTON3) buttons.is3Pressed = 1;
+	if (GPIO_Pin == BUTTON4) buttons.is4Pressed = 1;
+}
 
 void updateWithButtons() {
 	/* program flow:
@@ -417,6 +425,7 @@ void updateStopwatchState() {
 // going in main, so it's executing in a while loop
 //   software interrupt on flag so that this doesn't run all the time?
 void updateDisplay(SPI_HandleTypeDef *hspi) {
+	// change faces
 	if (isFaceBeingChanged == 1) {
 		isFaceBeingChanged = 0;
 
@@ -480,130 +489,294 @@ void updateClockDisplay(SPI_HandleTypeDef *hspi) {
 	struct times *currentTime;
 
 	if (clockVars.isBeingSet == 0) {
-		drawTextAt(0, 0, "not setting", hspi);
-		drawTextAt(0, 10, "     ", hspi);
 		getDateTime(currentDate, currentTime);
-		sprintf(str, "%2u:%2u:%2u", currentTime->hr, currentTime->min, currentTime->sec);
-		drawTextAt(0, 60, str, hspi);
-		sprintf(str, "%s, %2u, %4u   %s", monthNames[currentDate->month], currentDate->date, currentDate->yr, weekdayNames[currentDate->weekday]);
-		drawTextAt(0, 70, str, hspi);
+		drawClock(currentDate, currentTime, hspi);
+
+		setTextSize(1);
+		// clear line that says "setting ___"
+		clearTextLine(52, hspi);
+
+		// draw button text
+		clearTextLine(HEIGHT-28, hspi);
+		drawCenteredText(WIDTH*3/4, HEIGHT-28, "set", hspi);
 	}
 	else if (clockVars.isBeingSet == 1) {
-		drawTextAt(0, 0, "setting... ", hspi);
+		// draw button text
+		setTextSize(1);
+		clearTextLine(HEIGHT-28, hspi);
+		drawCenteredText(WIDTH/4, HEIGHT-28, "up", hspi);
+		drawCenteredText(WIDTH/2, HEIGHT-28, "down", hspi);
+		drawCenteredText(WIDTH*3/4, HEIGHT-28, "change", hspi);
+
+		clearTextLine(52, hspi);
+		setTextSize(1);
 		switch (clockVars.fieldBeingSet) {
-			case 1: drawTextAt(0, 10, "min  ", hspi); break;
-			case 2: drawTextAt(0, 10, "hr   ", hspi); break;
-			case 3: drawTextAt(0, 10, "year ", hspi); break;
-			case 4: drawTextAt(0, 10, "month", hspi); break;
-			case 5: drawTextAt(0, 10, "day  ", hspi); break;
+			case 1:	drawCenteredText(WIDTH/2, 52, "setting minute...", hspi); break;
+			case 2:	drawCenteredText(WIDTH/2, 52, "setting hour...", hspi);	break;
+			case 3: drawCenteredText(WIDTH/2, 52, "setting year...", hspi); break;
+			case 4: drawCenteredText(WIDTH/2, 52, "setting month...", hspi); break;
+			case 5: drawCenteredText(WIDTH/2, 52, "setting date...", hspi); break;
 			default: break;
 		}
-		sprintf(str, "%2u:%2u   ", clockVars.timeToSet->hr, clockVars.timeToSet->min);
-		drawTextAt(0, 60, str, hspi);
-		sprintf(str, "%s, %2u, %4u      ", monthNames[clockVars.dateToSet->month], clockVars.dateToSet->date, clockVars.dateToSet->yr);
-		drawTextAt(0, 70, str, hspi);
+
+		drawClock(clockVars.dateToSet, clockVars.timeToSet, hspi);
 	}
 }
 
 void updateTimerDisplay(SPI_HandleTypeDef *hspi) {
-	char str[40];
+	struct times *currentTimer;
 	uint32_t timerVal;
-	uint8_t hr, min, sec;
 
 	if (timerVars.isBeingSet == 0) {
-		timerVal = watchTimerSeconds;
+		if (timerVars.isSet == 0) {
+			// write "timer unset"
+			setTextSize(1);
+			clearTextLine(84, hspi);
+			drawCenteredText(WIDTH/2, 84, "timer unset", hspi);
 
-		if (timerVal != 0) {
-			hr = timerVal / 3600;
-			timerVal %= 3600;
-			min = timerVal / 60;
-			timerVal %= 60;
-			sec = timerVal;
-
-			sprintf(str, "%2u:%2u:%2u", hr, min, sec);
-			drawTextAt(0, 60, str, hspi);
+			// draw button text
+			clearTextLine(HEIGHT-28, hspi);
+			drawCenteredText(WIDTH*3/4, HEIGHT-28, "set", hspi);
 		}
 		else {
-			drawTextAt(0, 60, "        ", hspi);
-		}
+			timerVal = watchTimerSeconds;
+			currentTimer->hr = timerVal/3600;
+			timerVal %= 3600;
+			currentTimer->min = timerVal/60;
+			timerVal %= 60;
+			currentTimer->sec = timerVal;
+			drawTimer(currentTimer, hspi);
 
-		drawTextAt(0, 10, "     ", hspi);
-		if (isTimerRunning == 0) {
-			drawTextAt(0, 0, "not running", hspi);
-		}
-		else if (isTimerRunning == 1) {
-			drawTextAt(0, 0, "running    ", hspi);
-			sprintf(str, "%2u:%2u:%2u", timerVars.timeToSet->hr, timerVars.timeToSet->min, timerVars.timeToSet->sec);
-			drawTextAt(0, 50, str, hspi);
-//			sprintf(str, " %lu", watchTimerSeconds);
-//			drawTextAt(0, 70, str, hspi);
+			// write "timer set!" when timer is set, but not running
+			setTextSize(1);
+			if (isTimerRunning == 0 && watchTimerSeconds != 0) {
+				drawCenteredText(WIDTH/2, 84, "timer set!", hspi);
+			}
+			else {
+				clearTextLine(84, hspi);
+			}
+
+			// draw button text
+			clearTextLine(HEIGHT-28, hspi);
+			drawCenteredText(WIDTH/4, HEIGHT-28, "run", hspi);
+			drawCenteredText(WIDTH/2, HEIGHT-28, "pause", hspi);
+			drawCenteredText(WIDTH*3/4, HEIGHT-28, "clear", hspi);
 		}
 	}
 	else if (timerVars.isBeingSet == 1) {
-		drawTextAt(0, 0, "setting... ", hspi);
+		// draw button text
+		setTextSize(1);
+		clearTextLine(HEIGHT-28, hspi);
+		drawCenteredText(WIDTH/4, HEIGHT-28, "up", hspi);
+		drawCenteredText(WIDTH/2, HEIGHT-28, "down", hspi);
+		drawCenteredText(WIDTH*3/4, HEIGHT-28, "change", hspi);
+
+		// write filler text
+		clearTextLine(60, hspi);
 		switch (timerVars.fieldBeingSet) {
-			case 1: drawTextAt(0, 10, "sec  ", hspi); break;
-			case 2: drawTextAt(0, 10, "min  ", hspi); break;
-			case 3: drawTextAt(0, 10, "hr   ", hspi); break;
+			case 1: drawCenteredText(WIDTH/2, 60, "setting hour...", hspi); break;
+			case 2: drawCenteredText(WIDTH/2, 60, "setting minute...", hspi); break;
+			case 3: drawCenteredText(WIDTH/2, 60, "setting second...", hspi); break;
 			default: break;
 		}
-		sprintf(str, "%2u:%2u:%2u", timerVars.timeToSet->hr, timerVars.timeToSet->min, timerVars.timeToSet->sec);
-		drawTextAt(0, 60, str, hspi);
+
+		drawTimer(timerVars.timeToSet, hspi);
 	}
 }
 
 void updateAlarmDisplay(SPI_HandleTypeDef *hspi) {
-	char str[40];
-
 	if (alarmVars.isBeingSet == 0) {
-		drawTextAt(0, 10, "     ", hspi);
 		if (isAlarmRunning == 0) {
-			drawTextAt(0, 0, "not running", hspi);
-			drawTextAt(0, 60, "              ", hspi);		// clears line used in other cases. probably should wrap in graphics function
+			setTextSize(3);
+			clearTextLine(68, hspi);	// clear alarm time text
+
+			setTextSize(1);
+			clearTextLine(92, hspi);
+			drawCenteredText(WIDTH/2, 92, "alarm unset", hspi);
+
+			// draw button text
+			clearTextLine(HEIGHT-28, hspi);
+			drawCenteredText(WIDTH*3/4, HEIGHT-28, "clear", hspi);
 		}
-		else if (isAlarmRunning == 1) {
-			drawTextAt(0, 0, "running    ", hspi);
-			sprintf(str, "%2u:%2u:%2u %s", alarmVars.alarmToSet->hr, alarmVars.alarmToSet->min, alarmVars.alarmToSet->sec, weekdayNames[alarmVars.alarmToSet->weekday]);
-			drawTextAt(0, 60, str, hspi);
+		else {
+			setTextSize(1);
+			clearTextLine(92, hspi);
+			drawCenteredText(WIDTH/2, 92, "alarm set", hspi);
+			drawAlarm(alarmVars.alarmToSet, hspi);
+
+			// draw button text
+			clearTextLine(HEIGHT-28, hspi);
+			drawCenteredText(WIDTH*3/4, HEIGHT-28, "clear", hspi);
 		}
 	}
 	else if (alarmVars.isBeingSet == 1) {
-		drawTextAt(0, 0, "setting... ", hspi);
+		setTextSize(1);
 		switch (alarmVars.fieldBeingSet) {
-			case 1: drawTextAt(0, 10, "sec  ", hspi); break;
-			case 2: drawTextAt(0, 10, "min  ", hspi); break;
-			case 3: drawTextAt(0, 10, "hr   ", hspi); break;
-			case 4: drawTextAt(0, 10, "day  ", hspi); break;
+			case 1: drawCenteredText(WIDTH/2, 60, "setting second...", hspi); break;
+			case 2: drawCenteredText(WIDTH/2, 60, "setting minute...", hspi); break;
+			case 3: drawCenteredText(WIDTH/2, 60, "setting hour...", hspi); break;
+			case 4: drawCenteredText(WIDTH/2, 60, "setting day...", hspi); break;
 			default: break;
 		}
-		// maybe make this more efficient
-		sprintf(str, "%2u:%2u:%2u %s", alarmVars.alarmToSet->hr, alarmVars.alarmToSet->min, alarmVars.alarmToSet->sec, weekdayNames[alarmVars.alarmToSet->weekday]);
-		drawTextAt(0, 60, str, hspi);
+
+		// draw button text
+		clearTextLine(HEIGHT-28, hspi);
+		drawCenteredText(WIDTH/4, HEIGHT-28, "up", hspi);
+		drawCenteredText(WIDTH/2, HEIGHT-28, "down", hspi);
+		drawCenteredText(WIDTH*3/4, HEIGHT-28, "change", hspi);
+
+		drawAlarm(alarmVars.alarmToSet, hspi);
 	}
 }
 
 void updateStopwatchDisplay(SPI_HandleTypeDef *hspi) {
+	drawStopwatch(stopwatchCNT, hspi);
+	drawStopwatchLap(stopwatchCNT, hspi);
+
+	setTextSize(1);
+	clearTextLine(HEIGHT-28, hspi);
+	drawCenteredText(WIDTH/2, HEIGHT-28, "lap", hspi);
+	drawCenteredText(WIDTH*3/4, HEIGHT-28, "clear", hspi);
+
+	if (isStopwatchRunning == 0) drawCenteredText(WIDTH/4, HEIGHT-28, "run", hspi);
+	else if (isStopwatchRunning == 1) drawCenteredText(WIDTH/4, HEIGHT-28, "pause", hspi);
+}
+
+void drawButton(uint8_t x, uint8_t y, SPI_HandleTypeDef *hspi) {
+	// draw rect size 8 with 1 pixel border
+	drawRect(x, y, 10, 10, ST77XX_BLACK, hspi);
+	fillRect(x+1, y+1, 8, 8, ST77XX_WHITE, hspi);
+
+	// draw circle in the middle
+	setCursor(x+3, y+1);
+	setTextColor(ST77XX_BLACK);
+	setBackgroundColor(ST77XX_WHITE);
+	drawChar('O', hspi);
+}
+
+void drawTitle(char *str, SPI_HandleTypeDef *hspi) {
+	uint8_t strSize = strlen(str);
+
+	// drawing title
+	if (12*strSize < WIDTH) {		// about string size = 10 for width = 128
+		setTextSize(2);
+		clearTextLine(y, hspi);
+		setCursor((WIDTH-12*strSize)/2, 10);
+		setTextColor(ST77XX_BLACK);
+		drawText(str, hspi);
+	}
+	else if (6*strSize < WIDTH) {	// about string size = 21 for width = 128
+		setTextSize(1);
+		clearTextLine(y, hspi);
+		setCursor((WIDTH-6*strSize)/2, 10);
+		setTextColor(ST77XX_BLACK);
+		drawText(str, hspi);
+	}
+	else {
+		setTextSize(1);
+		clearTextLine(y, hspi);
+		setCursor((WIDTH-6*15)/2, 10);
+		setTextColor(ST77XX_BLACK);
+		drawText("shit's too long", hspi);
+	}
+}
+
+// draw time and date
+// should optimize to only redraw part that changed
+void drawClock(struct dates *d, struct times *t, SPI_HandleTypeDef *hspi) {
+	// notes on paper.
 	char str[40];
-	uint32_t stopwatchVal;
+
+	// drawing hr and min
+	// should change to print 12-hr format instead of 24 if using am/pm
+	sprintf(str, "%2d:%2d", t->hr, t->min);
+	setTextSize(3);
+	setTextColor(ST77XX_BLACK);
+	clearTextLine(68, hspi);
+	drawCenteredText(45, 60, str, hspi);
+
+	// drawing sec
+	sprintf(str, "%2d", t->sec);
+	setTextSize(2);
+	drawCenteredText(109, 68, str, hspi);
+
+	// drawing AM/PM text
+	setTextSize(1);
+	if (hr < 12) drawCenteredText(103, 60, "AM", hspi);
+	else drawCenteredText(103, 60, "PM", hspi);
+
+	// drawing date
+	setTextSize(2);
+	clearTextLine(84, hspi);
+	setTextSize(1);
+	sprintf(str, "%s %2d %04d", monthNames[d->month], d->date, d->year);
+	drawCenteredText(WIDTH/2, 84, str, hspi);
+
+	// drawing weekday
+	drawCenteredText(WIDTH/2, 92, weekdayNames[d->weekday], hspi);
+}
+
+void drawTimer(struct times *t, SPI_HandleTypeDef *hspi) {
+	char str[40];
+
+	// only drawing hr:min:sec of timer
+	setTextSize(2);
+	clearTextLine(68, hspi);
+	sprintf(str, "%2d:%2d:%2d", t->hr, t->min, t->sec);
+	drawCenteredText(WIDTH/2, HEIGHT/2-12, str, hspi);		// about y=68
+
+	// leaving room to draw "timer set!/unset"
+}
+
+void drawAlarm(struct alarmTimes *a, SPI_HandleTypeDef *hspi) {
+	char str[40];
+	setTextSize(3);
+	clearTextLine(68, hspi);
+
+	// drawing hr:min:sec
+	setTextSize(2);
+	sprintf(str, "%2d:%2d:%2d", a->hr, a->min, a->sec);
+	drawCenteredText(WIDTH/2, 68, str, hspi);
+
+	// drawing weekday
+	setTextSize(1);
+	drawCenteredText(WIDTH/2, 84, weekdayNames[a->weekday], hspi);
+}
+
+void drawStopwatch(uint32_t seconds, SPI_HandleTypeDef *hspi) {
 	uint8_t hr, min, sec;
+	char str[40];
 
-	// translating 32-bit counter to hours, minutes, seconds
-	stopwatchVal = stopwatchCNT;
+	hr = seconds / 3600;
+	seconds %= 3600;
+	min = seconds / 60;
+	seconds %= 60;
+	sec = seconds;
 
-	hr = stopwatchVal / 3600;
-	stopwatchVal %= 3600;
-	min = stopwatchVal / 60;
-	stopwatchVal %= 60;
-	sec = stopwatchVal;
+	// drawing hr:min:sec
+	setTextSize(2);
+	clearTextLine(68, hspi);
+	sprintf(str, "%2d:%2d:%2d", hr, min, sec);
+	drawCenteredText(WIDTH/2, 68, str, hspi);
 
-	sprintf(str, "%2u:%2u:%2u", hr, min, sec);
-	drawTextAt(0, 60, str, hspi);
-	if (isStopwatchRunning == 0) {
-		drawTextAt(0, 0, "not running", hspi);
-	}
-	else if (isStopwatchRunning == 1) {
-		drawTextAt(0, 0, "running    ", hspi);
-	}
+	// leaving room for lap
+}
+
+void drawStopwatchLap(uint32_t seconds, SPI_HandleTypeDef *hspi) {
+	uint8_t hr, min, sec;
+	char str[40];
+
+	hr = seconds / 3600;
+	seconds %= 3600;
+	min = seconds / 60;
+	seconds %= 60;
+	sec = seconds;
+
+	// drawing hr:min:sec
+	setTextSize(1);
+	clearTextLine(84, hspi);
+	sprintf(str, "%2d:%2d:%2d", hr, min, sec);
+	drawCenteredText(WIDTH/2, 84, str, hspi);
 }
 
 // calculator for number of days in a month given a month and accounting for leap years
@@ -637,13 +810,4 @@ void initFace() {
 	isFaceBeingChanged = 1;
 	faceOnDisplay = faceClock;
 	updateFace.clock = 1;
-}
-
-// this sure is a big callback
-// need to complete
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-	if (GPIO_Pin == BUTTON1) buttons.is1Pressed = 1;
-	if (GPIO_Pin == BUTTON2) buttons.is2Pressed = 1;
-	if (GPIO_Pin == BUTTON3) buttons.is3Pressed = 1;
-	if (GPIO_Pin == BUTTON4) buttons.is4Pressed = 1;
 }

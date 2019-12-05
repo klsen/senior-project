@@ -83,40 +83,6 @@ volatile uint8_t isTimerRunning;
 volatile uint8_t isAlarmRunning;
 volatile uint8_t isStopwatchRunning;
 
-//// ---- buncha flags ----
-//volatile uint8_t updateFace;
-//volatile uint8_t updateClock;
-//volatile uint8_t updateTimer;
-//volatile uint8_t updateAlarm;
-//volatile uint8_t updateStopwatch;
-//// ---- end of flags ----
-//
-//// for face on screen
-//static volatile int face;
-//
-//// for clock
-//volatile int clockSet;
-//volatile int clockField;
-//struct dates tempClockDate;
-//struct times tempClockTimes;
-//
-//// for timer
-//volatile int timerSet;
-//volatile int timerField;
-//volatile int timerRunning;
-//volatile struct times tempTimer;
-//
-//// for alarm
-//volatile int alarmSet;
-//volatile int alarmField;
-//volatile int alarmRunning;
-//volatile struct alarmTimes tempAlarm;
-//
-//// for stopwatch
-//volatile int stopwatchRunning;
-//volatile uint32_t lapPrev, lapCurrent;
-//int tempStopwatch[NUM_STOPWATCHFIELDS];
-
 // enum for different faces used (clock, timer, alarm, stopwatch)
 // probably not needed
 enum displayFaces {
@@ -145,6 +111,15 @@ void updateClockDisplay(SPI_HandleTypeDef *hspi);
 void updateTimerDisplay(SPI_HandleTypeDef *hspi);
 void updateAlarmDisplay(SPI_HandleTypeDef *hspi);
 void updateStopwatchDisplay(SPI_HandleTypeDef *hspi);
+
+// draw functions
+void drawButton(uint8_t x, uint8_t y, SPI_HandleTypeDef* hspi);
+void drawTitle(char *str, SPI_HandleTypeDef *hspi);
+void drawClock(struct dates *d, struct times *t, SPI_HandleTypeDef *hspi);
+void drawTimer(struct times *t, SPI_HandleTypeDef *hspi);
+void drawAlarm(struct alarmTimes *a, SPI_HandleTypeDef *hspi);
+void drawStopwatch(uint32_t seconds, SPI_HandleTypeDef *hspi);
+void drawStopwatchLap(uint32_t seconds, SPI_HandleTypeDef *hspi);
 
 uint8_t maxDaysInMonth(uint8_t month, uint16_t year);
 void initFace();

@@ -320,45 +320,6 @@ void fillScreen(uint16_t color, SPI_HandleTypeDef *hspi) {
 // ---- end of basic shapes and lines ----
 
 // ---- start of more complicated graphics ----
-void drawButton(uint8_t x, uint8_t y, SPI_HandleTypeDef *hspi) {
-	// draw rect size 8 with 1 pixel border
-	drawRect(x, y, 10, 10, ST77XX_BLACK, hspi);
-	fillRect(x+1, y+1, 8, 8, ST77XX_WHITE, hspi);
-
-	// draw circle in the middle
-	setCursor(x+3, y+1);
-	setTextColor(ST77XX_BLACK);
-	setBackgroundColor(ST77XX_WHITE);
-	drawChar('O', hspi);
-}
-
-void drawTitle(char *str, SPI_HandleTypeDef *hspi) {
-	uint8_t strSize = strlen(str);
-
-	// drawing title
-	if (12*strSize < WIDTH) {		// about string size = 10 for width = 128
-		setTextSize(2);
-		clearTextLine(y, hspi);
-		setCursor((WIDTH-12*strSize)/2, 10);
-		setTextColor(ST77XX_BLACK);
-		drawText(str, hspi);
-	}
-	else if (6*strSize < WIDTH) {	// about string size = 21 for width = 128
-		setTextSize(1);
-		clearTextLine(y, hspi);
-		setCursor((WIDTH-6*strSize)/2, 10);
-		setTextColor(ST77XX_BLACK);
-		drawText(str, hspi);
-	}
-	else {
-		setTextSize(1);
-		clearTextLine(y, hspi);
-		setCursor((WIDTH-6*15)/2, 10);
-		setTextColor(ST77XX_BLACK);
-		drawText("shit's too long", hspi);
-	}
-}
-
 void drawCenteredText(uint8_t x_center, uint8_t y, char *str, SPI_HandleTypeDef *hspi) {
 	uint8_t strSize = strlen(str);
 	// bounds checking. text box needed to print text should not end up ouf of bounds
@@ -370,10 +331,6 @@ void drawCenteredText(uint8_t x_center, uint8_t y, char *str, SPI_HandleTypeDef 
 
 	setCursor(leftBound, y);
 	drawText(str, hspi);
-}
-
-void drawClock(struct dates *d, struct times *t, SPI_HandleTypeDef *hspi) {
-
 }
 
 void clearTextLine(uint8_t y, SPI_HandleTypeDef *hspi) {

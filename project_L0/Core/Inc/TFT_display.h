@@ -144,10 +144,7 @@ void fillScreen(uint16_t color, SPI_HandleTypeDef* hspi);
 
 // ---- other more complicated graphics ----
 // pls sort this garbage. move some funcs to nav?
-void drawButton(uint8_t x, uint8_t y, SPI_HandleTypeDef* hspi);
-void drawTitle(char *str, SPI_HandleTypeDef *hspi);
 void drawCenteredText(uint8_t x_center, uint8_t y, uint8_t size, char *str, SPI_HandleTypeDef *hspi);
-void drawClock(struct dates *d, struct times *t, SPI_HandleTypeDef *hspi);
 void clearTextLine(uint8_t y, SPI_HandleTypeDef *hspi);
 // ---- end of other stuff ----
 
