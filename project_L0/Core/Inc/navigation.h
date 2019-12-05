@@ -44,8 +44,8 @@ struct faceFlags {
 struct clockVariables {
 	uint8_t isBeingSet;
 	uint8_t fieldBeingSet;
-	struct dates dateToSet;
-	struct times timeToSet;
+	struct dates *dateToSet;
+	struct times *timeToSet;
 };
 
 struct timerVariables {
@@ -53,14 +53,14 @@ struct timerVariables {
 	uint8_t fieldBeingSet;
 	uint8_t isSet;
 //	uint8_t isRunning;			// global
-	struct times timeToSet;
+	struct times *timeToSet;
 };
 
 struct alarmVariables {
 	uint8_t isBeingSet;
 	uint8_t fieldBeingSet;
 //	uint8_t isRunning;				// global
-	struct alarmTimes alarmToSet;
+	struct alarmTimes *alarmToSet;
 };
 
 struct stopwatchVariables {
@@ -82,15 +82,6 @@ volatile struct faceFlags updateFace;
 volatile uint8_t isTimerRunning;
 volatile uint8_t isAlarmRunning;
 volatile uint8_t isStopwatchRunning;
-
-// use static for timer/alarm/stopwatch variables, changeface, and face used.
-// needed only in updatedisplay/buttons, but each func shares these variables
-static struct clockVariables clockVars;
-static struct timerVariables timerVars;
-static struct alarmVariables alarmVars;
-static struct stopwatchVariables stopwatchVars;
-static uint8_t isFaceBeingChanged;
-static uint8_t faceOnDisplay;
 
 //// ---- buncha flags ----
 //volatile uint8_t updateFace;
@@ -138,9 +129,24 @@ enum displayFaces {
 const char* weekdayNames[8];
 const char* monthNames[13];
 
-void updateWithButtons();	// might need hw timer and rtc handles but not if they're kept global
+// might need hw timer and rtc handles but not if they're kept global.
+// refactor clock and timer back to use non-global
+void updateWithButtons();
 void updateDisplay(SPI_HandleTypeDef *hspi);
 
+// getting really sick of looking at 1 function with 250 lines.
+void updateClockState();
+void updateTimerState();
+void updateAlarmState();
+void updateStopwatchState();
+
+// getting really sick of looking at 1 function with 150 lines
+void updateClockDisplay(SPI_HandleTypeDef *hspi);
+void updateTimerDisplay(SPI_HandleTypeDef *hspi);
+void updateAlarmDisplay(SPI_HandleTypeDef *hspi);
+void updateStopwatchDisplay(SPI_HandleTypeDef *hspi);
+
 uint8_t maxDaysInMonth(uint8_t month, uint16_t year);
+void initFace();
 
 #endif

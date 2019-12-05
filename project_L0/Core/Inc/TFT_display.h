@@ -15,6 +15,7 @@
 
 #include "stm32l0xx_hal.h"
 #include "font.h"
+#include <string.h>			// just for using strlen() :I
 
 // ---- Start of library constants ----
 // pulled from Adafruit ST77XX driver library.
@@ -141,16 +142,16 @@ void fillRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t color, SPI_Ha
 void fillScreen(uint16_t color, SPI_HandleTypeDef* hspi);
 // ---- end of basic shapes and lines ----
 
-// ---- text functions ----
-// variables to make using functions easier or something
-// no protections from accessing these variables directly. what's the point of setters (??)
-// non-static suppresses warnings. is this fine or does it do weird behaviors?
-static uint8_t cursorX;
-static uint8_t cursorY;
-static uint8_t textSize;
-static uint16_t textColor;
-volatile uint16_t bg;
+// ---- other more complicated graphics ----
+// pls sort this garbage. move some funcs to nav?
+void drawButton(uint8_t x, uint8_t y, SPI_HandleTypeDef* hspi);
+void drawTitle(char *str, SPI_HandleTypeDef *hspi);
+void drawCenteredText(uint8_t x_center, uint8_t y, uint8_t size, char *str, SPI_HandleTypeDef *hspi);
+void drawClock(struct dates *d, struct times *t, SPI_HandleTypeDef *hspi);
+void clearTextLine(uint8_t y, SPI_HandleTypeDef *hspi);
+// ---- end of other stuff ----
 
+// ---- text functions ----
 void drawChar(uint8_t ch, SPI_HandleTypeDef *hspi);
 void drawText(char *str, SPI_HandleTypeDef *hspi);
 void drawTextAt(uint8_t x, uint8_t y, char *str, SPI_HandleTypeDef *hspi);
@@ -159,6 +160,9 @@ void setCursor(uint8_t x, uint8_t y);
 void setTextSize(uint8_t size);
 void setTextColor(uint16_t color);
 void clearScreen(uint16_t backgroundColor, SPI_HandleTypeDef* hspi);
+
+uint16_t getBackgroundColor();
+uint16_t getTextColor();
 // ---- end of text functions ----
 
 /* some more ideas for graphics:

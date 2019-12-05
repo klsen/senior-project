@@ -127,12 +127,10 @@ int main(void)
   	/* initialization for display */
 	HAL_Delay(2000);
 	TFT_startup(&hspi1);
-	clearScreen(ST77XX_WHITE, &hspi1);
+	clearScreen(ST77XX_BLACK, &hspi1);
 
 	/* start updating display for ui */
-	updateFace = 1;
-	face = faceClock;
-	updateClock = 1;
+	initFace();
 	runClockDisplay();
 
 	/* tests that are only meant to run once */
@@ -164,7 +162,13 @@ int main(void)
 //	  textTest(bg, &hspi1);
 
 	  // ui/nav tests or full run. uncomment when ready
+	  updateWithButtons();
 	  updateDisplay(&hspi1);
+
+	  // wait for interrupt instruction. CPU goes to sleep mode (listed as "sleep mode" by ST as one of their low-power modes)
+	  // does it work on it's own, or do registers have to be configured first?
+	  // put in bottom, since screen updates should run once at the start
+	  __WFI();
   }
   /* USER CODE END 3 */
 }

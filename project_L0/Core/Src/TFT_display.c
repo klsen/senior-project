@@ -12,6 +12,14 @@
 
 #include "TFT_display.h"
 
+// variables to make using functions easier or something
+// no protections from accessing these variables directly. what's the point of setters (??)
+static uint8_t cursorX;
+static uint8_t cursorY;
+static uint8_t textSize;
+static uint16_t textColor;
+static uint16_t bg;
+
 // ---- lower level functions ----
 void SPI_CS_LOW() {HAL_GPIO_WritePin(CS_GPIO, CS_PIN, GPIO_PIN_RESET);}
 
@@ -297,10 +305,6 @@ void fillRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t color, SPI_Ha
 	}
 }
 
-//void fillScreen(uint16_t color, SPI_HandleTypeDef *hspi) {
-//	fillRect(0, 0, WIDTH, HEIGHT, color, hspi);
-//}
-
 void fillScreen(uint16_t color, SPI_HandleTypeDef *hspi) {
 	uint16_t bufferSize = WIDTH*HEIGHT/4;
 	uint16_t buffer[bufferSize];
@@ -311,49 +315,73 @@ void fillScreen(uint16_t color, SPI_HandleTypeDef *hspi) {
 
 	for (i = 0; i < 4; i++) {
 		drawBuffer(0, HEIGHT/4*i, WIDTH, HEIGHT/4, buffer, bufferSize, hspi);
-//		HAL_Delay(1000);
 	}
 }
 // ---- end of basic shapes and lines ----
 
-// ---- text functions ----
-//void drawChar(uint8_t ch, SPI_HandleTypeDef *hspi) {
-//	// very much ripped from Adafruit
-//	// saves me a lot of time from making my own fonts
-//	// thinking of only using 1 parameter for size?
-//
-////	if((x >= _width)            || // Clip right
-////	   (y >= _height)           || // Clip bottom
-////	   ((x + 6 * size_x - 1) < 0) || // Clip left
-////	   ((y + 8 * size_y - 1) < 0))   // Clip top
-////		return;
-//
-////	if(!_cp437 && (c >= 176)) c++; // Handle 'classic' charset behavior
-//
-//	for (int8_t i=0; i<5; i++ ) { // Char bitmap = 5 columns
-//		uint8_t line = font[ch*5+i];
-//		for (int8_t j=0; j<8; j++, line >>= 1) {
-//			if (line & 1) {
-//				if (textSize == 1)
-//					drawPixel(cursorX+i, cursorY+j, textColor, hspi);
-//				else
-//					fillRect(cursorX+i*textSize, cursorY+j*textSize, textSize, textSize, textColor, hspi);
-//			} else if (bg != textColor) {
-//				if (textSize == 1)
-//					drawPixel(cursorX+i, cursorY+j, bg, hspi);
-//				else
-//					fillRect(cursorX+i*textSize, cursorY+j*textSize, textSize, textSize, bg, hspi);
-//			}
-//		}
-//	}
-//
-//	// 6wx8h char. this is 6th column, since it's always blank for kerning
-//	if (bg != textColor) { // If opaque, draw vertical line for last column
-//		if (textSize == 1) drawVLine(cursorX+5, cursorY, 8, bg, hspi);
-//		else fillRect(cursorX+5*textSize, cursorY, textSize, 8*textSize, bg, hspi);
-//	}
-//}
+// ---- start of more complicated graphics ----
+void drawButton(uint8_t x, uint8_t y, SPI_HandleTypeDef *hspi) {
+	// draw rect size 8 with 1 pixel border
+	drawRect(x, y, 10, 10, ST77XX_BLACK, hspi);
+	fillRect(x+1, y+1, 8, 8, ST77XX_WHITE, hspi);
 
+	// draw circle in the middle
+	setCursor(x+3, y+1);
+	setTextColor(ST77XX_BLACK);
+	setBackgroundColor(ST77XX_WHITE);
+	drawChar('O', hspi);
+}
+
+void drawTitle(char *str, SPI_HandleTypeDef *hspi) {
+	uint8_t strSize = strlen(str);
+
+	// drawing title
+	if (12*strSize < WIDTH) {		// about string size = 10 for width = 128
+		setTextSize(2);
+		clearTextLine(y, hspi);
+		setCursor((WIDTH-12*strSize)/2, 10);
+		setTextColor(ST77XX_BLACK);
+		drawText(str, hspi);
+	}
+	else if (6*strSize < WIDTH) {	// about string size = 21 for width = 128
+		setTextSize(1);
+		clearTextLine(y, hspi);
+		setCursor((WIDTH-6*strSize)/2, 10);
+		setTextColor(ST77XX_BLACK);
+		drawText(str, hspi);
+	}
+	else {
+		setTextSize(1);
+		clearTextLine(y, hspi);
+		setCursor((WIDTH-6*15)/2, 10);
+		setTextColor(ST77XX_BLACK);
+		drawText("shit's too long", hspi);
+	}
+}
+
+void drawCenteredText(uint8_t x_center, uint8_t y, char *str, SPI_HandleTypeDef *hspi) {
+	uint8_t strSize = strlen(str);
+	// bounds checking. text box needed to print text should not end up ouf of bounds
+	if (y+textSize*8 > HEIGHT) return;
+	int leftBound = x_center-(strSize*textSize*6)/2;
+	int rightBound = x_center+(strSize*textSize*6)/2;
+	if (leftBound < 0) return;
+	if (rightBound > WIDTH) return;
+
+	setCursor(leftBound, y);
+	drawText(str, hspi);
+}
+
+void drawClock(struct dates *d, struct times *t, SPI_HandleTypeDef *hspi) {
+
+}
+
+void clearTextLine(uint8_t y, SPI_HandleTypeDef *hspi) {
+	fillRect(0, y, WIDTH, textSize*8, bg, hspi);
+}
+// ---- end of more complicated graphics ----
+
+// ---- text functions ----
 void drawChar(uint8_t ch, SPI_HandleTypeDef *hspi) {
 	uint16_t bufferSize = 6*8*textSize*textSize;
 	uint16_t buffer[bufferSize];
@@ -454,4 +482,8 @@ void clearScreen(uint16_t backgroundColor, SPI_HandleTypeDef *hspi) {
 	bg = backgroundColor;
 	fillScreen(backgroundColor, hspi);
 }
+
+uint16_t getBackgroundColor() {return bg;}
+uint16_t getTextColor() {return textColor;}
+
 // ---- end of text functions ----

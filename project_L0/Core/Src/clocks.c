@@ -102,18 +102,6 @@ void setTimer(struct times *t_in) {
 	uint8_t s,m,h,w;
 
 	// adding timer value to current time so we can set an alarm time
-	// REDO THIS ADDER BC ITS NOT RIGHT
-//	if (t.sec + t_in->sec > 60) {		// adding seconds
-//		if (t.min + t_in->min > 60) {		// adding minutes
-//			if (t.hr + t_in->hr > 24) {			// adding hours
-//				a.weekday = ((d.weekday + t_in->hr/24) % 7) + 1;		// bc weekday count starts from 1
-//			}
-//			a.hr = (t.hr + t_in->hr) % 24;
-//		}
-//		a.min = (t.min + t_in->min) % 60;
-//	}
-//	a.sec = (t.sec + t_in->sec) % 60;
-//
 	s = t.sec + t_in->sec;
 	m = t.min + t_in->min + s/60;
 	h = t.hr + t_in->hr + m/60;
@@ -122,10 +110,6 @@ void setTimer(struct times *t_in) {
 	a.min = m % 60;
 	a.hr = h % 24;
 	a.weekday = (w-1) % 7 + 1;
-//	a.sec = t_in->sec;
-//	a.min = t_in->min;
-//	a.hr = t_in->hr;
-//	a.weekday = d.weekday;
 
 	// setting RTC parameters
 	salarmtime.Hours = a.hr;
@@ -158,8 +142,8 @@ void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc) {
 	// using PC0
 	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_0);
 	HAL_RTC_DeactivateAlarm(hrtc, RTC_ALARM_A);
-	alarmRunning = 0;
-	updateAlarm = 1;
+	isAlarmRunning = 0;
+	updateFace.alarm = 1;
 //	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET);
 //	HAL_Delay(500);			// does this work in interrupt/callback? might not
 //	HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_1);
@@ -169,8 +153,8 @@ void HAL_RTCEx_AlarmBEventCallback(RTC_HandleTypeDef *hrtc) {
 	// toggles pin on end of timer. clears alarm
 	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_1);
 	HAL_RTC_DeactivateAlarm(hrtc, RTC_ALARM_B);
-	timerRunning = 0;
-	updateTimer = 1;
+	isTimerRunning = 0;
+	updateFace.timer = 1;
 	/*
 	 * should run motor thing and update display to signal user
 	 * also clear alarm

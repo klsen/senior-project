@@ -34,7 +34,7 @@ void HAL_LPTIM_AutoReloadMatchCallback(LPTIM_HandleTypeDef *hlptim) {
 	// toggle pin, should toggle every 1s. change this pin
 	HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_1);
 	stopwatchCNT++;
-	updateStopwatch = 1;
+	updateFace.stopwatch = 1;
 }
 // ---- end of stopwatch functions ----
 
@@ -63,7 +63,7 @@ void stopClockDisplay() {
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 	if (htim->Instance == TIM21) {
-		updateTimer = 1;
+		updateFace.timer = 1;
 //		HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_1);
 		// should toggle pin every 1s. change pin
 		if (watchTimerSeconds != 0) {
@@ -72,12 +72,12 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 		}
 		else {
 			stopTimerDisplay();
-			timerRunning = 0;
-			updateTimer = 1;
+			isTimerRunning = 0;
+			updateFace.timer = 1;
 		}
 	}
 	else if (htim->Instance == TIM22) {
-		updateClock = 1;
+		updateFace.clock = 1;
 	}
 }
 // ---- end of timer functions ----
