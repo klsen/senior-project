@@ -1,0 +1,6 @@
+Removed Pin From Net: NetName=LCD_Reset Pin=U2-53
+Added Pin To Net: NetName=LCD_Reset Pin=U2-59
+Added Room: Name=Button_connections
+Added Room: Name=MCU_Connections
+Added Room: Name=Motor_Driver_Schematic
+Added Room: Name=power_supply

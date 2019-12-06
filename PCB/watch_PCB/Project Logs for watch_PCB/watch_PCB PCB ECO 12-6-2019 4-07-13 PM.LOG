@@ -1,0 +1,17 @@
+Removed Pin From Net: NetName=Backlight Pin=U2-37
+Removed Pin From Net: NetName=LCD_Reset Pin=U2-38
+Added Pin To Net: NetName=Backlight Pin=U2-50
+Added Pin To Net: NetName=LCD_Reset Pin=U2-53
+Change Net Name : Old Net Name=NetS5_2 New Net Name=BOOT0
+Added Member To Class: ClassName=power_supply Member=Component 1 SMAJ5.0A-E3/5A
+Added Member To Class: ClassName=power_supply Member=Component C20 Cap
+Added Member To Class: ClassName=power_supply Member=Component D1 Orange LED
+Added Member To Class: ClassName=power_supply Member=Component D2 Green LED
+Added Member To Class: ClassName=power_supply Member=Component J1 10118193-0001LF
+Added Member To Class: ClassName=power_supply Member=Component R16 Res3
+Added Member To Class: ClassName=power_supply Member=Component R17 Res3
+Added Member To Class: ClassName=power_supply Member=Component U5 MCP73831T-2ATI/OT
+Added Room: Name=Button_connections
+Added Room: Name=MCU_Connections
+Added Room: Name=Motor_Driver_Schematic
+Added Room: Name=power_supply
