@@ -72,6 +72,10 @@ void getDate(struct dates *d);
 void getDateTime(struct dates *d, struct times *t);
 // ---- end of getters ----
 
+// converters
+uint32_t timeToSeconds(struct times *t);
+void secondsToTime(struct times *t, uint32_t seconds);
+
 // ---- printing stuff ----
 //void printTime(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
 //void printDate(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
@@ -84,9 +88,9 @@ void printDateTime();
 // ---- tests ----
 //void clockTest(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
 //void alarmTest(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
-void clockTest();
-void alarmTest();
-void timerTest();
+//void clockTest();
+//void alarmTest();
+//void timerTest();
 // ---- end of tests ----
 
 #endif

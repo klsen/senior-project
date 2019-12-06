@@ -49,8 +49,7 @@ void lineTest(SPI_HandleTypeDef *hspi) {
 	drawRect(x, y-HEIGHT/4, WIDTH/2, HEIGHT/4, ST77XX_WHITE, hspi);
 	HAL_Delay(1000);
 
-	bg = ST77XX_BLACK;
-	fillScreen(bg, hspi);
+	clearScreen(ST77XX_BLACK, hspi);
 }
 
 void charTest(SPI_HandleTypeDef *hspi) {
@@ -82,7 +81,7 @@ void charTest(SPI_HandleTypeDef *hspi) {
 //			HAL_Delay(250);
 		}
 		HAL_Delay(1000);
-		fillScreen(bg, hspi);
+		clearScreen(ST77XX_BLACK, hspi);
 	}
 }
 
@@ -103,7 +102,7 @@ void textTest(SPI_HandleTypeDef *hspi) {
 	drawTextAt(0, 64, str, hspi);
 	HAL_Delay(500);
 
-	fillScreen(bg, hspi);
+	clearScreen(ST77XX_BLACK, hspi);
 }
 
 void basicTest(SPI_HandleTypeDef *hspi) {
@@ -116,9 +115,9 @@ void basicTest(SPI_HandleTypeDef *hspi) {
 
 	HAL_Delay(500);
 
-	fillScreen(bg, hspi);
-	drawPixel(0, 0, bg, hspi);
-	drawHLine(0, 159, 128, bg, hspi);
-	drawVLine(127, 0, 160, bg, hspi);
-	drawRect(50, 50, 50, 50, bg, hspi);
+	clearScreen(ST77XX_BLACK, hspi);
+//	drawPixel(0, 0, bg, hspi);
+//	drawHLine(0, 159, 128, bg, hspi);
+//	drawVLine(127, 0, 160, bg, hspi);
+//	drawRect(50, 50, 50, 50, bg, hspi);
 }

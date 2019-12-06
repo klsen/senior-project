@@ -1,14 +1,14 @@
 /*
  * file for initializing and working with the real-time clock
- * and low-power/general purpose timers for time-keeping functionality
+ * only for time-keeping and alarm triggering functionality
  *
- * called in main(). uses global variables?
+ * called in main(). uses global variables? might change back
  */
-
 
 #include "clocks.h"
 
 // set rtc time. uses perosnal struct as arg
+// assert members not null for set functions?
 void setTime(struct times *t) {
 	RTC_TimeTypeDef stime = {0};	// change to malloc call? does that work in embedded?
 
@@ -73,7 +73,6 @@ void setAlarm(struct alarmTimes *a) {
 	salarmtime.StoreOperation = RTC_STOREOPERATION_RESET;
 
 	salarm.AlarmTime = salarmtime;
-//	salarm.AlarmMask = RTC_ALARMMASK_ALL;
 	salarm.AlarmMask = RTC_ALARMMASK_NONE;
 	salarm.AlarmSubSecondMask = RTC_ALARMSUBSECONDMASK_ALL;
 	salarm.AlarmDateWeekDaySel = RTC_ALARMDATEWEEKDAYSEL_WEEKDAY;
@@ -103,18 +102,6 @@ void setTimer(struct times *t_in) {
 	uint8_t s,m,h,w;
 
 	// adding timer value to current time so we can set an alarm time
-	// REDO THIS ADDER BC ITS NOT RIGHT
-//	if (t.sec + t_in->sec > 60) {		// adding seconds
-//		if (t.min + t_in->min > 60) {		// adding minutes
-//			if (t.hr + t_in->hr > 24) {			// adding hours
-//				a.weekday = ((d.weekday + t_in->hr/24) % 7) + 1;		// bc weekday count starts from 1
-//			}
-//			a.hr = (t.hr + t_in->hr) % 24;
-//		}
-//		a.min = (t.min + t_in->min) % 60;
-//	}
-//	a.sec = (t.sec + t_in->sec) % 60;
-//
 	s = t.sec + t_in->sec;
 	m = t.min + t_in->min + s/60;
 	h = t.hr + t_in->hr + m/60;
@@ -123,10 +110,6 @@ void setTimer(struct times *t_in) {
 	a.min = m % 60;
 	a.hr = h % 24;
 	a.weekday = (w-1) % 7 + 1;
-//	a.sec = t_in->sec;
-//	a.min = t_in->min;
-//	a.hr = t_in->hr;
-//	a.weekday = d.weekday;
 
 	// setting RTC parameters
 	salarmtime.Hours = a.hr;
@@ -159,8 +142,8 @@ void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc) {
 	// using PC0
 	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_0);
 	HAL_RTC_DeactivateAlarm(hrtc, RTC_ALARM_A);
-	alarmRunning = 0;
-	updateAlarm = 1;
+	isAlarmRunning = 0;
+	updateFace.alarm = 1;
 //	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET);
 //	HAL_Delay(500);			// does this work in interrupt/callback? might not
 //	HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_1);
@@ -170,8 +153,8 @@ void HAL_RTCEx_AlarmBEventCallback(RTC_HandleTypeDef *hrtc) {
 	// toggles pin on end of timer. clears alarm
 	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_1);
 	HAL_RTC_DeactivateAlarm(hrtc, RTC_ALARM_B);
-	timerRunning = 0;
-	updateTimer = 1;
+	isTimerRunning = 0;
+	updateFace.timer = 1;
 	/*
 	 * should run motor thing and update display to signal user
 	 * also clear alarm
@@ -229,10 +212,24 @@ void getDateTime(struct dates *d, struct times *t) {
 }
 // ---- end of clock get functions ----
 
+// converters
+uint32_t timeToSeconds(struct times *t) {
+	return t->sec + t->min*60 + t->hr*3600;
+}
+
+void secondsToTime(struct times *t, uint32_t seconds) {
+	t->hr = seconds / 3600;
+	seconds %= 3600;
+	t->min = seconds / 60;
+	seconds %= 60;
+	t->sec = seconds;
+}
+
 // ---- clock print functions ----
 // print functions for RTC
 // assumes we're using SPI display and file TFT_display.c
 // pulls date and time structs automatically to only print current time in RTC
+// not really needed anymore, almost pretty much a test function
 void printTime() {
 	char str[40];		// problems when using only char*
 
@@ -272,119 +269,3 @@ void printDateTime() {
 	printDate();
 }
 // ---- end of clock print functions ----
-
-// tests clock functions. assumes SPI display using TFT_display.c is available
-void clockTest() {
-	struct times t = {1, 1, 1};
-	struct dates d = {19, 11, 13};
-
-	HAL_Delay(1000);
-	printDateTime();
-	HAL_Delay(2000);
-	printDateTime();
-
-	HAL_Delay(1000);
-	setTime(&t);
-	printDateTime();
-	HAL_Delay(1000);
-	printDateTime();
-
-	HAL_Delay(1000);
-	setDateTime(&d, &t);
-	printDateTime();
-	HAL_Delay(1000);
-	printDateTime();
-}
-
-void alarmTest() {
-	struct dates d;
-	struct times t;
-
-	getDateTime(&d, &t);
-
-//	if (t.sec > 60) t.min += 1;
-//	t.sec = (t.sec+10) % 60;
-//	struct alarmTimes a = {t.hr, t.min, t.sec, d.weekday};
-//	struct alarmTimes a = {0, 1, 0, RTC_WEEKDAY_MONDAY};
-	struct alarmTimes a = {0, 0, 30, RTC_WEEKDAY_MONDAY};
-
-	HAL_Delay(1000);
-
-	char str[40];
-	clearScreen(ST77XX_WHITE, &hspi1);
-	setTextColor(ST77XX_BLACK);
-	sprintf(str, "%2u:%2u:%2u %2u", t.hr, t.min, t.sec, d.weekday);
-	drawTextAt(0, 0, str, &hspi1);
-	sprintf(str, "%2u:%2u:%2u %2u", a.hr, a.min, a.sec, a.weekday);
-	drawTextAt(0, 10, str, &hspi1);
-
-	setAlarm(&a);
-
-	HAL_Delay(30000);
-	getDateTime(&d, &t);
-	sprintf(str, "%2u:%2u:%2u %2u", t.hr, t.min, t.sec, d.weekday);
-	drawTextAt(0, 0, str, &hspi1);
-
-	a.sec += 20;
-	clearScreen(ST77XX_WHITE, &hspi1);
-	setTextColor(ST77XX_BLACK);
-	sprintf(str, "%2u:%2u:%2u %2u", t.hr, t.min, t.sec, d.weekday);
-	drawTextAt(0, 0, str, &hspi1);
-	sprintf(str, "%2u:%2u:%2u %2u", a.hr, a.min, a.sec, a.weekday);
-	drawTextAt(0, 10, str, &hspi1);
-
-	setAlarm(&a);
-
-	HAL_Delay(30000);
-	getDateTime(&d, &t);
-	sprintf(str, "%2u:%2u:%2u %2u", t.hr, t.min, t.sec, d.weekday);
-	drawTextAt(0, 0, str, &hspi1);
-}
-
-// set a timer for a short time (10s) and watch it go
-void timerTest() {
-	struct times timerTime = {0, 0, 20};
-
-	setTimer(&timerTime);
-
-	// print current time and timer value set
-	struct dates currentDate;
-	struct times currentTime;
-	getDateTime(&currentDate, &currentTime);
-
-	char str[40];
-	sprintf(str, "current: %2u:%2u:%2u", currentTime.hr, currentTime.min, currentTime.sec);
-	drawTextAt(0, 0, str, &hspi1);
-	sprintf(str, "       : %2u:%2u:%2u", currentDate.month, currentDate.date, currentDate.yr);
-	drawTextAt(0, 10, str, &hspi1);
-	sprintf(str, "timer: %2u:%2u:%2u", timerTime.hr, timerTime.min, timerTime.sec);
-	drawTextAt(0, 20, str, &hspi1);
-
-	HAL_Delay(20000);
-	getDateTime(&currentDate, &currentTime);
-	sprintf(str, "current: %2u:%2u:%2u", currentTime.hr, currentTime.min, currentTime.sec);
-	drawTextAt(0, 0, str, &hspi1);
-	sprintf(str, "       : %2u:%2u:%2u", currentDate.month, currentDate.date, currentDate.yr);
-	drawTextAt(0, 10, str, &hspi1);
-
-
-	timerTime.sec+=20;
-	setTimer(&timerTime);
-
-	// print current time and timer value set
-	getDateTime(&currentDate, &currentTime);
-
-	sprintf(str, "current: %2u:%2u:%2u", currentTime.hr, currentTime.min, currentTime.sec);
-	drawTextAt(0, 0, str, &hspi1);
-	sprintf(str, "       : %2u:%2u:%2u", currentDate.month, currentDate.date, currentDate.yr);
-	drawTextAt(0, 10, str, &hspi1);
-	sprintf(str, "timer: %2u:%2u:%2u", timerTime.hr, timerTime.min, timerTime.sec);
-	drawTextAt(0, 20, str, &hspi1);
-
-	HAL_Delay(40000);
-	getDateTime(&currentDate, &currentTime);
-	sprintf(str, "current: %2u:%2u:%2u", currentTime.hr, currentTime.min, currentTime.sec);
-	drawTextAt(0, 0, str, &hspi1);
-	sprintf(str, "       : %2u:%2u:%2u", currentDate.month, currentDate.date, currentDate.yr);
-	drawTextAt(0, 10, str, &hspi1);
-}
