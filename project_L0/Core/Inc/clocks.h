@@ -48,28 +48,29 @@ struct alarmTimes {
 // ---- end of structs ----
 
 // ---- setting rtc time ----
-//void setTime(struct times *t, RTC_HandleTypeDef *hrtc);
-//void setDate(struct dates *d, RTC_HandleTypeDef *hrtc);
-//void setDateTime(struct dates *d, struct times *t, RTC_HandleTypeDef *hrtc);
-void setTime(struct times *t);
-void setDate(struct dates *d);
-void setDateTime(struct dates *d, struct times *t);
+void setTime(struct times *t, RTC_HandleTypeDef *hrtc);
+void setDate(struct dates *d, RTC_HandleTypeDef *hrtc);
+void setDateTime(struct dates *d, struct times *t, RTC_HandleTypeDef *hrtc);
+//void setTime(struct times *t);
+//void setDate(struct dates *d);
+//void setDateTime(struct dates *d, struct times *t);
 // ---- end of rtc setters ----
 
 // ---- alarm setters ----
-//void setAlarm(struct alarmTimes *a, RTC_HandleTypeDef *hrtc);
+void setAlarm(struct alarmTimes *a, RTC_HandleTypeDef *hrtc);
+void setClockAlarm(RTC_HandleTypeDef *hrtc);
 //void setTimer(struct times *t_in, RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *htim);
-void setAlarm(struct alarmTimes *a);
-void setTimer(struct times *t_in);
+//void setAlarm(struct alarmTimes *a);
+//void setTimer(struct times *t_in);
 // ---- end of alarm setters ----
 
 // ---- getting rtc times ----
-//void getTime(struct times *t, RTC_HandleTypeDef *hrtc);
-//void getDate(struct dates *d, RTC_HandleTypeDef *hrtc);
-//void getDateTime(struct dates *d, struct times *t, RTC_HandleTypeDef *hrtc);
-void getTime(struct times *t);
-void getDate(struct dates *d);
-void getDateTime(struct dates *d, struct times *t);
+void getTime(struct times *t, RTC_HandleTypeDef *hrtc);
+void getDate(struct dates *d, RTC_HandleTypeDef *hrtc);
+void getDateTime(struct dates *d, struct times *t, RTC_HandleTypeDef *hrtc);
+//void getTime(struct times *t);
+//void getDate(struct dates *d);
+//void getDateTime(struct dates *d, struct times *t);
 // ---- end of getters ----
 
 // converters
@@ -77,12 +78,12 @@ uint32_t timeToSeconds(struct times *t);
 void secondsToTime(struct times *t, uint32_t seconds);
 
 // ---- printing stuff ----
-//void printTime(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
-//void printDate(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
-//void printDateTime(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
-void printTime();
-void printDate();
-void printDateTime();
+void printTime(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
+void printDate(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
+void printDateTime(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
+//void printTime();
+//void printDate();
+//void printDateTime();
 // ---- end of prints ----
 
 // ---- tests ----

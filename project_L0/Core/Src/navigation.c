@@ -47,9 +47,13 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	if (GPIO_Pin == BUTTON2) buttons.is2Pressed = 1;
 	if (GPIO_Pin == BUTTON3) buttons.is3Pressed = 1;
 	if (GPIO_Pin == BUTTON4) buttons.is4Pressed = 1;
+
+	HAL_NVIC_DisableIRQ(EXTI2_3_IRQn);
+	HAL_NVIC_DisableIRQ(EXTI4_15_IRQn);
+	HAL_TIM_Base_Start_IT(&htim6);
 }
 
-void updateWithButtons() {
+void updateWithButtons(RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *timerStopwatchTim, TIM_HandleTypeDef *motorBacklightTim) {
 	/* program flow:
 	 *   check current face used
 	 *   check current variables and check button pressed
@@ -70,10 +74,10 @@ void updateWithButtons() {
 		}
 	}
 
-	if (faceOnDisplay == faceClock) updateClockState();
-	else if (faceOnDisplay == faceTimer) updateTimerState();
-	else if (faceOnDisplay == faceAlarm) updateAlarmState();
-	else if (faceOnDisplay == faceStopwatch) updateStopwatchState();
+	if (faceOnDisplay == faceClock) updateClockState(hrtc);
+	else if (faceOnDisplay == faceTimer) updateTimerState(timerStopwatchTim);
+	else if (faceOnDisplay == faceAlarm) updateAlarmState(hrtc);
+	else if (faceOnDisplay == faceStopwatch) updateStopwatchState(timerStopwatchTim);
 }
 
 /*
@@ -93,7 +97,7 @@ void updateWithButtons() {
  * notes:
  *   make date setting more robust (invalidate date entries when that day of month doesn't exist or just change modulo)
  */
-void updateClockState() {
+void updateClockState(RTC_HandleTypeDef *hrtc) {
 	// change fields up, do nothing if not setting clock
 	if (buttons.is2Pressed && clockVars.isBeingSet) {
 		buttons.is2Pressed = 0;
@@ -140,13 +144,13 @@ void updateClockState() {
 			clockVars.isBeingSet = 1;
 
 			// should pull current time when first entering setting mode
-			if (clockVars.fieldBeingSet == 1) getDateTime(clockVars.dateToSet, clockVars.timeToSet);
+			if (clockVars.fieldBeingSet == 1) getDateTime(clockVars.dateToSet, clockVars.timeToSet, hrtc);
 		}
 		else {
 			clockVars.isBeingSet = 0;
 
 			// second set to 0, weekday ignored
-			setDateTime(clockVars.dateToSet, clockVars.timeToSet);
+			setDateTime(clockVars.dateToSet, clockVars.timeToSet, hrtc);
 		}
 	}
 	// checks on clock set for other buttons here (what did this note mean??)
@@ -183,7 +187,7 @@ void updateClockState() {
  *   might need to change to using only hardware timer for this instead of rtc because of problems listed above
  *   insert a few more functions into this (those that need to use the hardware)
  */
-void updateTimerState() {
+void updateTimerState(TIM_HandleTypeDef *timerStopwatchTim) {
 	if (timerVars.isBeingSet) {
 		if (buttons.is2Pressed) {
 			buttons.is2Pressed = 0;
@@ -226,12 +230,14 @@ void updateTimerState() {
 			updateFace.timer = 1;
 			// start timer
 			isTimerRunning = 1;
+			isTimerPaused = 0;
 		}
 		if (buttons.is3Pressed && isTimerRunning) {
 			buttons.is3Pressed = 0;
 			updateFace.timer = 1;
 			// pause timer
 			isTimerRunning = 0;
+			isTimerPaused = 1;
 		}
 		if (buttons.is4Pressed) {
 			buttons.is4Pressed = 0;
@@ -240,6 +246,7 @@ void updateTimerState() {
 			// stop and clear timer
 			timerVars.isSet = 0;
 			isTimerRunning = 0;
+			isTimerPaused = 0;
 		}
 	}
 	// not done? might be done (other buttons start/stop timer)
@@ -294,7 +301,7 @@ void updateTimerState() {
  *   need to make changes to ui to make this happen
  *   currently just does old behavior (only 1 alarm)
  */
-void updateAlarmState() {
+void updateAlarmState(RTC_HandleTypeDef *hrtc) {
 	if (buttons.is2Pressed && alarmVars.isBeingSet) {
 		buttons.is2Pressed = 0;
 		updateFace.alarm = 1;
@@ -345,7 +352,7 @@ void updateAlarmState() {
 				if (alarmVars.fieldBeingSet == 1) {
 					struct dates *d;
 					struct times *t;
-					getDateTime(d, t);
+					getDateTime(d, t, hrtc);
 					alarmVars.alarmToSet->sec = t->sec;
 					alarmVars.alarmToSet->min = t->min;
 					alarmVars.alarmToSet->hr = t->hr;
@@ -355,13 +362,13 @@ void updateAlarmState() {
 			else {
 				alarmVars.isBeingSet = 0;
 				isAlarmRunning = 1;
-				setAlarm(alarmVars.alarmToSet);
+				setAlarm(alarmVars.alarmToSet, hrtc);
 			}
 		}
 		else {
 			// stop and clear alarm hw
 			isAlarmRunning = 0;
-			HAL_RTC_DeactivateAlarm(&hrtc, RTC_ALARM_A);
+			HAL_RTC_DeactivateAlarm(hrtc, RTC_ALARM_A);
 		}
 	}
 }
@@ -389,18 +396,20 @@ void updateAlarmState() {
  *     to take regular measurements of the battery
  *   would just have to modify functions in timers.c
  */
-void updateStopwatchState() {
+void updateStopwatchState(TIM_HandleTypeDef *timerStopwatchTim) {
 	if (buttons.is2Pressed) {	// start/stop
 		buttons.is2Pressed = 0;
 		updateFace.stopwatch = 1;
 
 		if (isStopwatchRunning == 0) {
 			isStopwatchRunning = 1;
-			runStopwatch();
+			isStopwatchPaused = 0;
+			runStopwatch(timerStopwatchTim);
 		}
 		else {
 			isStopwatchRunning = 0;
-			pauseStopwatch();
+			isStopwatchPaused = 1;
+			pauseStopwatch(timerStopwatchTim);
 		}
 	}
 	if (buttons.is3Pressed) {
@@ -409,7 +418,7 @@ void updateStopwatchState() {
 
 		// pull data and set lap
 		stopwatchVars.lapPrev = stopwatchVars.lapCurrent;
-		stopwatchVars.lapCurrent = stopwatchCNT;		// did this variable get changed to something else?
+		stopwatchVars.lapCurrent = stopwatchCounter;		// did this variable get changed to something else?
 	}
 	if (buttons.is4Pressed) {
 		buttons.is4Pressed = 0;
@@ -417,14 +426,15 @@ void updateStopwatchState() {
 
 		// clear stopwatch hw
 		isStopwatchRunning = 0;
-		clearStopwatch();
+		isStopwatchPaused = 0;
+		clearStopwatch(timerStopwatchTim);
 	}
 }
 
 // update screen based on global variables
 // going in main, so it's executing in a while loop
 //   software interrupt on flag so that this doesn't run all the time?
-void updateDisplay(SPI_HandleTypeDef *hspi) {
+void updateDisplay(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 	// change faces
 	if (isFaceBeingChanged == 1) {
 		isFaceBeingChanged = 0;
@@ -457,7 +467,7 @@ void updateDisplay(SPI_HandleTypeDef *hspi) {
 	if (faceOnDisplay == faceClock) {
 		if (updateFace.clock == 1) {
 			updateFace.clock = 0;
-			updateClockDisplay(hspi);
+			updateClockDisplay(hrtc, hspi);
 		}
 	}
 	// update timer face
@@ -483,12 +493,12 @@ void updateDisplay(SPI_HandleTypeDef *hspi) {
 	}
 }
 
-void updateClockDisplay(SPI_HandleTypeDef *hspi) {
+void updateClockDisplay(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 	struct dates *currentDate;
 	struct times *currentTime;
 
 	if (clockVars.isBeingSet == 0) {
-		getDateTime(currentDate, currentTime);
+		getDateTime(currentDate, currentTime, hrtc);
 		drawClock(currentDate, currentTime, hspi);
 
 		setTextSize(1);
@@ -550,6 +560,9 @@ void updateTimerDisplay(SPI_HandleTypeDef *hspi) {
 			setTextSize(1);
 			if (isTimerRunning == 0 && watchTimerSeconds != 0) {
 				drawCenteredText(WIDTH/2, 84, "timer set!", hspi);
+			}
+			else if (isTimerPaused == 1) {
+				drawCenteredText(WIDTH/2, 84, "timer paused", hspi);
 			}
 			else {
 				clearTextLine(84, hspi);
@@ -629,8 +642,8 @@ void updateAlarmDisplay(SPI_HandleTypeDef *hspi) {
 }
 
 void updateStopwatchDisplay(SPI_HandleTypeDef *hspi) {
-	drawStopwatch(stopwatchCNT, hspi);
-	drawStopwatchLap(stopwatchCNT, hspi);
+	drawStopwatch(stopwatchCounter, hspi);
+	drawStopwatchLap(stopwatchVars.lapCurrent, hspi);
 
 	setTextSize(1);
 	clearTextLine(HEIGHT-28, hspi);

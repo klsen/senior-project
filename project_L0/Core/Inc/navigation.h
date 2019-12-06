@@ -82,6 +82,8 @@ volatile struct faceFlags updateFace;
 volatile uint8_t isTimerRunning;
 volatile uint8_t isAlarmRunning;
 volatile uint8_t isStopwatchRunning;
+volatile uint8_t isTimerPaused;			// new flags for hw timer. update nav accordingly
+volatile uint8_t isStopwatchPaused;
 
 // enum for different faces used (clock, timer, alarm, stopwatch)
 // probably not needed
@@ -97,17 +99,17 @@ const char* monthNames[13];
 
 // might need hw timer and rtc handles but not if they're kept global.
 // refactor clock and timer back to use non-global
-void updateWithButtons();
-void updateDisplay(SPI_HandleTypeDef *hspi);
+void updateWithButtons(RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *timerStopwatchTim, TIM_HandleTypeDef *motorBacklightTim);
+void updateDisplay(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
 
 // getting really sick of looking at 1 function with 250 lines.
-void updateClockState();
-void updateTimerState();
-void updateAlarmState();
-void updateStopwatchState();
+void updateClockState(RTC_HandleTypeDef *hrtc);
+void updateTimerState(TIM_HandleTypeDef *timerStopwatchTim);
+void updateAlarmState(RTC_HandleTypeDef *hrtc);
+void updateStopwatchState(TIM_HandleTypeDef *timerStopwatchTim);
 
 // getting really sick of looking at 1 function with 150 lines
-void updateClockDisplay(SPI_HandleTypeDef *hspi);
+void updateClockDisplay(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
 void updateTimerDisplay(SPI_HandleTypeDef *hspi);
 void updateAlarmDisplay(SPI_HandleTypeDef *hspi);
 void updateStopwatchDisplay(SPI_HandleTypeDef *hspi);

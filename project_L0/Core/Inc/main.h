@@ -54,6 +54,8 @@ extern "C" {
 
 /* USER CODE END EM */
 
+void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
+
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
 
@@ -63,11 +65,12 @@ void Error_Handler(void);
 
 /* Private defines -----------------------------------------------------------*/
 /* USER CODE BEGIN Private defines */
-SPI_HandleTypeDef hspi1;
-LPTIM_HandleTypeDef hlptim1;
-RTC_HandleTypeDef hrtc;
-TIM_HandleTypeDef htim21;
-TIM_HandleTypeDef htim22;
+//SPI_HandleTypeDef hspi1;
+//LPTIM_HandleTypeDef hlptim1;
+//RTC_HandleTypeDef hrtc;
+//TIM_HandleTypeDef htim21;
+//TIM_HandleTypeDef htim22;
+TIM_HandleTypeDef htim6;
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
