@@ -1,0 +1,6 @@
+Removed Pin From Net: NetName=NSS Pin=U2-54
+Removed Pin From Net: NetName=D/C Pin=U2-58
+Removed Pin From Net: NetName=LCD_Reset Pin=U2-59
+Added Pin To Net: NetName=NSS Pin=U2-58
+Added Pin To Net: NetName=D/C Pin=U2-59
+Added Pin To Net: NetName=LCD_Reset Pin=U2-61
