@@ -772,6 +772,8 @@ void drawStopwatchLap(uint32_t seconds, SPI_HandleTypeDef *hspi) {
 
 // calculator for number of days in a month given a month and accounting for leap years
 uint8_t maxDaysInMonth(uint8_t month, uint16_t year) {
+	if (month == 0 || month > 12) return 0;		// bounds checking
+
 	if (month == RTC_MONTH_JANUARY ||
 		month == RTC_MONTH_MARCH   ||
 		month == RTC_MONTH_MAY     ||
