@@ -41,6 +41,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 		HAL_NVIC_ClearPendingIRQ(EXTI4_15_IRQn);
 		HAL_NVIC_EnableIRQ(EXTI2_3_IRQn);
 		HAL_NVIC_EnableIRQ(EXTI4_15_IRQn);
+//		buttonPressed = 0;
 	}
 	// motor's timer
 	else if (htim->Instance == TIM2) {
@@ -108,14 +109,14 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
 //}
 
 void runTimer(TIM_HandleTypeDef *htim) {
-	TIM_OC_InitTypeDef *sConfig;
-	sConfig->OCMode = TIM_OCMODE_TIMING;
-	sConfig->OCPolarity = TIM_OCPOLARITY_HIGH;
-	sConfig->OCFastMode = TIM_OCFAST_DISABLE;
+	TIM_OC_InitTypeDef sConfig = {0};
+	sConfig.OCMode = TIM_OCMODE_TIMING;
+	sConfig.OCPolarity = TIM_OCPOLARITY_HIGH;
+	sConfig.OCFastMode = TIM_OCFAST_DISABLE;
 
 	// calculating pulse/OC trigger
 	if (isTimerPaused == 0) {		// 1st run, hasn't been paused yet
-		sConfig->Pulse = htim->Instance->CNT;
+		sConfig.Pulse = htim->Instance->CNT;
 	}
 	else {		// unpausing
 		uint32_t temp = htim->Instance->CNT;
@@ -123,11 +124,11 @@ void runTimer(TIM_HandleTypeDef *htim) {
 		// count needed to get from pause marker to start marker - basically how many steps it would've taken to get to next cycle
 		// shifted to account for negative behavior
 		uint32_t diff = ((int)(timerStartMarker-timerPauseMarker)+0x8000) % 0x8000;
-		sConfig->Pulse = (temp+diff) % 0x8000;
-		timerStartMarker = sConfig->Pulse;		// set new start marker
+		sConfig.Pulse = (temp+diff) % 0x8000;
+		timerStartMarker = sConfig.Pulse;		// set new start marker
 	}
 
-	HAL_TIM_PWM_ConfigChannel(htim, sConfig, HAL_TIM_ACTIVE_CHANNEL_1);
+	HAL_TIM_PWM_ConfigChannel(htim, &sConfig, HAL_TIM_ACTIVE_CHANNEL_1);
 	HAL_TIM_OC_Start_IT(htim, HAL_TIM_ACTIVE_CHANNEL_1);
 }
 
@@ -150,14 +151,14 @@ void stopTimer(TIM_HandleTypeDef *htim) {
 void runStopwatch(TIM_HandleTypeDef *htim) {
 //	htim->Instance->CNT = tempStopwatchCounter;
 //	HAL_TIM_Base_Start_IT(htim);
-	TIM_OC_InitTypeDef *sConfig;
-	sConfig->OCMode = TIM_OCMODE_TIMING;
-	sConfig->OCPolarity = TIM_OCPOLARITY_HIGH;
-	sConfig->OCFastMode = TIM_OCFAST_DISABLE;
+	TIM_OC_InitTypeDef sConfig = {0};
+	sConfig.OCMode = TIM_OCMODE_TIMING;
+	sConfig.OCPolarity = TIM_OCPOLARITY_HIGH;
+	sConfig.OCFastMode = TIM_OCFAST_DISABLE;
 
 	// calculating pulse/OC trigger
 	if (isStopwatchPaused == 0) {		// 1st run, hasn't been paused yet
-		sConfig->Pulse = htim->Instance->CNT;
+		sConfig.Pulse = htim->Instance->CNT;
 	}
 	else {		// unpausing
 		uint32_t temp = htim->Instance->CNT;
@@ -165,11 +166,11 @@ void runStopwatch(TIM_HandleTypeDef *htim) {
 		// count needed to get from pause marker to start marker - basically how many steps it would've taken to get to next cycle
 		// shifted to account for negative behavior
 		uint32_t diff = ((int)(stopwatchStartMarker-stopwatchPauseMarker)+0x8000) % 0x8000;
-		sConfig->Pulse = (temp+diff) % 0x8000;
-		timerStartMarker = sConfig->Pulse;		// set new start marker
+		sConfig.Pulse = (temp+diff) % 0x8000;
+		timerStartMarker = sConfig.Pulse;		// set new start marker
 	}
 
-	HAL_TIM_PWM_ConfigChannel(htim, sConfig, HAL_TIM_ACTIVE_CHANNEL_2);
+	HAL_TIM_PWM_ConfigChannel(htim, &sConfig, HAL_TIM_ACTIVE_CHANNEL_2);
 	HAL_TIM_OC_Start_IT(htim, HAL_TIM_ACTIVE_CHANNEL_2);
 }
 
@@ -216,13 +217,13 @@ void stopMotor(TIM_HandleTypeDef *htim) {
 
 // uses basic HSI timer TIM7
 void runDisplayBacklight(TIM_HandleTypeDef *htim) {
-	TIM_OC_InitTypeDef *sConfig;
-	sConfig->OCMode = TIM_OCMODE_PWM1;
-	sConfig->Pulse = htim->Instance->ARR-1;
-	sConfig->OCPolarity = TIM_OCPOLARITY_HIGH;
-	sConfig->OCFastMode = TIM_OCFAST_DISABLE;
+	TIM_OC_InitTypeDef sConfig = {0};
+	sConfig.OCMode = TIM_OCMODE_PWM1;
+	sConfig.Pulse = htim->Instance->ARR-1;
+	sConfig.OCPolarity = TIM_OCPOLARITY_HIGH;
+	sConfig.OCFastMode = TIM_OCFAST_DISABLE;
 
-	HAL_TIM_PWM_ConfigChannel(htim, sConfig, HAL_TIM_ACTIVE_CHANNEL_1);
+	HAL_TIM_PWM_ConfigChannel(htim, &sConfig, HAL_TIM_ACTIVE_CHANNEL_1);
 	HAL_TIM_PWM_Start_IT(htim, HAL_TIM_ACTIVE_CHANNEL_1);
 }
 

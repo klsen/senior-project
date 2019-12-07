@@ -133,7 +133,7 @@ int main(void)
   	/* initialization for display */
 	HAL_Delay(2000);
 	TFT_startup(&hspi1);
-	clearScreen(ST77XX_BLACK, &hspi1);
+	clearScreen(ST77XX_RED, &hspi1);
 
 	/* start updating display for ui */
 	initFace();
@@ -169,13 +169,13 @@ int main(void)
 //	  textTest(bg, &hspi1);
 
 	  // ui/nav tests or full run. uncomment when ready
-	  updateWithButtons(&hrtc, &htim21, &htim2);
+	  updateWithButtons(&hrtc, &htim21, &htim2, &htim6);
 	  updateDisplay(&hrtc, &hspi1);
 
 	  // wait for interrupt instruction. CPU goes to sleep mode (listed as "sleep mode" by ST as one of their low-power modes)
 	  // does it work on it's own, or do registers have to be configured first?
 	  // put in bottom, since screen updates should run once at the start
-	  __WFI();
+//	  __WFI();
   }
   /* USER CODE END 3 */
 }
@@ -475,10 +475,7 @@ static void MX_TIM2_Init(void)
   {
     Error_Handler();
   }
-  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_ETRMODE2;
-  sClockSourceConfig.ClockPolarity = TIM_CLOCKPOLARITY_NONINVERTED;
-  sClockSourceConfig.ClockPrescaler = TIM_CLOCKPRESCALER_DIV1;
-  sClockSourceConfig.ClockFilter = 0;
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
   if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
   {
     Error_Handler();
@@ -494,10 +491,6 @@ static void MX_TIM2_Init(void)
   sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
   if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_TIMEx_RemapConfig(&htim2, TIM2_ETR_LSE) != HAL_OK)
   {
     Error_Handler();
   }
@@ -539,9 +532,9 @@ static void MX_TIM6_Init(void)
 
   /* USER CODE END TIM6_Init 1 */
   htim6.Instance = TIM6;
-  htim6.Init.Prescaler = 0x8000;
+  htim6.Init.Prescaler = 0x100;
   htim6.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim6.Init.Period = 30720;
+  htim6.Init.Period = 32768;
   htim6.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim6) != HAL_OK)
   {

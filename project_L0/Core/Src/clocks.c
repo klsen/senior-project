@@ -87,28 +87,28 @@ void setAlarm(struct alarmTimes *a, RTC_HandleTypeDef *hrtc) {
 // for triggering display updates.
 // uses rtc weekday. should have weekday calculator integrated before using
 void setClockAlarm(RTC_HandleTypeDef *hrtc) {
-	RTC_AlarmTypeDef salarm = {0};
+	RTC_AlarmTypeDef salarm = {0};			// malloc if using pointers
 	RTC_TimeTypeDef salarmtime = {0};
 
-	struct dates *currentDate;
-	struct times *currentTime;
+	struct dates currentDate = {0};
+	struct times currentTime = {0};
 
-	getDateTime(currentDate, currentTime, hrtc);
+	getDateTime(&currentDate, &currentTime, hrtc);
 
-	struct alarmTimes *a;
+	struct alarmTimes a = {0};
 	uint8_t s,m,h,w;
-	s = currentTime->sec + 1;
-	m = currentTime->min + s/60;
-	h = currentTime->hr + m/60;
-	w = currentDate->weekday + h/24;
-	a->sec = s % 60;
-	a->min = m % 60;
-	a->hr = h % 24;
-	a->weekday = (w-1) % 7 + 1;
+	s = currentTime.sec + 1;
+	m = currentTime.min + s/60;
+	h = currentTime.hr + m/60;
+	w = currentDate.weekday + h/24;
+	a.sec = s % 60;
+	a.min = m % 60;
+	a.hr = h % 24;
+	a.weekday = (w-1) % 7 + 1;
 
-	salarmtime.Hours = a->hr;
-	salarmtime.Minutes = a->min;
-	salarmtime.Seconds = a->sec;
+	salarmtime.Hours = a.hr;
+	salarmtime.Minutes = a.min;
+	salarmtime.Seconds = a.sec;
 	salarmtime.TimeFormat = RTC_HOURFORMAT_24;
 	salarmtime.SubSeconds = 0;
 	salarmtime.SecondFraction = 0;
@@ -119,7 +119,7 @@ void setClockAlarm(RTC_HandleTypeDef *hrtc) {
 	salarm.AlarmMask = RTC_ALARMMASK_NONE;
 	salarm.AlarmSubSecondMask = RTC_ALARMSUBSECONDMASK_ALL;
 	salarm.AlarmDateWeekDaySel = RTC_ALARMDATEWEEKDAYSEL_WEEKDAY;
-	salarm.AlarmDateWeekDay = a->weekday;
+	salarm.AlarmDateWeekDay = a.weekday;
 	salarm.Alarm = RTC_ALARM_B;			// change if using different alarm
 
 	// do nothing until done

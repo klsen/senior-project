@@ -16,6 +16,7 @@
 #include "stm32l0xx_hal.h"
 #include "font.h"
 #include <string.h>			// just for using strlen() :I
+#include <stdlib.h>
 
 // ---- Start of library constants ----
 // pulled from Adafruit ST77XX driver library.
@@ -110,7 +111,7 @@
 
 // ---- Function Macros ----
 #define swap_ints(x,y) (x)=(x)+(y); (y)=(x)-(y); (x)=(x)-(y)
-#define abs(x) ((x) > 0 ? (x) : -(x))
+//#define abs(x) ((x) > 0 ? (x) : -(x))
 // ---- End of function macros ----
 
 // ---- Lower level functions ----

@@ -410,6 +410,7 @@ void drawText(const char *str, SPI_HandleTypeDef *hspi) {
 	// add text wrap
 	for (int i = 0; str[i] != '\0'; i++) {
 		drawChar(str[i], hspi);
+		setCursor(cursorX+textSize*6, cursorY);
 	}
 }
 

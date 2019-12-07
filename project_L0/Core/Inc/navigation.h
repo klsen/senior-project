@@ -12,6 +12,7 @@
 #include "clocks.h"
 #include "timers.h"
 #include "main.h"
+#include <stdlib.h>		// for malloc
 
 // uses gpio external interrupts. interrupt handler/callback function
 // ignores ports, so only pin number is needed.
@@ -85,6 +86,8 @@ volatile uint8_t isStopwatchRunning;
 volatile uint8_t isTimerPaused;			// new flags for hw timer. update nav accordingly
 volatile uint8_t isStopwatchPaused;
 
+volatile uint8_t buttonPressed;
+
 // enum for different faces used (clock, timer, alarm, stopwatch)
 // probably not needed
 enum displayFaces {
@@ -99,7 +102,7 @@ const char* monthNames[13];
 
 // might need hw timer and rtc handles but not if they're kept global.
 // refactor clock and timer back to use non-global
-void updateWithButtons(RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *timerStopwatchTim, TIM_HandleTypeDef *motorBacklightTim);
+void updateWithButtons(RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *timerStopwatchTim, TIM_HandleTypeDef *motorBacklightTim, TIM_HandleTypeDef *buttonTim);
 void updateDisplay(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
 
 // getting really sick of looking at 1 function with 250 lines.

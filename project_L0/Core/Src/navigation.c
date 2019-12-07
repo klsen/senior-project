@@ -7,12 +7,12 @@
 
 // use static for timer/alarm/stopwatch variables, changeface, and face used.
 // needed only in updatedisplay/buttons, but each func shares these variables
-static struct clockVariables clockVars;
-static struct timerVariables timerVars;
-static struct alarmVariables alarmVars;
-static struct stopwatchVariables stopwatchVars;
-static uint8_t isFaceBeingChanged;
-static uint8_t faceOnDisplay;
+static struct clockVariables clockVars = {0};
+static struct timerVariables timerVars = {0};
+static struct alarmVariables alarmVars = {0};
+static struct stopwatchVariables stopwatchVars = {0};
+static uint8_t isFaceBeingChanged = 1;
+static uint8_t faceOnDisplay = faceClock;
 
 const char* weekdayNames[8] = {
 	"",			// padding so i can avoid dealing with out-of-bounds access
@@ -48,16 +48,34 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	if (GPIO_Pin == BUTTON3) buttons.is3Pressed = 1;
 	if (GPIO_Pin == BUTTON4) buttons.is4Pressed = 1;
 
+	buttonPressed = 1;
 	HAL_NVIC_DisableIRQ(EXTI2_3_IRQn);
 	HAL_NVIC_DisableIRQ(EXTI4_15_IRQn);
+	HAL_NVIC_ClearPendingIRQ(EXTI2_3_IRQn);
+	HAL_NVIC_ClearPendingIRQ(EXTI4_15_IRQn);
 	HAL_TIM_Base_Start_IT(&htim6);
 }
 
-void updateWithButtons(RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *timerStopwatchTim, TIM_HandleTypeDef *motorBacklightTim) {
+void updateWithButtons(RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *timerStopwatchTim, TIM_HandleTypeDef *motorBacklightTim, TIM_HandleTypeDef *buttonTim) {
 	/* program flow:
 	 *   check current face used
 	 *   check current variables and check button pressed
 	 */
+//	if (buttonPressed == 1) {
+//		HAL_NVIC_ClearPendingIRQ(EXTI2_3_IRQn);
+//		HAL_NVIC_ClearPendingIRQ(EXTI4_15_IRQn);
+//		HAL_NVIC_DisableIRQ(EXTI2_3_IRQn);
+//		HAL_NVIC_DisableIRQ(EXTI4_15_IRQn);
+//		HAL_TIM_Base_Start_IT(buttonTim);
+//	}
+//	else {
+//		HAL_TIM_Base_Stop_IT(buttonTim);
+//		HAL_NVIC_ClearPendingIRQ(EXTI2_3_IRQn);
+//		HAL_NVIC_ClearPendingIRQ(EXTI4_15_IRQn);
+//		HAL_NVIC_EnableIRQ(EXTI2_3_IRQn);
+//		HAL_NVIC_EnableIRQ(EXTI4_15_IRQn);
+//	}
+
 	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_3);		// should run for any button
 
 	// button 1 changes the face on screen.
@@ -144,13 +162,17 @@ void updateClockState(RTC_HandleTypeDef *hrtc) {
 			clockVars.isBeingSet = 1;
 
 			// should pull current time when first entering setting mode
-			if (clockVars.fieldBeingSet == 1) getDateTime(clockVars.dateToSet, clockVars.timeToSet, hrtc);
+			if (clockVars.fieldBeingSet == 1) {
+				getDateTime(clockVars.dateToSet, clockVars.timeToSet, hrtc);
+				HAL_RTC_DeactivateAlarm(hrtc, RTC_ALARM_B);
+			}
 		}
 		else {
 			clockVars.isBeingSet = 0;
 
 			// second set to 0, weekday ignored
 			setDateTime(clockVars.dateToSet, clockVars.timeToSet, hrtc);
+			setClockAlarm(hrtc);
 		}
 	}
 	// checks on clock set for other buttons here (what did this note mean??)
@@ -350,13 +372,13 @@ void updateAlarmState(RTC_HandleTypeDef *hrtc) {
 			if (alarmVars.fieldBeingSet != 0) {
 				alarmVars.isBeingSet = 1;
 				if (alarmVars.fieldBeingSet == 1) {
-					struct dates *d;
-					struct times *t;
-					getDateTime(d, t, hrtc);
-					alarmVars.alarmToSet->sec = t->sec;
-					alarmVars.alarmToSet->min = t->min;
-					alarmVars.alarmToSet->hr = t->hr;
-					alarmVars.alarmToSet->weekday = d->weekday;
+					struct dates d = {0};
+					struct times t = {0};
+					getDateTime(&d, &t, hrtc);
+					alarmVars.alarmToSet->sec = t.sec;
+					alarmVars.alarmToSet->min = t.min;
+					alarmVars.alarmToSet->hr = t.hr;
+					alarmVars.alarmToSet->weekday = d.weekday;
 				}
 			}
 			else {
@@ -467,6 +489,7 @@ void updateDisplay(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 	if (faceOnDisplay == faceClock) {
 		if (updateFace.clock == 1) {
 			updateFace.clock = 0;
+			setBackgroundColor(ST77XX_CYAN);
 			updateClockDisplay(hrtc, hspi);
 		}
 	}
@@ -474,6 +497,7 @@ void updateDisplay(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 	else if (faceOnDisplay == faceTimer) {
 		if (updateFace.timer == 1) {
 			updateFace.timer = 0;
+			setBackgroundColor(ST77XX_GREEN);
 			updateTimerDisplay(hspi);
 		}
 	}
@@ -481,6 +505,7 @@ void updateDisplay(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 	else if (faceOnDisplay == faceAlarm) {
 		if (updateFace.alarm == 1) {
 			updateFace.alarm = 0;
+			setBackgroundColor(ST77XX_MAGENTA);
 			updateAlarmDisplay(hspi);
 		}
 	}
@@ -488,18 +513,19 @@ void updateDisplay(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 	else if (faceOnDisplay == faceStopwatch) {
 		if (updateFace.stopwatch == 1) {
 			updateFace.stopwatch = 0;
+			setBackgroundColor(ST77XX_YELLOW);
 			updateStopwatchDisplay(hspi);
 		}
 	}
 }
 
 void updateClockDisplay(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
-	struct dates *currentDate;
-	struct times *currentTime;
+	struct dates currentDate = {0};
+	struct times currentTime = {0};
 
 	if (clockVars.isBeingSet == 0) {
-		getDateTime(currentDate, currentTime, hrtc);
-		drawClock(currentDate, currentTime, hspi);
+		getDateTime(&currentDate, &currentTime, hrtc);
+		drawClock(&currentDate, &currentTime, hspi);
 
 		setTextSize(1);
 		// clear line that says "setting ___"
@@ -533,7 +559,7 @@ void updateClockDisplay(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 }
 
 void updateTimerDisplay(SPI_HandleTypeDef *hspi) {
-	struct times *currentTimer;
+	struct times currentTimer = {0};
 	uint32_t timerVal;
 
 	if (timerVars.isBeingSet == 0) {
@@ -549,12 +575,12 @@ void updateTimerDisplay(SPI_HandleTypeDef *hspi) {
 		}
 		else {
 			timerVal = watchTimerSeconds;
-			currentTimer->hr = timerVal/3600;
+			currentTimer.hr = timerVal/3600;
 			timerVal %= 3600;
-			currentTimer->min = timerVal/60;
+			currentTimer.min = timerVal/60;
 			timerVal %= 60;
-			currentTimer->sec = timerVal;
-			drawTimer(currentTimer, hspi);
+			currentTimer.sec = timerVal;
+			drawTimer(&currentTimer, hspi);
 
 			// write "timer set!" when timer is set, but not running
 			setTextSize(1);
@@ -663,6 +689,7 @@ void drawButton(uint8_t x, uint8_t y, SPI_HandleTypeDef *hspi) {
 	setCursor(x+3, y+1);
 	setTextColor(ST77XX_BLACK);
 	setBackgroundColor(ST77XX_WHITE);
+	setTextSize(1);
 	drawChar('O', hspi);
 }
 
@@ -701,14 +728,14 @@ void drawClock(struct dates *d, struct times *t, SPI_HandleTypeDef *hspi) {
 
 	// drawing hr and min
 	// should change to print 12-hr format instead of 24 if using am/pm
-	sprintf(str, "%2d:%2d", t->hr, t->min);
+	sprintf(str, "%2d:%02d", t->hr, t->min);
 	setTextSize(3);
 	setTextColor(ST77XX_BLACK);
 	clearTextLine(68, hspi);
 	drawCenteredText(45, 60, str, hspi);
 
 	// drawing sec
-	sprintf(str, "%2d", t->sec);
+	sprintf(str, "%02d", t->sec);
 	setTextSize(2);
 	drawCenteredText(109, 68, str, hspi);
 
@@ -721,7 +748,7 @@ void drawClock(struct dates *d, struct times *t, SPI_HandleTypeDef *hspi) {
 	setTextSize(2);
 	clearTextLine(84, hspi);
 	setTextSize(1);
-	sprintf(str, "%s %2d %04d", monthNames[d->month], d->date, d->yr);
+	sprintf(str, "%s %d %04d", monthNames[d->month], d->date, d->yr);
 	drawCenteredText(WIDTH/2, 84, str, hspi);
 
 	// drawing weekday
@@ -756,30 +783,30 @@ void drawAlarm(struct alarmTimes *a, SPI_HandleTypeDef *hspi) {
 }
 
 void drawStopwatch(uint32_t seconds, SPI_HandleTypeDef *hspi) {
-	struct times *t;
+	struct times t = {0};
 	char str[40];
 
-	secondsToTime(t, seconds);
+	secondsToTime(&t, seconds);
 
 	// drawing hr:min:sec
 	setTextSize(2);
 	clearTextLine(68, hspi);
-	sprintf(str, "%2d:%2d:%2d", t->hr, t->min, t->sec);
+	sprintf(str, "%2d:%2d:%2d", t.hr, t.min, t.sec);
 	drawCenteredText(WIDTH/2, 68, str, hspi);
 
 	// leaving room for lap
 }
 
 void drawStopwatchLap(uint32_t seconds, SPI_HandleTypeDef *hspi) {
-	struct times *t;
+	struct times t = {0};
 	char str[40];
 
-	secondsToTime(t, seconds);
+	secondsToTime(&t, seconds);
 
 	// drawing hr:min:sec
 	setTextSize(1);
 	clearTextLine(84, hspi);
-	sprintf(str, "%2d:%2d:%2d", t->hr, t->min, t->sec);
+	sprintf(str, "%2d:%2d:%2d", t.hr, t.min, t.sec);
 	drawCenteredText(WIDTH/2, 84, str, hspi);
 }
 
@@ -813,7 +840,12 @@ uint8_t maxDaysInMonth(uint8_t month, uint16_t year) {
 }
 
 void initFace() {
-	isFaceBeingChanged = 1;
-	faceOnDisplay = faceClock;
+//	isFaceBeingChanged = 1;
+//	faceOnDisplay = faceClock;
 	updateFace.clock = 1;
+
+	clockVars.dateToSet = (struct dates *)malloc(sizeof(struct dates *));
+	clockVars.timeToSet = (struct times *)malloc(sizeof(struct times *));
+	timerVars.timeToSet = (struct times *)malloc(sizeof(struct times *));
+	alarmVars.alarmToSet = (struct alarmTimes *)malloc(sizeof(struct alarmTimes *));
 }
