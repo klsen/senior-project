@@ -471,9 +471,7 @@ void updateDisplay(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 			drawTitle("stopwatch", hspi);
 		}
 
-		drawButton(WIDTH/4-5, HEIGHT-20, hspi);
-		drawButton(WIDTH/2-5, HEIGHT-20, hspi);
-		drawButton(WIDTH/4*3-5, HEIGHT-20, hspi);
+		drawButtons(hspi);
 	}
 
 	// update clock face
@@ -523,25 +521,19 @@ void updateClockDisplay(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 		clearTextLine(44, hspi);
 
 		// draw button text
-		clearTextLine(HEIGHT-28, hspi);
-		drawCenteredText(WIDTH*3/4, HEIGHT-28, "set", hspi);
+		drawButtonText("", "", "set", hspi);
 	}
 	else if (clockVars.isBeingSet == 1) {
 		// draw button text
-		setTextSize(1);
-		clearTextLine(HEIGHT-28, hspi);
-		drawCenteredText(WIDTH/4, HEIGHT-28, "up", hspi);
-		drawCenteredText(WIDTH/2, HEIGHT-28, "down", hspi);
-		drawCenteredText(WIDTH*3/4, HEIGHT-28, "change", hspi);
+		if (clockVars.fieldBeingSet == 1) drawButtonText("up", "down", "change", hspi);
 
-		clearTextLine(44, hspi);
 		setTextSize(1);
 		switch (clockVars.fieldBeingSet) {
-			case 1:	drawCenteredText(WIDTH/2, 44, "setting minute...", hspi); break;
-			case 2:	drawCenteredText(WIDTH/2, 44, "setting hour...", hspi);	break;
-			case 3: drawCenteredText(WIDTH/2, 44, "setting year...", hspi); break;
-			case 4: drawCenteredText(WIDTH/2, 44, "setting month...", hspi); break;
-			case 5: drawCenteredText(WIDTH/2, 44, "setting date...", hspi); break;
+			case 1:	drawCenteredTextWithPadding(WIDTH/2, 44, 17, "setting minute...", hspi); break;
+			case 2:	drawCenteredTextWithPadding(WIDTH/2, 44, 17, "setting hour...", hspi);	break;
+			case 3: drawCenteredTextWithPadding(WIDTH/2, 44, 17, "setting year...", hspi); break;
+			case 4: drawCenteredTextWithPadding(WIDTH/2, 44, 17, "setting month...", hspi); break;
+			case 5: drawCenteredTextWithPadding(WIDTH/2, 44, 17, "setting date...", hspi); break;
 			default: break;
 		}
 
@@ -554,18 +546,16 @@ void updateTimerDisplay(SPI_HandleTypeDef *hspi) {
 
 	if (timerVars.isBeingSet == 0) {
 		if (timerVars.isSet == 0) {
-			secondsToTime(&currentTimer, 0);
-			drawTimer(&currentTimer, hspi);
+			setTextSize(2);
+			clearTextLine(68, hspi);	// clear timer time text
 
 			// write "timer unset"
 			setTextSize(1);
-			clearTextLine(52, hspi);
-			clearTextLine(84, hspi);
-			drawCenteredText(WIDTH/2, 84, "timer unset", hspi);
+			clearTextLine(52, hspi);	// clear setting ___ text
+			drawCenteredTextWithPadding(WIDTH/2, 84, 12, "timer unset", hspi);
 
 			// draw button text
-			clearTextLine(HEIGHT-28, hspi);
-			drawCenteredText(WIDTH*3/4, HEIGHT-28, "set", hspi);
+			drawButtonText("", "", "set", hspi);
 		}
 		else {
 			secondsToTime(&currentTimer, timerCounter);
@@ -573,39 +563,30 @@ void updateTimerDisplay(SPI_HandleTypeDef *hspi) {
 
 			// write "timer set!" when timer is set, but not running
 			setTextSize(1);
-			clearTextLine(52, hspi);
-			clearTextLine(84, hspi);
+			clearTextLine(52, hspi);	// clear setting ___ text
 			if (isTimerPaused == 1) {
-				drawCenteredText(WIDTH/2, 84, "timer paused", hspi);
+				drawCenteredTextWithPadding(WIDTH/2, 84, 12, "timer paused", hspi);
 			}
 			else if (isTimerRunning == 0 && timerCounter != 0) {
-				drawCenteredText(WIDTH/2, 84, "timer set!", hspi);
+				drawCenteredTextWithPadding(WIDTH/2, 84, 12, "timer set!", hspi);
 			}
 			else {
 				clearTextLine(84, hspi);
 			}
 
 			// draw button text
-			clearTextLine(HEIGHT-28, hspi);
-			drawCenteredText(WIDTH/4, HEIGHT-28, "run", hspi);
-			drawCenteredText(WIDTH/2, HEIGHT-28, "pause", hspi);
-			drawCenteredText(WIDTH*3/4, HEIGHT-28, "clear", hspi);
+			drawButtonText("run", "pause", "clear", hspi);
 		}
 	}
 	else if (timerVars.isBeingSet == 1) {
 		// draw button text
-		setTextSize(1);
-		clearTextLine(HEIGHT-28, hspi);
-		drawCenteredText(WIDTH/4, HEIGHT-28, "up", hspi);
-		drawCenteredText(WIDTH/2, HEIGHT-28, "down", hspi);
-		drawCenteredText(WIDTH*3/4, HEIGHT-28, "change", hspi);
+		drawButtonText("up", "down", "change", hspi);
 
 		// write filler text
-		clearTextLine(52, hspi);
 		switch (timerVars.fieldBeingSet) {
-			case 1: drawCenteredText(WIDTH/2, 52, "setting second...", hspi); break;
-			case 2: drawCenteredText(WIDTH/2, 52, "setting minute...", hspi); break;
-			case 3: drawCenteredText(WIDTH/2, 52, "setting hour...", hspi); break;
+			case 1: drawCenteredTextWithPadding(WIDTH/2, 52, 17, "setting second...", hspi); break;
+			case 2: drawCenteredTextWithPadding(WIDTH/2, 52, 17, "setting minute...", hspi); break;
+			case 3: drawCenteredTextWithPadding(WIDTH/2, 52, 17, "setting hour...", hspi); break;
 			default: break;
 		}
 
@@ -620,40 +601,32 @@ void updateAlarmDisplay(SPI_HandleTypeDef *hspi) {
 			clearTextLine(68, hspi);	// clear alarm time text
 
 			setTextSize(1);
-			clearTextLine(92, hspi);
-			drawCenteredText(WIDTH/2, 92, "alarm unset", hspi);
+			drawCenteredTextWithPadding(WIDTH/2, 100, 11, "alarm unset", hspi);
 
 			// draw button text
-			clearTextLine(HEIGHT-28, hspi);
-			drawCenteredText(WIDTH*3/4, HEIGHT-28, "clear", hspi);
+			drawButtonText("", "", "set", hspi);
 		}
 		else {
 			setTextSize(1);
-			clearTextLine(52, hspi);
-			clearTextLine(92, hspi);
-			drawCenteredText(WIDTH/2, 92, "alarm set", hspi);
+			drawCenteredTextWithPadding(WIDTH/2, 100, 11, "alarm set", hspi);
 			drawAlarm(alarmVars.alarmToSet, hspi);
 
 			// draw button text
-			clearTextLine(HEIGHT-28, hspi);
-			drawCenteredText(WIDTH*3/4, HEIGHT-28, "clear", hspi);
+			drawButtonText("", "", "clear", hspi);
 		}
 	}
 	else if (alarmVars.isBeingSet == 1) {
 		setTextSize(1);
 		switch (alarmVars.fieldBeingSet) {
-			case 1: drawCenteredText(WIDTH/2, 52, "setting second...", hspi); break;
-			case 2: drawCenteredText(WIDTH/2, 52, "setting minute...", hspi); break;
-			case 3: drawCenteredText(WIDTH/2, 52, "setting hour...", hspi); break;
-			case 4: drawCenteredText(WIDTH/2, 52, "setting day...", hspi); break;
+			case 1: drawCenteredTextWithPadding(WIDTH/2, 52, 17, "setting second...", hspi); break;
+			case 2: drawCenteredTextWithPadding(WIDTH/2, 52, 17, "setting minute...", hspi); break;
+			case 3: drawCenteredTextWithPadding(WIDTH/2, 52, 17, "setting hour...", hspi); break;
+			case 4: drawCenteredTextWithPadding(WIDTH/2, 52, 17, "setting day...", hspi); break;
 			default: break;
 		}
 
 		// draw button text
-		clearTextLine(HEIGHT-28, hspi);
-		drawCenteredText(WIDTH/4, HEIGHT-28, "up", hspi);
-		drawCenteredText(WIDTH/2, HEIGHT-28, "down", hspi);
-		drawCenteredText(WIDTH*3/4, HEIGHT-28, "change", hspi);
+		drawButtonText("up", "down", "change", hspi);
 
 		drawAlarm(alarmVars.alarmToSet, hspi);
 	}
@@ -663,46 +636,54 @@ void updateStopwatchDisplay(SPI_HandleTypeDef *hspi) {
 	drawStopwatch(stopwatchCounter, hspi);
 	drawStopwatchLap(stopwatchVars.lapCurrent-stopwatchVars.lapPrev, hspi);
 
-	setTextSize(1);
-	clearTextLine(HEIGHT-28, hspi);
-	drawCenteredText(WIDTH/2, HEIGHT-28, "lap", hspi);
-	drawCenteredText(WIDTH*3/4, HEIGHT-28, "clear", hspi);
-
-	if (isStopwatchRunning == 0) drawCenteredText(WIDTH/4, HEIGHT-28, "run", hspi);
-	else if (isStopwatchRunning == 1) drawCenteredText(WIDTH/4, HEIGHT-28, "pause", hspi);
+	if (isStopwatchRunning == 0) drawButtonText("run", "lap", "clear", hspi);
+	else if (isStopwatchRunning == 1) drawButtonText("pause", "lap", "clear", hspi);
 }
 
-void drawButton(uint8_t x, uint8_t y, SPI_HandleTypeDef *hspi) {
+void drawButton(uint8_t x_center, uint8_t y_center, SPI_HandleTypeDef *hspi) {
+	// bounds checking. probably already done in draw/fillRect
+	if (x_center-5 < 0 || x_center+5 > WIDTH || y_center-5 < 0 || y_center+5 > HEIGHT) return;
+
 	// draw rect size 8 with 1 pixel border
-	drawRect(x, y, 10, 10, ST77XX_BLACK, hspi);
-	fillRect(x+1, y+1, 8, 8, ST77XX_WHITE, hspi);
+	// parameters give center position of graphic
+	drawRect(x_center-5, y_center-5, 10, 10, ST77XX_BLACK, hspi);
+	fillRect(x_center-4, y_center-4, 8, 8, ST77XX_WHITE, hspi);
+}
+
+void drawButtons(SPI_HandleTypeDef *hspi) {
+	// 3 buttons. positioned so their text boxes, which are centered over button, can have equal spacing left and right
+	drawButton(22, HEIGHT-15, hspi);		// button 1
+	drawButton(64, HEIGHT-15, hspi);		// button 2
+	drawButton(106, HEIGHT-15, hspi);		// button 3
+}
+
+void drawButtonText(const char *str1, const char *str2, const char *str3, SPI_HandleTypeDef *hspi) {
+	setTextSize(1);
+	drawCenteredTextWithPadding(22, HEIGHT-28, 7, str1, hspi);		// button 1
+	drawCenteredTextWithPadding(64, HEIGHT-28, 7, str2, hspi);		// button 2
+	drawCenteredTextWithPadding(106, HEIGHT-28, 7, str3, hspi);		// button 3
 }
 
 void drawTitle(char *str, SPI_HandleTypeDef *hspi) {
 	uint8_t strSize = strlen(str);
 
 	// drawing title
-	if (12*strSize < WIDTH) {		// about string size = 10 for width = 128
+	if (12*strSize < WIDTH) {			// about string size = 10 for width = 128
 		setTextSize(2);
-		clearTextLine(10, hspi);
 		setCursor((WIDTH-12*strSize)/2, 10);
-		setTextColor(ST77XX_BLACK);
-		drawText(str, hspi);
 	}
-	else if (6*strSize < WIDTH) {	// about string size = 21 for width = 128
+	else if (6*strSize < WIDTH) {		// about string size = 21 for width = 128
 		setTextSize(1);
-//		clearTextLine(10, hspi);
 		setCursor((WIDTH-6*strSize)/2, 10);
-		setTextColor(ST77XX_BLACK);
-		drawText(str, hspi);
 	}
 	else {
 		setTextSize(1);
-//		clearTextLine(10, hspi);
-		setCursor((WIDTH-6*15)/2, 10);
-		setTextColor(ST77XX_BLACK);
-		drawText("shit's too long", hspi);
+		sprintf(str, "it's too long");		// should not need to worry about null access, since this string is shorter than case above
+		setCursor((WIDTH-6*strSize)/2, 10);
 	}
+
+	setTextColor(ST77XX_BLACK);
+	drawText(str, hspi);
 }
 
 // draw time and date
@@ -711,12 +692,12 @@ void drawClock(struct dates *d, struct times *t, SPI_HandleTypeDef *hspi) {
 	// notes on paper.
 	char str[40];
 
-	// drawing hr and min
-	// should change to print 12-hr format instead of 24 if using am/pm
-	sprintf(str, "%2d:%02d", t->hr, t->min);
+	// no need to draw padding for those that always have the same length
+	// drawing hr and min, 12-hr format
+	if (t->hr % 12 == 0) sprintf(str, "%2d:%02d", 12, t->min);
+	else sprintf(str, "%2d:%02d", t->hr%12, t->min);
 	setTextSize(3);
 	setTextColor(ST77XX_BLACK);
-//	clearTextLine(60, hspi);
 	drawCenteredText(52, 60, str, hspi);
 
 	// drawing sec
@@ -730,14 +711,12 @@ void drawClock(struct dates *d, struct times *t, SPI_HandleTypeDef *hspi) {
 	else drawCenteredText(103, 60, "PM", hspi);
 
 	// drawing date
-	setTextSize(2);
-//	clearTextLine(84, hspi);
 	setTextSize(1);
 	sprintf(str, "%s %d %04d", monthNames[d->month], d->date, d->yr);
-	drawCenteredText(WIDTH/2, 84, str, hspi);
+	drawCenteredTextWithPadding(WIDTH/2, 84, 11, str, hspi);
 
 	// drawing weekday
-	drawCenteredText(WIDTH/2, 92, weekdayNames[d->weekday], hspi);
+	drawCenteredTextWithPadding(WIDTH/2, 92, 9, weekdayNames[d->weekday], hspi);
 }
 
 void drawTimer(struct times *t, SPI_HandleTypeDef *hspi) {
@@ -745,7 +724,6 @@ void drawTimer(struct times *t, SPI_HandleTypeDef *hspi) {
 
 	// only drawing hr:min:sec of timer
 	setTextSize(2);
-	clearTextLine(68, hspi);
 	sprintf(str, "%2d:%2d:%2d", t->hr, t->min, t->sec);
 	drawCenteredText(WIDTH/2, HEIGHT/2-12, str, hspi);		// about y=68
 
@@ -754,8 +732,6 @@ void drawTimer(struct times *t, SPI_HandleTypeDef *hspi) {
 
 void drawAlarm(struct alarmTimes *a, SPI_HandleTypeDef *hspi) {
 	char str[40];
-	setTextSize(3);
-	clearTextLine(68, hspi);
 
 	// drawing hr:min:sec
 	setTextSize(2);
@@ -764,7 +740,7 @@ void drawAlarm(struct alarmTimes *a, SPI_HandleTypeDef *hspi) {
 
 	// drawing weekday
 	setTextSize(1);
-	drawCenteredText(WIDTH/2, 84, weekdayNames[a->weekday], hspi);
+	drawCenteredTextWithPadding(WIDTH/2, 84, 9, weekdayNames[a->weekday], hspi);
 }
 
 void drawStopwatch(uint32_t seconds, SPI_HandleTypeDef *hspi) {
@@ -775,7 +751,6 @@ void drawStopwatch(uint32_t seconds, SPI_HandleTypeDef *hspi) {
 
 	// drawing hr:min:sec
 	setTextSize(2);
-//	clearTextLine(68, hspi);
 	sprintf(str, "%2d:%2d:%2d", t.hr, t.min, t.sec);
 	drawCenteredText(WIDTH/2, 68, str, hspi);
 
@@ -790,7 +765,6 @@ void drawStopwatchLap(uint32_t seconds, SPI_HandleTypeDef *hspi) {
 
 	// drawing hr:min:sec
 	setTextSize(1);
-//	clearTextLine(84, hspi);
 	sprintf(str, "lap: %2d:%2d:%2d", t.hr, t.min, t.sec);
 	drawCenteredText(WIDTH/2, 84, str, hspi);
 }

@@ -118,7 +118,9 @@ void updateAlarmDisplay(SPI_HandleTypeDef *hspi);
 void updateStopwatchDisplay(SPI_HandleTypeDef *hspi);
 
 // draw functions
-void drawButton(uint8_t x, uint8_t y, SPI_HandleTypeDef* hspi);
+void drawButton(uint8_t x_center, uint8_t y_center, SPI_HandleTypeDef* hspi);
+void drawButtons(SPI_HandleTypeDef *hspi);
+void drawButtonText(const char *str1, const char *str2, const char *str3, SPI_HandleTypeDef *hspi);
 void drawTitle(char *str, SPI_HandleTypeDef *hspi);
 void drawClock(struct dates *d, struct times *t, SPI_HandleTypeDef *hspi);
 void drawTimer(struct times *t, SPI_HandleTypeDef *hspi);

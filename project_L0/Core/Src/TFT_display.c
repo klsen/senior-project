@@ -322,7 +322,7 @@ void fillScreen(uint16_t color, SPI_HandleTypeDef *hspi) {
 // ---- start of more complicated graphics ----
 void drawCenteredText(uint8_t x_center, uint8_t y, const char *str, SPI_HandleTypeDef *hspi) {
 	uint8_t strSize = strlen(str);
-	// bounds checking. text box needed to print text should not end up ouf of bounds
+	// bounds checking. text box needed to print text should not end up out of bounds
 	if (y+textSize*8 > HEIGHT) return;
 	int leftBound = x_center-(strSize*textSize*6)/2;
 	int rightBound = x_center+(strSize*textSize*6)/2;
@@ -330,6 +330,27 @@ void drawCenteredText(uint8_t x_center, uint8_t y, const char *str, SPI_HandleTy
 	if (rightBound > WIDTH) return;
 
 	setCursor(leftBound, y);
+	drawText(str, hspi);
+}
+
+void drawCenteredTextWithPadding(uint8_t x_center, uint8_t y, uint8_t maxLength, const char *str, SPI_HandleTypeDef *hspi) {
+	// bounds checking. text box needed to print text should not end up out of bounds
+	if (y+textSize*8 > HEIGHT) return;
+	int leftBound = x_center-(maxLength*textSize*6)/2;
+	int rightBound = x_center+(maxLength*textSize*6)/2;
+	if (leftBound < 0) return;
+	if (rightBound > WIDTH) return;
+
+	uint8_t strSize = strlen(str);
+	if (maxLength < strSize) return;		// size should not be greater than max
+
+	// draw left and right padding
+	uint8_t diff = maxLength-strSize;
+	fillRect(leftBound, y, diff*textSize*6/2, textSize*8, bg, hspi);		// math out of order to accomodate diff/2 being a non-int
+	fillRect(rightBound-diff*textSize*6/2, y, diff*textSize*6/2, textSize*8, bg, hspi);
+
+	int textLeftBound = x_center-(strSize*textSize*6)/2;
+	setCursor(textLeftBound, y);
 	drawText(str, hspi);
 }
 
