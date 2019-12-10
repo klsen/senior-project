@@ -601,6 +601,7 @@ void updateAlarmDisplay(SPI_HandleTypeDef *hspi) {
 			clearTextLine(68, hspi);	// clear alarm time text
 
 			setTextSize(1);
+			clearTextLine(52, hspi);
 			drawCenteredTextWithPadding(WIDTH/2, 100, 11, "alarm unset", hspi);
 
 			// draw button text
