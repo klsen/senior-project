@@ -42,7 +42,7 @@ void setDate(struct dates *d, RTC_HandleTypeDef *hrtc) {
 
 	sdate.Month = d->month;
 	sdate.Date = d->date;
-	sdate.WeekDay = d->weekday;
+	sdate.WeekDay = weekdayCalculator(d->yr, d->month, d->date) % 7;
 	sdate.Year = d->yr % 100; 		// set only between 0-99. part of the library (!?)
 
 	HAL_RTC_SetDate(hrtc, &sdate, RTC_FORMAT_BIN);
@@ -126,56 +126,6 @@ void setClockAlarm(RTC_HandleTypeDef *hrtc) {
 	HAL_RTC_SetAlarm_IT(hrtc, &salarm, RTC_FORMAT_BIN);
 }
 
-// set alarm for timer function of watch project
-// using RTC alarm hardware
-//void setTimer(struct times *t_in) {
-//	RTC_AlarmTypeDef salarm = {0};
-//	RTC_TimeTypeDef salarmtime = {0};
-//
-//	// set global variables to hold value being set
-//	watchTimer = *t_in;
-//	watchTimerSeconds = t_in->sec + t_in->min*60 + t_in->hr*3600;
-//
-//	// pull current RTC time
-//	struct dates d;
-//	struct times t;
-//	getDateTime(&d, &t, hrtc);
-//
-//	struct alarmTimes a = {0};
-//	uint8_t s,m,h,w;
-//
-//	// adding timer value to current time so we can set an alarm time
-//	s = t.sec + t_in->sec;
-//	m = t.min + t_in->min + s/60;
-//	h = t.hr + t_in->hr + m/60;
-//	w = d.weekday + h/24;
-//	a.sec = s % 60;
-//	a.min = m % 60;
-//	a.hr = h % 24;
-//	a.weekday = (w-1) % 7 + 1;
-//
-//	// setting RTC parameters
-//	salarmtime.Hours = a.hr;
-//	salarmtime.Minutes = a.min;
-//	salarmtime.Seconds = a.sec;
-//	salarmtime.TimeFormat = RTC_HOURFORMAT_24;
-//	salarmtime.SubSeconds = 0;
-//	salarmtime.SecondFraction = 0;
-//	salarmtime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
-//	salarmtime.StoreOperation = RTC_STOREOPERATION_RESET;
-//
-//	salarm.AlarmTime = salarmtime;
-//	salarm.AlarmMask = RTC_ALARMMASK_NONE;
-//	salarm.AlarmSubSecondMask = RTC_ALARMSUBSECONDMASK_ALL;
-//	salarm.AlarmDateWeekDaySel = RTC_ALARMDATEWEEKDAYSEL_WEEKDAY;
-//	salarm.AlarmDateWeekDay = a.weekday;
-//	salarm.Alarm = RTC_ALARM_B;			// change if using different alarm
-//
-//	HAL_RTC_SetAlarm_IT(&hrtc, &salarm, RTC_FORMAT_BIN);
-//
-//	runTimerDisplay();
-//}
-
 // ---- callbacks for interrupts ----
 // used for alarm function in project
 // meant to send signal to use motor
@@ -183,7 +133,7 @@ void setClockAlarm(RTC_HandleTypeDef *hrtc) {
 void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc) {
 	// change pin to whatever's accessible
 	// using PC0
-//	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_0);
+	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_0);
 
 	HAL_RTC_DeactivateAlarm(hrtc, RTC_ALARM_A);
 	isAlarmRunning = 0;
@@ -263,5 +213,19 @@ void secondsToTime(struct times *t, uint32_t seconds) {
 	t->min = seconds / 60;
 	seconds %= 60;
 	t->sec = seconds;
+}
+/*
+ * returns weekday from given year, month, and day.
+ * algorithm stolen from wikipedia.
+ * weekdays is 0-6, with 0 being sunday. hal uses 1=monday, 7=sunday - just call with % 7 to integrate with hal
+ * months given in 1-12, with 1 being january. hal uses the same setup
+ * rtc represents years with last 2 digits only. make sure year has all 4 numbers
+ * should be accurate for any gregorian date
+ */
+uint8_t weekdayCalculator(uint16_t year, uint8_t month, uint8_t day) {
+	static uint8_t table[] = {0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4};
+	if (month < 3) year--;
+	uint16_t temp = (year + year/4 - year/100 + year/400 + table[month-1] + day) % 7;
+	return temp;
 }
 // ---- end of converters ----

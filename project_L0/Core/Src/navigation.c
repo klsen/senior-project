@@ -43,17 +43,19 @@ const char* monthNames[13] = {
 
 // button interrupt(s)
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+	HAL_NVIC_DisableIRQ(EXTI2_3_IRQn);
+	HAL_NVIC_DisableIRQ(EXTI4_15_IRQn);
+	HAL_NVIC_ClearPendingIRQ(EXTI2_3_IRQn);
+	HAL_NVIC_ClearPendingIRQ(EXTI4_15_IRQn);
+
 	if (GPIO_Pin == BUTTON1) buttons.is1Pressed = 1;
 	if (GPIO_Pin == BUTTON2) buttons.is2Pressed = 1;
 	if (GPIO_Pin == BUTTON3) buttons.is3Pressed = 1;
 	if (GPIO_Pin == BUTTON4) buttons.is4Pressed = 1;
 
-	buttonPressed = 1;
-	HAL_NVIC_DisableIRQ(EXTI2_3_IRQn);
-	HAL_NVIC_DisableIRQ(EXTI4_15_IRQn);
-	HAL_NVIC_ClearPendingIRQ(EXTI2_3_IRQn);
-	HAL_NVIC_ClearPendingIRQ(EXTI4_15_IRQn);
 	HAL_TIM_Base_Start_IT(&htim6);
+
+	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_3);		// should run for any button
 }
 
 void updateWithButtons(RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *timerStopwatchTim, TIM_HandleTypeDef *motorBacklightTim, TIM_HandleTypeDef *buttonTim) {
@@ -61,28 +63,11 @@ void updateWithButtons(RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *timerStopwatc
 	 *   check current face used
 	 *   check current variables and check button pressed
 	 */
-//	if (buttonPressed == 1) {
-//		HAL_NVIC_ClearPendingIRQ(EXTI2_3_IRQn);
-//		HAL_NVIC_ClearPendingIRQ(EXTI4_15_IRQn);
-//		HAL_NVIC_DisableIRQ(EXTI2_3_IRQn);
-//		HAL_NVIC_DisableIRQ(EXTI4_15_IRQn);
-//		HAL_TIM_Base_Start_IT(buttonTim);
-//	}
-//	else {
-//		HAL_TIM_Base_Stop_IT(buttonTim);
-//		HAL_NVIC_ClearPendingIRQ(EXTI2_3_IRQn);
-//		HAL_NVIC_ClearPendingIRQ(EXTI4_15_IRQn);
-//		HAL_NVIC_EnableIRQ(EXTI2_3_IRQn);
-//		HAL_NVIC_EnableIRQ(EXTI4_15_IRQn);
-//	}
-
-	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_3);		// should run for any button
-
 	// button 1 changes the face on screen.
 	if (buttons.is1Pressed) {
 		buttons.is1Pressed = 0;
-		faceOnDisplay = (faceOnDisplay + 1) % NUM_FACES;
 		isFaceBeingChanged = 1;
+		faceOnDisplay = (faceOnDisplay + 1) % NUM_FACES;
 		switch (faceOnDisplay) {
 			case faceClock: updateFace.clock = 1; break;
 			case faceTimer: updateFace.timer = 1; break;
@@ -124,8 +109,8 @@ void updateClockState(RTC_HandleTypeDef *hrtc) {
 			case 1: clockVars.timeToSet->min = (clockVars.timeToSet->min+1) % 60; break;
 			case 2: clockVars.timeToSet->hr = (clockVars.timeToSet->hr+1) % 24; break;
 			case 3: clockVars.dateToSet->yr++; break;		// supposed to be between large numbers. no need for bounds checking
-			case 4: clockVars.dateToSet->month = (clockVars.dateToSet->month+1) % 12 + 1; break;
-			case 5: clockVars.dateToSet->date = (clockVars.dateToSet->date+1) % maxDaysInMonth(clockVars.dateToSet->month, clockVars.dateToSet->yr); break;		// make more robust?
+			case 4: clockVars.dateToSet->month = (clockVars.dateToSet->month) % 12 + 1; break;
+			case 5: clockVars.dateToSet->date = ((clockVars.dateToSet->date) % maxDaysInMonth(clockVars.dateToSet->month, clockVars.dateToSet->yr)) + 1; break;
 			default: break;
 		}
 	}
@@ -143,11 +128,12 @@ void updateClockState(RTC_HandleTypeDef *hrtc) {
 				else clockVars.timeToSet->hr--;
 				break;
 			case 3: clockVars.dateToSet->yr--; break;		// supposed to be from 1950-2050. no need to do bounds checking
-			case 4: clockVars.dateToSet->month = clockVars.dateToSet->month == 1 ? 12 : clockVars.dateToSet->month-1; break;
-				if (clockVars.dateToSet->month == RTC_MONTH_JANUARY) clockVars.dateToSet->month = RTC_MONTH_DECEMBER;
+			case 4: //clockVars.dateToSet->month = clockVars.dateToSet->month == 1 ? 12 : clockVars.dateToSet->month-1; break;
+				if (clockVars.dateToSet->month == 1) clockVars.dateToSet->month = 12;
 				else clockVars.dateToSet->month--;
+				break;
 			case 5:
-				if (clockVars.dateToSet->date == 0) clockVars.dateToSet->date = maxDaysInMonth(clockVars.dateToSet->month, clockVars.dateToSet->yr);
+				if (clockVars.dateToSet->date == 1) clockVars.dateToSet->date = maxDaysInMonth(clockVars.dateToSet->month, clockVars.dateToSet->yr);
 				else clockVars.dateToSet->date--;
 				break;
 			default: break;
@@ -219,7 +205,7 @@ void updateTimerState(TIM_HandleTypeDef *timerStopwatchTim) {
 			switch (timerVars.fieldBeingSet) {
 				case 1: timerVars.timeToSet->sec = (timerVars.timeToSet->sec+1) % 60; break;
 				case 2: timerVars.timeToSet->min = (timerVars.timeToSet->min+1) % 60; break;
-				case 3: timerVars.timeToSet->hr = (timerVars.timeToSet->hr+1) % 24; break;
+				case 3: timerVars.timeToSet->hr = (timerVars.timeToSet->hr+1) % 100; break;
 				default: break;
 			}
 		}
@@ -238,7 +224,7 @@ void updateTimerState(TIM_HandleTypeDef *timerStopwatchTim) {
 					else timerVars.timeToSet->min--;
 					break;
 				case 3:
-					if (timerVars.timeToSet->hr == 0) timerVars.timeToSet->hr = 23;
+					if (timerVars.timeToSet->hr == 0) timerVars.timeToSet->hr = 99;		// no limit on hour, since we're not using day
 					else timerVars.timeToSet->hr--;
 					break;
 				default: break;
@@ -250,14 +236,18 @@ void updateTimerState(TIM_HandleTypeDef *timerStopwatchTim) {
 		if (buttons.is2Pressed && isTimerRunning == 0) {
 			buttons.is2Pressed = 0;
 			updateFace.timer = 1;
+
 			// start timer
+			runTimer(timerStopwatchTim);
 			isTimerRunning = 1;
 			isTimerPaused = 0;
 		}
 		if (buttons.is3Pressed && isTimerRunning) {
 			buttons.is3Pressed = 0;
 			updateFace.timer = 1;
+
 			// pause timer
+			pauseTimer(timerStopwatchTim);
 			isTimerRunning = 0;
 			isTimerPaused = 1;
 		}
@@ -266,13 +256,14 @@ void updateTimerState(TIM_HandleTypeDef *timerStopwatchTim) {
 			updateFace.timer = 1;
 
 			// stop and clear timer
+			stopTimer(timerStopwatchTim);
 			timerVars.isSet = 0;
 			isTimerRunning = 0;
 			isTimerPaused = 0;
 		}
 	}
 	// not done? might be done (other buttons start/stop timer)
-	else if (buttons.is4Pressed) {
+	if (buttons.is4Pressed) {
 		buttons.is4Pressed = 0;
 		updateFace.timer = 1;
 
@@ -292,7 +283,7 @@ void updateTimerState(TIM_HandleTypeDef *timerStopwatchTim) {
 		else {
 			timerVars.isBeingSet = 0;
 			timerVars.isSet = 1;
-			// setTimer(&timerVars.timeToSet);
+			timerCounter = timeToSeconds(timerVars.timeToSet);
 		}
 	}
 }
@@ -333,7 +324,7 @@ void updateAlarmState(RTC_HandleTypeDef *hrtc) {
 			case 1: alarmVars.alarmToSet->sec = (alarmVars.alarmToSet->sec + 1) % 60; break;
 			case 2: alarmVars.alarmToSet->min = (alarmVars.alarmToSet->min + 1) % 60; break;
 			case 3: alarmVars.alarmToSet->hr = (alarmVars.alarmToSet->hr + 1) % 24; break;
-			case 4: alarmVars.alarmToSet->weekday = (alarmVars.alarmToSet->weekday + 1) % 7 + 1; break;
+			case 4: alarmVars.alarmToSet->weekday = (alarmVars.alarmToSet->weekday) % 7 + 1; break;
 			default: break;
 		}
 	}
@@ -424,14 +415,14 @@ void updateStopwatchState(TIM_HandleTypeDef *timerStopwatchTim) {
 		updateFace.stopwatch = 1;
 
 		if (isStopwatchRunning == 0) {
+			runStopwatch(timerStopwatchTim);
 			isStopwatchRunning = 1;
 			isStopwatchPaused = 0;
-			runStopwatch(timerStopwatchTim);
 		}
 		else {
+			pauseStopwatch(timerStopwatchTim);
 			isStopwatchRunning = 0;
 			isStopwatchPaused = 1;
-			pauseStopwatch(timerStopwatchTim);
 		}
 	}
 	if (buttons.is3Pressed) {
@@ -440,16 +431,16 @@ void updateStopwatchState(TIM_HandleTypeDef *timerStopwatchTim) {
 
 		// pull data and set lap
 		stopwatchVars.lapPrev = stopwatchVars.lapCurrent;
-		stopwatchVars.lapCurrent = stopwatchCounter;		// did this variable get changed to something else?
+		stopwatchVars.lapCurrent = stopwatchCounter;
 	}
 	if (buttons.is4Pressed) {
 		buttons.is4Pressed = 0;
 		updateFace.stopwatch = 1;
 
 		// clear stopwatch hw
+		clearStopwatch(timerStopwatchTim);
 		isStopwatchRunning = 0;
 		isStopwatchPaused = 0;
-		clearStopwatch(timerStopwatchTim);
 	}
 }
 
@@ -529,7 +520,7 @@ void updateClockDisplay(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 
 		setTextSize(1);
 		// clear line that says "setting ___"
-		clearTextLine(52, hspi);
+		clearTextLine(44, hspi);
 
 		// draw button text
 		clearTextLine(HEIGHT-28, hspi);
@@ -543,14 +534,14 @@ void updateClockDisplay(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 		drawCenteredText(WIDTH/2, HEIGHT-28, "down", hspi);
 		drawCenteredText(WIDTH*3/4, HEIGHT-28, "change", hspi);
 
-		clearTextLine(52, hspi);
+		clearTextLine(44, hspi);
 		setTextSize(1);
 		switch (clockVars.fieldBeingSet) {
-			case 1:	drawCenteredText(WIDTH/2, 52, "setting minute...", hspi); break;
-			case 2:	drawCenteredText(WIDTH/2, 52, "setting hour...", hspi);	break;
-			case 3: drawCenteredText(WIDTH/2, 52, "setting year...", hspi); break;
-			case 4: drawCenteredText(WIDTH/2, 52, "setting month...", hspi); break;
-			case 5: drawCenteredText(WIDTH/2, 52, "setting date...", hspi); break;
+			case 1:	drawCenteredText(WIDTH/2, 44, "setting minute...", hspi); break;
+			case 2:	drawCenteredText(WIDTH/2, 44, "setting hour...", hspi);	break;
+			case 3: drawCenteredText(WIDTH/2, 44, "setting year...", hspi); break;
+			case 4: drawCenteredText(WIDTH/2, 44, "setting month...", hspi); break;
+			case 5: drawCenteredText(WIDTH/2, 44, "setting date...", hspi); break;
 			default: break;
 		}
 
@@ -560,12 +551,15 @@ void updateClockDisplay(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 
 void updateTimerDisplay(SPI_HandleTypeDef *hspi) {
 	struct times currentTimer = {0};
-	uint32_t timerVal;
 
 	if (timerVars.isBeingSet == 0) {
 		if (timerVars.isSet == 0) {
+			secondsToTime(&currentTimer, 0);
+			drawTimer(&currentTimer, hspi);
+
 			// write "timer unset"
 			setTextSize(1);
+			clearTextLine(52, hspi);
 			clearTextLine(84, hspi);
 			drawCenteredText(WIDTH/2, 84, "timer unset", hspi);
 
@@ -574,21 +568,18 @@ void updateTimerDisplay(SPI_HandleTypeDef *hspi) {
 			drawCenteredText(WIDTH*3/4, HEIGHT-28, "set", hspi);
 		}
 		else {
-			timerVal = watchTimerSeconds;
-			currentTimer.hr = timerVal/3600;
-			timerVal %= 3600;
-			currentTimer.min = timerVal/60;
-			timerVal %= 60;
-			currentTimer.sec = timerVal;
+			secondsToTime(&currentTimer, timerCounter);
 			drawTimer(&currentTimer, hspi);
 
 			// write "timer set!" when timer is set, but not running
 			setTextSize(1);
-			if (isTimerRunning == 0 && watchTimerSeconds != 0) {
-				drawCenteredText(WIDTH/2, 84, "timer set!", hspi);
-			}
-			else if (isTimerPaused == 1) {
+			clearTextLine(52, hspi);
+			clearTextLine(84, hspi);
+			if (isTimerPaused == 1) {
 				drawCenteredText(WIDTH/2, 84, "timer paused", hspi);
+			}
+			else if (isTimerRunning == 0 && timerCounter != 0) {
+				drawCenteredText(WIDTH/2, 84, "timer set!", hspi);
 			}
 			else {
 				clearTextLine(84, hspi);
@@ -610,11 +601,11 @@ void updateTimerDisplay(SPI_HandleTypeDef *hspi) {
 		drawCenteredText(WIDTH*3/4, HEIGHT-28, "change", hspi);
 
 		// write filler text
-		clearTextLine(60, hspi);
+		clearTextLine(52, hspi);
 		switch (timerVars.fieldBeingSet) {
-			case 1: drawCenteredText(WIDTH/2, 60, "setting hour...", hspi); break;
-			case 2: drawCenteredText(WIDTH/2, 60, "setting minute...", hspi); break;
-			case 3: drawCenteredText(WIDTH/2, 60, "setting second...", hspi); break;
+			case 1: drawCenteredText(WIDTH/2, 52, "setting second...", hspi); break;
+			case 2: drawCenteredText(WIDTH/2, 52, "setting minute...", hspi); break;
+			case 3: drawCenteredText(WIDTH/2, 52, "setting hour...", hspi); break;
 			default: break;
 		}
 
@@ -638,6 +629,7 @@ void updateAlarmDisplay(SPI_HandleTypeDef *hspi) {
 		}
 		else {
 			setTextSize(1);
+			clearTextLine(52, hspi);
 			clearTextLine(92, hspi);
 			drawCenteredText(WIDTH/2, 92, "alarm set", hspi);
 			drawAlarm(alarmVars.alarmToSet, hspi);
@@ -650,10 +642,10 @@ void updateAlarmDisplay(SPI_HandleTypeDef *hspi) {
 	else if (alarmVars.isBeingSet == 1) {
 		setTextSize(1);
 		switch (alarmVars.fieldBeingSet) {
-			case 1: drawCenteredText(WIDTH/2, 60, "setting second...", hspi); break;
-			case 2: drawCenteredText(WIDTH/2, 60, "setting minute...", hspi); break;
-			case 3: drawCenteredText(WIDTH/2, 60, "setting hour...", hspi); break;
-			case 4: drawCenteredText(WIDTH/2, 60, "setting day...", hspi); break;
+			case 1: drawCenteredText(WIDTH/2, 52, "setting second...", hspi); break;
+			case 2: drawCenteredText(WIDTH/2, 52, "setting minute...", hspi); break;
+			case 3: drawCenteredText(WIDTH/2, 52, "setting hour...", hspi); break;
+			case 4: drawCenteredText(WIDTH/2, 52, "setting day...", hspi); break;
 			default: break;
 		}
 
@@ -669,7 +661,7 @@ void updateAlarmDisplay(SPI_HandleTypeDef *hspi) {
 
 void updateStopwatchDisplay(SPI_HandleTypeDef *hspi) {
 	drawStopwatch(stopwatchCounter, hspi);
-	drawStopwatchLap(stopwatchVars.lapCurrent, hspi);
+	drawStopwatchLap(stopwatchVars.lapCurrent-stopwatchVars.lapPrev, hspi);
 
 	setTextSize(1);
 	clearTextLine(HEIGHT-28, hspi);
@@ -684,13 +676,6 @@ void drawButton(uint8_t x, uint8_t y, SPI_HandleTypeDef *hspi) {
 	// draw rect size 8 with 1 pixel border
 	drawRect(x, y, 10, 10, ST77XX_BLACK, hspi);
 	fillRect(x+1, y+1, 8, 8, ST77XX_WHITE, hspi);
-
-	// draw circle in the middle
-	setCursor(x+3, y+1);
-	setTextColor(ST77XX_BLACK);
-	setBackgroundColor(ST77XX_WHITE);
-	setTextSize(1);
-	drawChar('O', hspi);
 }
 
 void drawTitle(char *str, SPI_HandleTypeDef *hspi) {
@@ -706,14 +691,14 @@ void drawTitle(char *str, SPI_HandleTypeDef *hspi) {
 	}
 	else if (6*strSize < WIDTH) {	// about string size = 21 for width = 128
 		setTextSize(1);
-		clearTextLine(10, hspi);
+//		clearTextLine(10, hspi);
 		setCursor((WIDTH-6*strSize)/2, 10);
 		setTextColor(ST77XX_BLACK);
 		drawText(str, hspi);
 	}
 	else {
 		setTextSize(1);
-		clearTextLine(10, hspi);
+//		clearTextLine(10, hspi);
 		setCursor((WIDTH-6*15)/2, 10);
 		setTextColor(ST77XX_BLACK);
 		drawText("shit's too long", hspi);
@@ -731,8 +716,8 @@ void drawClock(struct dates *d, struct times *t, SPI_HandleTypeDef *hspi) {
 	sprintf(str, "%2d:%02d", t->hr, t->min);
 	setTextSize(3);
 	setTextColor(ST77XX_BLACK);
-	clearTextLine(68, hspi);
-	drawCenteredText(45, 60, str, hspi);
+//	clearTextLine(60, hspi);
+	drawCenteredText(52, 60, str, hspi);
 
 	// drawing sec
 	sprintf(str, "%02d", t->sec);
@@ -746,7 +731,7 @@ void drawClock(struct dates *d, struct times *t, SPI_HandleTypeDef *hspi) {
 
 	// drawing date
 	setTextSize(2);
-	clearTextLine(84, hspi);
+//	clearTextLine(84, hspi);
 	setTextSize(1);
 	sprintf(str, "%s %d %04d", monthNames[d->month], d->date, d->yr);
 	drawCenteredText(WIDTH/2, 84, str, hspi);
@@ -790,7 +775,7 @@ void drawStopwatch(uint32_t seconds, SPI_HandleTypeDef *hspi) {
 
 	// drawing hr:min:sec
 	setTextSize(2);
-	clearTextLine(68, hspi);
+//	clearTextLine(68, hspi);
 	sprintf(str, "%2d:%2d:%2d", t.hr, t.min, t.sec);
 	drawCenteredText(WIDTH/2, 68, str, hspi);
 
@@ -805,28 +790,30 @@ void drawStopwatchLap(uint32_t seconds, SPI_HandleTypeDef *hspi) {
 
 	// drawing hr:min:sec
 	setTextSize(1);
-	clearTextLine(84, hspi);
-	sprintf(str, "%2d:%2d:%2d", t.hr, t.min, t.sec);
+//	clearTextLine(84, hspi);
+	sprintf(str, "lap: %2d:%2d:%2d", t.hr, t.min, t.sec);
 	drawCenteredText(WIDTH/2, 84, str, hspi);
 }
 
 // calculator for number of days in a month given a month and accounting for leap years
+// assumes month is 1-12, 1=january, 12=december
 uint8_t maxDaysInMonth(uint8_t month, uint16_t year) {
 	if (month == 0 || month > 12) return 0;		// bounds checking
 
-	if (month == RTC_MONTH_JANUARY ||
-		month == RTC_MONTH_MARCH   ||
-		month == RTC_MONTH_MAY     ||
-		month == RTC_MONTH_JULY    ||
-		month == RTC_MONTH_AUGUST  ||
-		month == RTC_MONTH_OCTOBER ||
-		month == RTC_MONTH_DECEMBER) {
+	// not using built-in defines, because they're in BCD
+	if (month == 1  ||		// january
+		month == 3  ||		// march
+		month == 5  ||		// may
+		month == 7  ||		// july
+		month == 8  ||		// august
+		month == 10 ||		// october
+		month == 12) {		// december
 		return 31;
 	}
-	else if (month == RTC_MONTH_APRIL     ||
-			 month == RTC_MONTH_JUNE      ||
-			 month == RTC_MONTH_SEPTEMBER ||
-			 month == RTC_MONTH_NOVEMBER) {
+	else if (month == 4 ||	// april
+			 month == 6 ||	// june
+			 month == 9 ||	// september
+			 month == 11) {	// november
 		return 30;
 	}
 
@@ -844,8 +831,17 @@ void initFace() {
 //	faceOnDisplay = faceClock;
 	updateFace.clock = 1;
 
-	clockVars.dateToSet = (struct dates *)malloc(sizeof(struct dates *));
-	clockVars.timeToSet = (struct times *)malloc(sizeof(struct times *));
-	timerVars.timeToSet = (struct times *)malloc(sizeof(struct times *));
-	alarmVars.alarmToSet = (struct alarmTimes *)malloc(sizeof(struct alarmTimes *));
+	clockVars.dateToSet = (struct dates *)calloc(1, sizeof(struct dates *));
+	clockVars.timeToSet = (struct times *)calloc(1, sizeof(struct times *));
+	timerVars.timeToSet = (struct times *)calloc(1, sizeof(struct times *));
+	alarmVars.alarmToSet = (struct alarmTimes *)calloc(1, sizeof(struct alarmTimes *));
+
+//	struct dates tempclockdate = {0};
+//	struct times tempclocktime = {0};
+//	struct times temptimer = {0};
+//	struct alarmTimes tempalarm = {0};
+//	*clockVars.dateToSet = tempclockdate;
+//	*clockVars.timeToSet = tempclocktime;
+//	*timerVars.timeToSet = temptimer;
+//	*alarmVars.alarmToSet = tempalarm;
 }

@@ -86,7 +86,7 @@ volatile uint8_t isStopwatchRunning;
 volatile uint8_t isTimerPaused;			// new flags for hw timer. update nav accordingly
 volatile uint8_t isStopwatchPaused;
 
-volatile uint8_t buttonPressed;
+//volatile uint8_t buttonPressed;
 
 // enum for different faces used (clock, timer, alarm, stopwatch)
 // probably not needed

@@ -76,11 +76,12 @@ void getDateTime(struct dates *d, struct times *t, RTC_HandleTypeDef *hrtc);
 // converters
 uint32_t timeToSeconds(struct times *t);
 void secondsToTime(struct times *t, uint32_t seconds);
+uint8_t weekdayCalculator(uint16_t year, uint8_t month, uint8_t day);
 
 // ---- printing stuff ----
-void printTime(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
-void printDate(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
-void printDateTime(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
+//void printTime(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
+//void printDate(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
+//void printDateTime(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
 //void printTime();
 //void printDate();
 //void printDateTime();

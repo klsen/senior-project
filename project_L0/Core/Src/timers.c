@@ -15,33 +15,19 @@ static uint8_t motorStateCounter = 0;
 
 // important boye that is called for a bunch of different timers
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
-//	if (htim->Instance == TIM21) {
-//		updateFace.timer = 1;
-////		HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_1);
-//		// should toggle pin every 1s. change pin
-//		if (watchTimerSeconds != 0) {
-////			HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_1);
-//			watchTimerSeconds--;
-//		}
-//		else {
-//			stopTimerDisplay();
-//			isTimerRunning = 0;
-//			updateFace.timer = 1;
-//		}
-//	}
-//	else if (htim->Instance == TIM22) {
-//		updateFace.clock = 1;
-//	}
-
 	// button's timer
 	if (htim->Instance == TIM6) {
 		// renable button interrupts and clear pending
 		HAL_TIM_Base_Stop_IT(htim);
 		HAL_NVIC_ClearPendingIRQ(EXTI2_3_IRQn);
 		HAL_NVIC_ClearPendingIRQ(EXTI4_15_IRQn);
+		__HAL_GPIO_EXTI_CLEAR_IT(BUTTON1);
+		__HAL_GPIO_EXTI_CLEAR_IT(BUTTON2);
+		__HAL_GPIO_EXTI_CLEAR_IT(BUTTON3);
+		__HAL_GPIO_EXTI_CLEAR_IT(BUTTON4);
+
 		HAL_NVIC_EnableIRQ(EXTI2_3_IRQn);
 		HAL_NVIC_EnableIRQ(EXTI4_15_IRQn);
-//		buttonPressed = 0;
 	}
 	// motor's timer
 	else if (htim->Instance == TIM2) {
@@ -72,42 +58,24 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
 	if (htim->Instance == TIM21) {
 		// timer's channel
 		if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_1) {
-			if (timerCounter != 0) --timerCounter;
-			else isTimerRunning = 0;
+			updateFace.timer = 1;
+			if (timerCounter != 1) --timerCounter;
+			else {
+				--timerCounter;
+				isTimerRunning = 0;
+				stopTimer(htim);
+			}
 		}
 		// stopwatch's channel
 		else if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_2) {
+			updateFace.stopwatch = 1;
 			++stopwatchCounter;
 		}
 	}
+	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_1);
 }
 
 // ---- important timer functions  ----
-// uses LPTIM clocked by LSE
-// called by buttons in nav, so no need to set flags for updates on
-// screen, since the buttons already do that
-//void runTimer(LPTIM_HandleTypeDef *hlptim) {
-//	hlptim->Instance->CNT = tempTimerCounter;
-//	HAL_LPTIM_Counter_Start_IT(hlptim);
-//}
-//
-//void pauseTimer(LPTIM_HandleTypeDef *hlptim) {
-//	HAL_LPTIM_Counter_Stop_IT(&hlptim1);
-//	tempTimerCounter = hlptim->Instance->CNT;
-//}
-//
-//void stopTimer(LPTIM_HandleTypeDef *hlptim) {
-//	HAL_LPTIM_Counter_Stop_IT(&hlptim1);
-//	tempTimerCounter = 0;
-//}
-//
-//// decrementer for timer functionality
-//void HAL_LPTIM_AutoReloadMatchCallback(LPTIM_HandleTypeDef *hlptim) {
-//	// toggle pin, should toggle every 1s. change this pin
-//	timerCNT++;
-//	updateFace.timer = 1;
-//}
-
 void runTimer(TIM_HandleTypeDef *htim) {
 	TIM_OC_InitTypeDef sConfig = {0};
 	sConfig.OCMode = TIM_OCMODE_TIMING;
@@ -128,18 +96,18 @@ void runTimer(TIM_HandleTypeDef *htim) {
 		timerStartMarker = sConfig.Pulse;		// set new start marker
 	}
 
-	HAL_TIM_PWM_ConfigChannel(htim, &sConfig, HAL_TIM_ACTIVE_CHANNEL_1);
-	HAL_TIM_OC_Start_IT(htim, HAL_TIM_ACTIVE_CHANNEL_1);
+	HAL_TIM_OC_ConfigChannel(htim, &sConfig, TIM_CHANNEL_1);
+	HAL_TIM_OC_Start_IT(htim, TIM_CHANNEL_1);
 }
 
 // flags should be set in nav
 void pauseTimer(TIM_HandleTypeDef *htim) {
-	HAL_TIM_OC_Stop_IT(htim, HAL_TIM_ACTIVE_CHANNEL_1);
+	HAL_TIM_OC_Stop_IT(htim, TIM_CHANNEL_1);
 	timerPauseMarker = htim->Instance->CNT;
 }
 
 void stopTimer(TIM_HandleTypeDef *htim) {
-	HAL_TIM_OC_Stop_IT(htim, HAL_TIM_ACTIVE_CHANNEL_1);
+	HAL_TIM_OC_Stop_IT(htim, TIM_CHANNEL_1);
 	timerStartMarker = 0;
 	timerPauseMarker = 0;
 }
@@ -158,6 +126,7 @@ void runStopwatch(TIM_HandleTypeDef *htim) {
 
 	// calculating pulse/OC trigger
 	if (isStopwatchPaused == 0) {		// 1st run, hasn't been paused yet
+		stopwatchCounter = 0;
 		sConfig.Pulse = htim->Instance->CNT;
 	}
 	else {		// unpausing
@@ -167,22 +136,22 @@ void runStopwatch(TIM_HandleTypeDef *htim) {
 		// shifted to account for negative behavior
 		uint32_t diff = ((int)(stopwatchStartMarker-stopwatchPauseMarker)+0x8000) % 0x8000;
 		sConfig.Pulse = (temp+diff) % 0x8000;
-		timerStartMarker = sConfig.Pulse;		// set new start marker
+		stopwatchStartMarker = sConfig.Pulse;		// set new start marker
 	}
 
-	HAL_TIM_PWM_ConfigChannel(htim, &sConfig, HAL_TIM_ACTIVE_CHANNEL_2);
-	HAL_TIM_OC_Start_IT(htim, HAL_TIM_ACTIVE_CHANNEL_2);
+	HAL_TIM_OC_ConfigChannel(htim, &sConfig, TIM_CHANNEL_2);
+	HAL_TIM_OC_Start_IT(htim, TIM_CHANNEL_2);
 }
 
 // stop the timer or pause it or whatever.
 // counter value might reset and screw up timekeeping? should save?
 void pauseStopwatch(TIM_HandleTypeDef *htim) {
-	HAL_TIM_OC_Stop_IT(htim, HAL_TIM_ACTIVE_CHANNEL_2);
+	HAL_TIM_OC_Stop_IT(htim, TIM_CHANNEL_2);
 	stopwatchPauseMarker = htim->Instance->CNT;
 }
 
 void clearStopwatch(TIM_HandleTypeDef *htim) {
-	HAL_TIM_OC_Stop_IT(htim, HAL_TIM_ACTIVE_CHANNEL_2);
+	HAL_TIM_OC_Stop_IT(htim, TIM_CHANNEL_2);
 	stopwatchPauseMarker = htim->Instance->CNT;
 	stopwatchStartMarker = htim->Instance->CNT;
 
