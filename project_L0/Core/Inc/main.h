@@ -37,6 +37,7 @@ extern "C" {
 #include "TFT_display_test.h"
 #include "clocks.h"
 #include "timers.h"
+#include "battery.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/

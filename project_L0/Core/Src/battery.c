@@ -2,50 +2,103 @@
 
 #include "battery.h"
 
-static volatile float32_t batterySum = 0;
-static uint8_t index = 0;
+static volatile float batterySum = 0;
+static uint8_t sampleIndex = 0;
+static uint8_t bState = batteryNormal;
+static const float batteryCapacity[];
+static uint16_t batteryCapacityArraySize = 179;
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {
 	batterySum += 3.3*hadc->Instance->DR/(1<<12);
-	if (index < NUM_SAMPLES) HAL_ADC_Start_IT(hadc);
-	else ++index;
+	if (sampleIndex < NUM_SAMPLES) HAL_ADC_Start_IT(hadc);
+	else ++sampleIndex;
+}
+
+void batteryManager(ADC_HandleTypeDef *hadc) {
+	if (canSampleBattery) {
+		canSampleBattery = 0;
+
+		battPercentage = getBatteryPercentage(hadc);
+
+		// start low-power mode and set flag
+		if (battPercentage <= 15) {
+			// start turning off some hardware
+			bState = batteryLow;
+		}
+		// start really shutting down & set flag
+		else if (battPercentage <= 5) {
+			// start turning off most hardware
+			bState = batteryReallyLow;
+		}
+		// disable power supply (setting enable pin to 0)
+		else if (battPercentage == 0) {
+			HAL_GPIO_WritePin(POWER_SUPPLY_ENABLE_PORT, POWER_SUPPLY_ENABLE_PIN, GPIO_PIN_RESET);
+		}
+		// set hardware to use power normally
+		else {
+			// do nothing? maybe might need to check previous state and make sure everything is normal
+			if (bState == batteryLow || bState == batteryReallyLow) {
+			}
+			bState = batteryNormal;
+		}
+	}
 }
 
 // should return a number from 0-100
-uint8_t calculateBatteryPercentage(ADC_HandleTypeDef *hadc) {
-	float32_t averageVoltage;
-	uint8_t percentage;
-	HAL_ADC_Start_IT(hadc);
+uint8_t getBatteryPercentage(ADC_HandleTypeDef *hadc) {
+	// uses c standard round(). included with stdlib.h
+	float averageVoltage, temp;
+	uint8_t index;
 
-	while (index != NUM_SAMPLES);		// wait
+	// enable adc voltage divider for measurements, disable after
+	HAL_GPIO_WritePin(ADC_DIVIDER_PORT, ADC_DIVIDER_PIN, GPIO_PIN_SET);
+	HAL_ADC_Start_IT(hadc);
+	while (sampleIndex != NUM_SAMPLES);		// wait until it's finished 10 samples
+	HAL_GPIO_WritePin(ADC_DIVIDER_PORT, ADC_DIVIDER_PIN, GPIO_PIN_RESET);
 
 	averageVoltage = batterySum / NUM_SAMPLES;
-	percentage = (batteryCapacityArraySize-search(averageVoltage))/(float32_t)batteryCapacityArraySize*100;
 
-	return percentage;
+	// trying to look only for 3.9-3.4. anything above 3.7 is 100%, anything below 3.4 is 0%
+	// scaled voltages at 3.0642-2.6714
+	// indices at 4-152. have to scale and flip to go from 100-0 since 4->100%
+	index = search(averageVoltage);
+	if (index <= 4) return 100;
+	else if (index >= 152) return 0;
+	else {
+		index -= 4;
+		temp = index*100.0/148;
+		temp = 100-temp;
+		return temp;
+	}
 }
 
 // should return index in array
-uint8_t search(float32_t val) {
+uint8_t search(float val) {
 	// write binary search for efficiency?
 	// size not related to 2. size is not that big. maybe in the future
 	uint8_t i;
 	for (i = 0; i < batteryCapacityArraySize; i++) {
 		if (val > batteryCapacity[i]) return i;
 	}
+	return batteryCapacityArraySize;
 }
 
 // might need to put into different file so it can use display includes
-void testBatteryCalculator(ADC_HandleTypeDef *hadc) {
-	uint8_t bat = calculateBatteryPercentage(hadc);
+void testBatteryCalculator(ADC_HandleTypeDef *hadc, SPI_HandleTypeDef *hspi) {
+	batteryManager(hadc);
 
-	// print to display. loop periodically?
+	setTextSize(1);
+	setTextColor(ST77XX_ORANGE);
+	setBackgroundColor(ST77XX_BLACK);
+	char str[40];
+	sprintf(str, "batt_level: %3d %%", battPercentage);
+	drawTextAt(0, 0, str, hspi);
 }
 
 // from some data set hosted hosted by nasa. should be replaced later with measurements from our own battery
 // thx for the data Prognostics CoE at NASA Ames
 // already scaled for 3.3V ADC. sorted by largest to smallest, so should do a conversion when indexing
-const float32_t batteryCapacity[] = {
+static const float batteryCapacity[] = {
 	3.293315,
 	3.292731,
 	3.123113,
@@ -226,5 +279,3 @@ const float32_t batteryCapacity[] = {
 	2.251871,
 	2.166412
 };
-
-uint16_t batteryCapacityArraySize = 179;

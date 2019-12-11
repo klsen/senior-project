@@ -10,7 +10,6 @@ static uint32_t timerStartMarker = 0;
 static uint32_t timerPauseMarker = 0;
 static uint32_t stopwatchStartMarker = 0;
 static uint32_t stopwatchPauseMarker = 0;
-static uint8_t isMotorRunning = 0;
 static uint8_t motorStateCounter = 0;
 
 // important boye that is called for a bunch of different timers
@@ -29,28 +28,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 		HAL_NVIC_EnableIRQ(EXTI2_3_IRQn);
 		HAL_NVIC_EnableIRQ(EXTI4_15_IRQn);
 	}
-	// motor's timer
-	else if (htim->Instance == TIM2) {
-		if (motorStateCounter == 5) {
-			isMotorRunning = 0;
-			motorStateCounter = 0;
-			HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_PIN, GPIO_PIN_RESET);
-		}
-		if (isMotorRunning) {
-			// just pulsing 3x
-			switch(motorStateCounter) {
-				case 0: HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_PIN, GPIO_PIN_SET); break;
-				case 1: HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_PIN, GPIO_PIN_RESET); break;
-				case 2: HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_PIN, GPIO_PIN_SET); break;
-				case 3: HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_PIN, GPIO_PIN_RESET); break;
-				case 4: HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_PIN, GPIO_PIN_SET); break;
-			}
-			++motorStateCounter;
-		}
-	}
 	// sampler's timer
 	else if (htim->Instance == TIM22) {
-//		canSampleADC = 1;
+		canSampleBattery = 1;
 	}
 }
 
@@ -64,15 +44,33 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
 				--timerCounter;
 				isTimerRunning = 0;
 				stopTimer(htim);
+				HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_1);
 			}
 		}
 		// stopwatch's channel
 		else if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_2) {
 			updateFace.stopwatch = 1;
 			++stopwatchCounter;
+			HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_1);
 		}
 	}
-	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_1);
+	// motor's timer
+	else if (htim->Instance == TIM2) {
+		// just pulsing 3x
+		switch(motorStateCounter) {
+			case 0: HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_PIN, GPIO_PIN_SET); break;
+			case 1: HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_PIN, GPIO_PIN_RESET); break;
+			case 2: HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_PIN, GPIO_PIN_SET); break;
+			case 3: HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_PIN, GPIO_PIN_RESET); break;
+			case 4: HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_PIN, GPIO_PIN_SET); break;
+			case 5:
+				HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_PIN, GPIO_PIN_RESET);
+				stopMotor(htim);
+				break;
+			default: break;
+		}
+		++motorStateCounter;
+	}
 }
 
 // ---- important timer functions  ----
@@ -112,13 +110,7 @@ void stopTimer(TIM_HandleTypeDef *htim) {
 	timerPauseMarker = 0;
 }
 
-// set stopwatch. using lptimer. maybe better with regular timer?
-// can operate in stop mode if using lptimer
-// modify to update screen/set flags when necessary
-// uses TIM21 clocked by LSE (or at least should)
 void runStopwatch(TIM_HandleTypeDef *htim) {
-//	htim->Instance->CNT = tempStopwatchCounter;
-//	HAL_TIM_Base_Start_IT(htim);
 	TIM_OC_InitTypeDef sConfig = {0};
 	sConfig.OCMode = TIM_OCMODE_TIMING;
 	sConfig.OCPolarity = TIM_OCPOLARITY_HIGH;
@@ -172,15 +164,21 @@ void runADCSampler(TIM_HandleTypeDef *htim) {
 // connect motor enable line to timer output line
 // uses basic HSI timer TIM6
 void runMotor(TIM_HandleTypeDef *htim) {
-//	HAL_TIM_Base_Start_IT(htim);
+	TIM_OC_InitTypeDef sConfig = {0};
+	sConfig.OCMode = TIM_OCMODE_TIMING;
+	sConfig.OCPolarity = TIM_OCPOLARITY_HIGH;
+	sConfig.OCFastMode = TIM_OCFAST_DISABLE;
+	sConfig.Pulse = htim->Instance->CNT;
 
-	// set flag only? to start looking at period complete interrupt for motor's timer?
-	isMotorRunning = 1;
+	HAL_TIM_OC_ConfigChannel(htim, &sConfig, TIM_CHANNEL_1);
+	HAL_TIM_OC_Start_IT(htim, TIM_CHANNEL_1);
+
+	motorStateCounter = 0;
 }
 
 void stopMotor(TIM_HandleTypeDef *htim) {
 	// set flag only? to start looking at period complete interrupt for motor's timer?
-	isMotorRunning = 0;
+	HAL_TIM_OC_Stop_IT(htim, TIM_CHANNEL_1);
 	motorStateCounter = 0;
 }
 
@@ -192,8 +190,23 @@ void runDisplayBacklight(TIM_HandleTypeDef *htim) {
 	sConfig.OCPolarity = TIM_OCPOLARITY_HIGH;
 	sConfig.OCFastMode = TIM_OCFAST_DISABLE;
 
-	HAL_TIM_PWM_ConfigChannel(htim, &sConfig, TIM_CHANNEL_1);
-	HAL_TIM_PWM_Start_IT(htim, TIM_CHANNEL_1);
+	HAL_TIM_PWM_ConfigChannel(htim, &sConfig, TIM_CHANNEL_2);
+	HAL_TIM_PWM_Start_IT(htim, TIM_CHANNEL_2);
+}
+
+void changeDisplayBacklight(uint8_t intensity, TIM_HandleTypeDef *htim) {
+	TIM_OC_InitTypeDef sConfig = {0};
+	sConfig.OCMode = TIM_OCMODE_PWM1;
+	sConfig.Pulse = htim->Instance->ARR-1;
+	sConfig.OCPolarity = TIM_OCPOLARITY_HIGH;
+	sConfig.OCFastMode = TIM_OCFAST_DISABLE;
+
+	HAL_TIM_PWM_ConfigChannel(htim, &sConfig, TIM_CHANNEL_2);
+	HAL_TIM_PWM_Start_IT(htim, TIM_CHANNEL_2);
+}
+
+void stopDisplayBacklight(TIM_HandleTypeDef *htim) {
+	HAL_TIM_PWM_Stop_IT(htim, TIM_CHANNEL_2);
 }
 
 // should use TIM22

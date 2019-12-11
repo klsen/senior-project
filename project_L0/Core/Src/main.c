@@ -77,18 +77,6 @@ static void MX_TIM6_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-// change if using more peripherals that use LSE
-//void peripheralClockConfig() {
-//	RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
-//	PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC|RCC_PERIPHCLK_LPTIM1;
-//	PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
-//	PeriphClkInit.LptimClockSelection = RCC_LPTIM1CLKSOURCE_LSE;
-//
-//	if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
-//	{
-//		Error_Handler();
-//	}
-//}
 /* USER CODE END 0 */
 
 /**
@@ -115,7 +103,6 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-//  peripheralClockConfig();
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -133,15 +120,14 @@ int main(void)
   	/* initialization for display */
 	HAL_Delay(2000);
 	TFT_startup(&hspi1);
-	clearScreen(ST77XX_RED, &hspi1);
+	clearScreen(ST77XX_BLACK, &hspi1);
 
 	/* start updating display for ui */
 	initFace();
-//	runClockDisplay();
 	setClockAlarm(&hrtc);
 	runTimerStopwatchBase(&htim21);
-//	runMotorBacklightBase(&htim2);
-//	runADCSampler(&htim22);
+	runMotorBacklightBase(&htim2);
+	runADCSampler(&htim22);
 
 	/* tests that are only meant to run once */
 //	runStopwatch(&hlptim1);
@@ -152,33 +138,37 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
-    /* USER CODE END WHILE */
+	while (1)
+	{
+	  /* USER CODE END WHILE */
 
-    /* USER CODE BEGIN 3 */
-	  // default
-	  /* test to make sure code isn't hanging */
-//	  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_3);
-//	  HAL_Delay(1000);
+	  /* USER CODE BEGIN 3 */
+		/* test to make sure code isn't hanging */
+//		HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_3);
+//		HAL_Delay(1000);
 
-	  /* repeatable tests */
-	  // clock and timer tests
-//	  clockTest(&hrtc, &hspi1);
+		/* repeatable tests */
+		/* clock and timer tests */
+//		clockTest(&hrtc, &hspi1);
 
-	  // display tests
-//	  lineTest(&hspi1);
-//	  charTest(&hspi1);
-//	  textTest(bg, &hspi1);
+		/* display tests */
+//		lineTest(&hspi1);
+//		charTest(&hspi1);
+//		textTest(bg, &hspi1);
 
-	  // ui/nav tests or full run. uncomment when ready
-	  updateWithButtons(&hrtc, &htim21, &htim2, &htim6);
-	  updateDisplay(&hrtc, &hspi1);
+		/* adc/battery test */
+		testBatteryCalculator(&hadc, &hspi1);
 
-	  // wait for interrupt instruction. CPU goes to sleep mode (listed as "sleep mode" by ST as one of their low-power modes)
-	  // does it work on it's own, or do registers have to be configured first?
-	  // put in bottom, since screen updates should run once at the start
-//	  __WFI();
+		// ui/nav tests or full run. uncomment when ready
+//		updateWithButtons(&hrtc, &htim21, &htim2, &htim6);
+//		batteryManager(&hadc);
+//		updateDisplay(&hrtc, &hspi1);
+
+		// wait for interrupt instruction. CPU goes to sleep mode (listed as "sleep mode" by ST as one of their low-power modes)
+		// does it work on it's own, or do registers have to be configured first?
+		// put in bottom, since screen updates should run once at the start
+//		__WFI();
+
   }
   /* USER CODE END 3 */
 }
