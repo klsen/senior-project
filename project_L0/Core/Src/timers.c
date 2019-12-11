@@ -192,8 +192,8 @@ void runDisplayBacklight(TIM_HandleTypeDef *htim) {
 	sConfig.OCPolarity = TIM_OCPOLARITY_HIGH;
 	sConfig.OCFastMode = TIM_OCFAST_DISABLE;
 
-	HAL_TIM_PWM_ConfigChannel(htim, &sConfig, HAL_TIM_ACTIVE_CHANNEL_1);
-	HAL_TIM_PWM_Start_IT(htim, HAL_TIM_ACTIVE_CHANNEL_1);
+	HAL_TIM_PWM_ConfigChannel(htim, &sConfig, TIM_CHANNEL_1);
+	HAL_TIM_PWM_Start_IT(htim, TIM_CHANNEL_1);
 }
 
 // should use TIM22

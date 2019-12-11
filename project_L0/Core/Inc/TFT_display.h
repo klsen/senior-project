@@ -16,7 +16,6 @@
 #include "stm32l0xx_hal.h"
 #include "font.h"
 #include <string.h>			// just for using strlen() :I
-#include <stdlib.h>
 
 // ---- Start of library constants ----
 // pulled from Adafruit ST77XX driver library.
