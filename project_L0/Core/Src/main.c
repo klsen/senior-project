@@ -126,7 +126,7 @@ int main(void)
 	initFace();
 	setClockAlarm(&hrtc);
 	runTimerStopwatchBase(&htim21);
-	runMotorBacklightBase(&htim2);
+	runBacklightMotorBase(&htim2);
 	runADCSampler(&htim22);
 
 	/* tests that are only meant to run once */
@@ -160,8 +160,8 @@ int main(void)
 		testBatteryCalculator(&hadc, &hspi1);
 
 		// ui/nav tests or full run. uncomment when ready
-//		updateWithButtons(&hrtc, &htim21, &htim2, &htim6);
-//		batteryManager(&hadc);
+//		updateState(&hrtc, &htim21, &htim2, &htim6);
+//		batteryManager(&hadc, &hspi1);
 //		updateDisplay(&hrtc, &hspi1);
 
 		// wait for interrupt instruction. CPU goes to sleep mode (listed as "sleep mode" by ST as one of their low-power modes)

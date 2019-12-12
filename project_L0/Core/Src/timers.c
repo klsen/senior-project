@@ -42,8 +42,10 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
 			if (timerCounter != 1) --timerCounter;
 			else {
 				--timerCounter;
-				isTimerRunning = 0;
+				isTimerDone = 1;
 				stopTimer(htim);
+				updateFace.timer = 1;
+
 				HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_1);
 			}
 		}

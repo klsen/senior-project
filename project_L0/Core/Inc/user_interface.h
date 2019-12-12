@@ -60,6 +60,7 @@ struct timerVariables {
 struct alarmVariables {
 	uint8_t isBeingSet;
 	uint8_t fieldBeingSet;
+	uint8_t isSet;
 //	uint8_t isRunning;				// global
 	struct alarmTimes *alarmToSet;
 };
@@ -81,10 +82,11 @@ struct buttonFlags {
 volatile struct buttonFlags buttons;
 volatile struct faceFlags updateFace;
 volatile uint8_t isTimerRunning;
-volatile uint8_t isAlarmRunning;
 volatile uint8_t isStopwatchRunning;
 volatile uint8_t isTimerPaused;			// used by timers.c file to see if function was paused
 volatile uint8_t isStopwatchPaused;
+volatile uint8_t isTimerDone;
+volatile uint8_t isAlarmDone;
 
 //volatile uint8_t buttonPressed;
 
@@ -102,13 +104,13 @@ const char* monthNames[13];
 
 // might need hw timer and rtc handles but not if they're kept global.
 // refactor clock and timer back to use non-global
-void updateWithButtons(RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *timerStopwatchTim, TIM_HandleTypeDef *motorBacklightTim, TIM_HandleTypeDef *buttonTim);
+void updateState(RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *timerStopwatchTim, TIM_HandleTypeDef *motorBacklightTim, TIM_HandleTypeDef *buttonTim);
 void updateDisplay(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
 
 // getting really sick of looking at 1 function with 250 lines.
 void updateClockState(RTC_HandleTypeDef *hrtc);
-void updateTimerState(TIM_HandleTypeDef *timerStopwatchTim);
-void updateAlarmState(RTC_HandleTypeDef *hrtc);
+void updateTimerState(TIM_HandleTypeDef *timerStopwatchTim, TIM_HandleTypeDef *motorTim);
+void updateAlarmState(RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *motorTim);
 void updateStopwatchState(TIM_HandleTypeDef *timerStopwatchTim);
 
 // getting really sick of looking at 1 function with 150 lines

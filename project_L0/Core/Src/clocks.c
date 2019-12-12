@@ -134,19 +134,12 @@ void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc) {
 	// change pin to whatever's accessible
 	// using PC0
 	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_0);
-
-	HAL_RTC_DeactivateAlarm(hrtc, RTC_ALARM_A);
-	isAlarmRunning = 0;
+	isAlarmDone = 1;
 	updateFace.alarm = 1;
 }
 
+// used to trigger display refresh every second. used because then it's synchronous with RTC updates
 void HAL_RTCEx_AlarmBEventCallback(RTC_HandleTypeDef *hrtc) {
-	// toggles pin on end of timer. clears alarm
-//	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_1);
-//	HAL_RTC_DeactivateAlarm(hrtc, RTC_ALARM_B);
-//	isTimerRunning = 0;
-//	updateFace.timer = 1;
-
 	updateFace.clock = 1;
 	setClockAlarm(hrtc);
 }

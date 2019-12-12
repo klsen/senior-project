@@ -28,7 +28,7 @@ enum batteryState {
 	// no state for 0% battery because system will have no power at that point
 };
 
-void batteryManager(ADC_HandleTypeDef *hadc);
+void batteryManager(ADC_HandleTypeDef *hadc, SPI_HandleTypeDef *hspi);
 uint8_t getBatteryPercentage(ADC_HandleTypeDef *hadc);
 uint8_t search(float val);
 void testBatteryCalculator(ADC_HandleTypeDef *hadc, SPI_HandleTypeDef *hspi);

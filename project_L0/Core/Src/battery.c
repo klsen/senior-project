@@ -87,7 +87,7 @@ uint8_t search(float val) {
 
 // might need to put into different file so it can use display includes
 void testBatteryCalculator(ADC_HandleTypeDef *hadc, SPI_HandleTypeDef *hspi) {
-	batteryManager(hadc);
+	batteryManager(hadc, hspi);
 
 	setTextSize(1);
 	setTextColor(ST77XX_ORANGE);

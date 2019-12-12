@@ -58,7 +58,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_3);		// should run for any button
 }
 
-void updateWithButtons(RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *timerStopwatchTim, TIM_HandleTypeDef *motorBacklightTim, TIM_HandleTypeDef *buttonTim) {
+void updateState(RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *timerStopwatchTim, TIM_HandleTypeDef *motorBacklightTim, TIM_HandleTypeDef *buttonTim) {
 	/* program flow:
 	 *   check current face used
 	 *   check current variables and check button pressed
@@ -78,8 +78,8 @@ void updateWithButtons(RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *timerStopwatc
 	}
 
 	if (faceOnDisplay == faceClock) updateClockState(hrtc);
-	else if (faceOnDisplay == faceTimer) updateTimerState(timerStopwatchTim);
-	else if (faceOnDisplay == faceAlarm) updateAlarmState(hrtc);
+	else if (faceOnDisplay == faceTimer) updateTimerState(timerStopwatchTim, motorBacklightTim);
+	else if (faceOnDisplay == faceAlarm) updateAlarmState(hrtc, motorBacklightTim);
 	else if (faceOnDisplay == faceStopwatch) updateStopwatchState(timerStopwatchTim);
 }
 
@@ -194,7 +194,7 @@ void updateClockState(RTC_HandleTypeDef *hrtc) {
  *   might need to change to using only hardware timer for this instead of rtc because of problems listed above
  *   insert a few more functions into this (those that need to use the hardware)
  */
-void updateTimerState(TIM_HandleTypeDef *timerStopwatchTim) {
+void updateTimerState(TIM_HandleTypeDef *timerStopwatchTim, TIM_HandleTypeDef *motorTim) {
 	if (timerVars.isBeingSet) {
 		if (buttons.is2Pressed) {
 			buttons.is2Pressed = 0;
@@ -230,7 +230,7 @@ void updateTimerState(TIM_HandleTypeDef *timerStopwatchTim) {
 			}
 		}
 	}
-	// not done
+	// set and ready to run
 	else if (timerVars.isSet) {
 		if (buttons.is2Pressed && isTimerRunning == 0 && timerCounter != 0) {
 			buttons.is2Pressed = 0;
@@ -260,6 +260,12 @@ void updateTimerState(TIM_HandleTypeDef *timerStopwatchTim) {
 			isTimerRunning = 0;
 			isTimerPaused = 0;
 		}
+		if (isTimerDone) {
+			isTimerRunning = 0;
+			isTimerPaused = 0;
+			timerCounter = timeToSeconds(timerVars.timeToSet);
+			runMotor(motorTim);
+		}
 	}
 	// not done? might be done (other buttons start/stop timer)
 	if (buttons.is4Pressed) {
@@ -282,6 +288,7 @@ void updateTimerState(TIM_HandleTypeDef *timerStopwatchTim) {
 		else {
 			timerVars.isBeingSet = 0;
 			timerVars.isSet = 1;
+			isTimerDone = 0;
 			timerCounter = timeToSeconds(timerVars.timeToSet);
 		}
 	}
@@ -313,7 +320,7 @@ void updateTimerState(TIM_HandleTypeDef *timerStopwatchTim) {
  *   need to make changes to ui to make this happen
  *   currently just does old behavior (only 1 alarm)
  */
-void updateAlarmState(RTC_HandleTypeDef *hrtc) {
+void updateAlarmState(RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *motorTim) {
 	if (buttons.is2Pressed && alarmVars.isBeingSet) {
 		buttons.is2Pressed = 0;
 		updateFace.alarm = 1;
@@ -356,7 +363,7 @@ void updateAlarmState(RTC_HandleTypeDef *hrtc) {
 		buttons.is4Pressed = 0;
 		updateFace.alarm = 1;
 
-		if (isAlarmRunning == 0) {
+		if (alarmVars.isSet == 0) {
 			// toggle between fields
 			alarmVars.fieldBeingSet = (alarmVars.fieldBeingSet + 1) % (NUM_ALARMFIELDS + 1);
 			if (alarmVars.fieldBeingSet != 0) {
@@ -373,15 +380,18 @@ void updateAlarmState(RTC_HandleTypeDef *hrtc) {
 			}
 			else {
 				alarmVars.isBeingSet = 0;
-				isAlarmRunning = 1;
+				alarmVars.isSet = 1;
 				setAlarm(alarmVars.alarmToSet, hrtc);
 			}
 		}
 		else {
 			// stop and clear alarm hw
-			isAlarmRunning = 0;
+			alarmVars.isSet = 0;
 			HAL_RTC_DeactivateAlarm(hrtc, RTC_ALARM_A);
 		}
+	}
+	if (isAlarmDone) {
+		runMotor(motorTim);
 	}
 }
 
@@ -556,7 +566,7 @@ void updateTimerDisplay(SPI_HandleTypeDef *hspi) {
 			// draw button text
 			drawButtonText("", "", "set", hspi);
 		}
-		else {
+		else if (isTimerDone == 0) {
 			secondsToTime(&currentTimer, timerCounter);
 			drawTimer(&currentTimer, hspi);
 
@@ -575,6 +585,14 @@ void updateTimerDisplay(SPI_HandleTypeDef *hspi) {
 
 			// draw button text
 			drawButtonText("run", "pause", "clear", hspi);
+		}
+		else {
+			// should occur after running (case above). states should be coded to let you run the same time again
+			secondsToTime(&currentTimer, timerCounter);
+			drawTimer(&currentTimer, hspi);
+
+			setTextSize(1);
+			drawCenteredTextWithPadding(WIDTH/2, 84, 12, "timer done!", hspi);
 		}
 	}
 	else if (timerVars.isBeingSet == 1) {
@@ -595,7 +613,7 @@ void updateTimerDisplay(SPI_HandleTypeDef *hspi) {
 
 void updateAlarmDisplay(SPI_HandleTypeDef *hspi) {
 	if (alarmVars.isBeingSet == 0) {
-		if (isAlarmRunning == 0) {
+		if (alarmVars.isSet == 0) {
 			setTextSize(3);
 			clearTextLine(68, hspi);	// clear alarm time text
 
@@ -606,13 +624,18 @@ void updateAlarmDisplay(SPI_HandleTypeDef *hspi) {
 			// draw button text
 			drawButtonText("", "", "set", hspi);
 		}
-		else {
+		else if (isAlarmDone == 0) {
 			setTextSize(1);
 			drawCenteredTextWithPadding(WIDTH/2, 100, 11, "alarm set", hspi);
 			drawAlarm(alarmVars.alarmToSet, hspi);
 
 			// draw button text
 			drawButtonText("", "", "clear", hspi);
+		}
+		else {
+			// should only run after case above. should let you run alarm again (alarm doesn't get deactivated, so it'll trigger again if you wait a week)
+			setTextSize(1);
+			drawCenteredTextWithPadding(WIDTH/2, 100, 11, "alarm done!", hspi);
 		}
 	}
 	else if (alarmVars.isBeingSet == 1) {
