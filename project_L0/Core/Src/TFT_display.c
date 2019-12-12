@@ -174,6 +174,9 @@ void setAddrWindow(uint16_t x, uint16_t y, uint16_t w, uint16_t h, SPI_HandleTyp
 	temp[3] = (y+h-1) & (0x00FF);
 	sendCommand(ST77XX_RASET, temp, 4, hspi);
 }
+
+void turnDisplayOn(SPI_HandleTypeDef *hspi) {sendCommand(ST77XX_DISPON, NULL, 0, hspi);}		// no args, null shouldn't be accessed by sendCommand func
+void turnDisplayOff(SPI_HandleTypeDef *hspi) {sendCommand(ST77XX_DISPOFF, NULL, 0, hspi);}
 // ---- end of lower level functions
 
 // ---- base graphics functions ----

@@ -14,7 +14,7 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {
 	else ++sampleIndex;
 }
 
-void batteryManager(ADC_HandleTypeDef *hadc) {
+void batteryManager(ADC_HandleTypeDef *hadc, SPI_HandleTypeDef *hspi) {
 	if (canSampleBattery) {
 		canSampleBattery = 0;
 
@@ -28,6 +28,7 @@ void batteryManager(ADC_HandleTypeDef *hadc) {
 		// start really shutting down & set flag
 		else if (battPercentage <= 5) {
 			// start turning off most hardware
+			turnDisplayOff(hspi);
 			bState = batteryReallyLow;
 		}
 		// disable power supply (setting enable pin to 0)
@@ -38,6 +39,7 @@ void batteryManager(ADC_HandleTypeDef *hadc) {
 		else {
 			// do nothing? maybe might need to check previous state and make sure everything is normal
 			if (bState == batteryLow || bState == batteryReallyLow) {
+				turnDisplayOn(hspi);
 			}
 			bState = batteryNormal;
 		}

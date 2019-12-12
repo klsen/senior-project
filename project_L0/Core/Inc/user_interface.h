@@ -83,7 +83,7 @@ volatile struct faceFlags updateFace;
 volatile uint8_t isTimerRunning;
 volatile uint8_t isAlarmRunning;
 volatile uint8_t isStopwatchRunning;
-volatile uint8_t isTimerPaused;			// new flags for hw timer. update nav accordingly
+volatile uint8_t isTimerPaused;			// used by timers.c file to see if function was paused
 volatile uint8_t isStopwatchPaused;
 
 //volatile uint8_t buttonPressed;

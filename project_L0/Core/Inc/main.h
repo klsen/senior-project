@@ -32,7 +32,7 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "navigation.h"
+#include "user_interface.h"
 #include "TFT_display.h"
 #include "TFT_display_test.h"
 #include "clocks.h"

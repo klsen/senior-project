@@ -3,7 +3,7 @@
  * uses global flags (concurrency problem?).
  */
 
-#include "navigation.h"
+#include "user_interface.h"
 
 // use static for timer/alarm/stopwatch variables, changeface, and face used.
 // needed only in updatedisplay/buttons, but each func shares these variables
@@ -161,7 +161,6 @@ void updateClockState(RTC_HandleTypeDef *hrtc) {
 			setClockAlarm(hrtc);
 		}
 	}
-	// checks on clock set for other buttons here (what did this note mean??)
 }
 
 /*
@@ -233,7 +232,7 @@ void updateTimerState(TIM_HandleTypeDef *timerStopwatchTim) {
 	}
 	// not done
 	else if (timerVars.isSet) {
-		if (buttons.is2Pressed && isTimerRunning == 0) {
+		if (buttons.is2Pressed && isTimerRunning == 0 && timerCounter != 0) {
 			buttons.is2Pressed = 0;
 			updateFace.timer = 1;
 
@@ -242,7 +241,7 @@ void updateTimerState(TIM_HandleTypeDef *timerStopwatchTim) {
 			isTimerRunning = 1;
 			isTimerPaused = 0;
 		}
-		if (buttons.is3Pressed && isTimerRunning) {
+		if (buttons.is3Pressed && isTimerRunning && timerCounter != 0) {
 			buttons.is3Pressed = 0;
 			updateFace.timer = 1;
 
@@ -425,7 +424,7 @@ void updateStopwatchState(TIM_HandleTypeDef *timerStopwatchTim) {
 			isStopwatchPaused = 1;
 		}
 	}
-	if (buttons.is3Pressed) {
+	if (buttons.is3Pressed && stopwatchCounter != 0) {
 		buttons.is3Pressed = 0;
 		updateFace.stopwatch = 1;
 

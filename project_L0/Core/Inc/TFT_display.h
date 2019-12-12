@@ -122,6 +122,8 @@ void sendCommand(uint8_t cmd, uint8_t* args, uint16_t numArgs, SPI_HandleTypeDef
 void displayInit(uint8_t *args, SPI_HandleTypeDef *hspi);
 void TFT_startup(SPI_HandleTypeDef *hspi);
 void setAddrWindow(uint16_t x, uint16_t y, uint16_t w, uint16_t h, SPI_HandleTypeDef *hspi);
+void turnDisplayOn(SPI_HandleTypeDef *hspi);
+void turnDisplayOff(SPI_HandleTypeDef *hspi);
 // ---- End of lower level functions ----
 
 // ---- Graphics functions ----
