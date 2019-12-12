@@ -58,7 +58,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_3);		// should run for any button
 }
 
-void updateState(RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *timerStopwatchTim, TIM_HandleTypeDef *motorBacklightTim, TIM_HandleTypeDef *buttonTim) {
+void updateState(RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *timerStopwatchTim, TIM_HandleTypeDef *motorBacklightTim, TIM_HandleTypeDef *buttonTim, SPI_HandleTypeDef *hspi) {
 	/* program flow:
 	 *   check current face used
 	 *   check current variables and check button pressed
@@ -77,10 +77,31 @@ void updateState(RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *timerStopwatchTim, 
 		}
 	}
 
+	static uint8_t s = 0;
+	switch(s) {
+		case 0:	if (buttons.is2Pressed) s++; break;
+		case 1: if (buttons.is2Pressed) s++; else if (buttons.is1Pressed || buttons.is3Pressed || buttons.is4Pressed) s = 0; break;
+		case 2: if (buttons.is3Pressed) s++; else if (buttons.is1Pressed || buttons.is2Pressed || buttons.is4Pressed) s = 0; break;
+		case 3: if (buttons.is3Pressed) s++; else if (buttons.is1Pressed || buttons.is2Pressed || buttons.is4Pressed) s = 0; break;
+		case 4: if (buttons.is4Pressed) s++; else if (buttons.is1Pressed || buttons.is2Pressed || buttons.is3Pressed) s = 0; break;
+		case 5: if (buttons.is4Pressed) {TFT_startup(hspi); s = 0;} break;
+		default: break;
+	}
+	char str[10];
+	sprintf(str, "%d", s);
+	setTextSize(1);
+	drawTextAt(0, 0, str, hspi);
+
+//	if (buttons.is3Pressed) turnDisplayOn(hspi);
+//	if (buttons.is4Pressed) turnDisplayOff(hspi);
+
 	if (faceOnDisplay == faceClock) updateClockState(hrtc);
 	else if (faceOnDisplay == faceTimer) updateTimerState(timerStopwatchTim, motorBacklightTim);
 	else if (faceOnDisplay == faceAlarm) updateAlarmState(hrtc, motorBacklightTim);
 	else if (faceOnDisplay == faceStopwatch) updateStopwatchState(timerStopwatchTim);
+
+	// some decisions in respective state functions dont clear these flags
+	buttons.is1Pressed = buttons.is2Pressed = buttons.is3Pressed = buttons.is4Pressed = 0;
 }
 
 /*
@@ -260,12 +281,12 @@ void updateTimerState(TIM_HandleTypeDef *timerStopwatchTim, TIM_HandleTypeDef *m
 			isTimerRunning = 0;
 			isTimerPaused = 0;
 		}
-		if (isTimerDone) {
-			isTimerRunning = 0;
-			isTimerPaused = 0;
-			timerCounter = timeToSeconds(timerVars.timeToSet);
-			runMotor(motorTim);
-		}
+//		if (isTimerDone) {
+//			isTimerRunning = 0;
+//			isTimerPaused = 0;
+//			timerCounter = timeToSeconds(timerVars.timeToSet);
+//			runMotor(motorTim);
+//		}
 	}
 	// not done? might be done (other buttons start/stop timer)
 	if (buttons.is4Pressed) {
@@ -285,11 +306,15 @@ void updateTimerState(TIM_HandleTypeDef *timerStopwatchTim, TIM_HandleTypeDef *m
 				timerVars.timeToSet->hr = 0;
 			}
 		}
-		else {
+		else if (timeToSeconds(timerVars.timeToSet) != 0) {
 			timerVars.isBeingSet = 0;
 			timerVars.isSet = 1;
 			isTimerDone = 0;
 			timerCounter = timeToSeconds(timerVars.timeToSet);
+		}
+		else {
+			timerVars.isBeingSet = 0;
+			timerVars.isSet = 0;
 		}
 	}
 }
@@ -792,53 +817,12 @@ void drawStopwatchLap(uint32_t seconds, SPI_HandleTypeDef *hspi) {
 	drawCenteredText(WIDTH/2, 84, str, hspi);
 }
 
-// calculator for number of days in a month given a month and accounting for leap years
-// assumes month is 1-12, 1=january, 12=december
-uint8_t maxDaysInMonth(uint8_t month, uint16_t year) {
-	if (month == 0 || month > 12) return 0;		// bounds checking
-
-	// not using built-in defines, because they're in BCD
-	if (month == 1  ||		// january
-		month == 3  ||		// march
-		month == 5  ||		// may
-		month == 7  ||		// july
-		month == 8  ||		// august
-		month == 10 ||		// october
-		month == 12) {		// december
-		return 31;
-	}
-	else if (month == 4 ||	// april
-			 month == 6 ||	// june
-			 month == 9 ||	// september
-			 month == 11) {	// november
-		return 30;
-	}
-
-	// february/leap year calculator
-	// leap year for every 4th year, but every 100th year is not a leap year except on every 400th year
-	// ex. 2020 is a leap year, 2100 is not a leap year, 2000 is a leap year.
-	else if (year % 400 == 0) return 29;
-	else if (year % 100 == 0) return 28;
-	else if (year % 4 == 0) return 29;
-	else return 28;
-}
-
 void initFace() {
-//	isFaceBeingChanged = 1;
-//	faceOnDisplay = faceClock;
+	faceOnDisplay = faceClock;
 	updateFace.clock = 1;
 
 	clockVars.dateToSet = (struct dates *)calloc(1, sizeof(struct dates *));
 	clockVars.timeToSet = (struct times *)calloc(1, sizeof(struct times *));
 	timerVars.timeToSet = (struct times *)calloc(1, sizeof(struct times *));
 	alarmVars.alarmToSet = (struct alarmTimes *)calloc(1, sizeof(struct alarmTimes *));
-
-//	struct dates tempclockdate = {0};
-//	struct times tempclocktime = {0};
-//	struct times temptimer = {0};
-//	struct alarmTimes tempalarm = {0};
-//	*clockVars.dateToSet = tempclockdate;
-//	*clockVars.timeToSet = tempclocktime;
-//	*timerVars.timeToSet = temptimer;
-//	*alarmVars.alarmToSet = tempalarm;
 }

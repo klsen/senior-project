@@ -104,7 +104,7 @@ const char* monthNames[13];
 
 // might need hw timer and rtc handles but not if they're kept global.
 // refactor clock and timer back to use non-global
-void updateState(RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *timerStopwatchTim, TIM_HandleTypeDef *motorBacklightTim, TIM_HandleTypeDef *buttonTim);
+void updateState(RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *timerStopwatchTim, TIM_HandleTypeDef *motorBacklightTim, TIM_HandleTypeDef *buttonTim, SPI_HandleTypeDef *hspi);
 void updateDisplay(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
 
 // getting really sick of looking at 1 function with 250 lines.
@@ -130,7 +130,6 @@ void drawAlarm(struct alarmTimes *a, SPI_HandleTypeDef *hspi);
 void drawStopwatch(uint32_t seconds, SPI_HandleTypeDef *hspi);
 void drawStopwatchLap(uint32_t seconds, SPI_HandleTypeDef *hspi);
 
-uint8_t maxDaysInMonth(uint8_t month, uint16_t year);
 void initFace();
 
 #endif

@@ -60,8 +60,6 @@ void setAlarm(struct alarmTimes *a, RTC_HandleTypeDef *hrtc) {
 	RTC_AlarmTypeDef salarm = {0};		// is there a problem with using pointers instead?
 	RTC_TimeTypeDef salarmtime = {0};
 
-	watchAlarm = *a;	// this is probably fine (value at a is defined already)
-
 	// change to set with args
 	salarmtime.Hours = a->hr;
 	salarmtime.Minutes = a->min;
@@ -195,7 +193,19 @@ void getDateTime(struct dates *d, struct times *t, RTC_HandleTypeDef *hrtc) {
 }
 // ---- end of clock get functions ----
 
-// ---- converters ----
+// ---- RTC calibration functions ----
+//void setRTCCalibration(int calibVal, RTC_HandleTypeDef *hrtc) {
+//	if (calibVal == 0) return;
+//	else if (calibVal > 0) {
+//		if (calibVal >= 126) HAL_RTCEx_SetSmoothCalib(hrtc, SmoothCalibPeriod, SmoothCalibPlusPulses, SmoothCalibMinusPulsesValue);
+//	}
+//	else {
+//
+//	}
+//}
+// ---- end of RTC calibration functions ----
+
+// ---- converters and calculators ----
 uint32_t timeToSeconds(struct times *t) {
 	return t->sec + t->min*60 + t->hr*3600;
 }
@@ -221,4 +231,35 @@ uint8_t weekdayCalculator(uint16_t year, uint8_t month, uint8_t day) {
 	uint16_t temp = (year + year/4 - year/100 + year/400 + table[month-1] + day) % 7;
 	return temp;
 }
-// ---- end of converters ----
+
+// calculator for number of days in a month given a month and accounting for leap years
+// assumes month is 1-12, 1=january, 12=december
+uint8_t maxDaysInMonth(uint8_t month, uint16_t year) {
+	if (month == 0 || month > 12) return 0;		// bounds checking
+
+	// not using built-in defines, because they're in BCD
+	if (month == 1  ||		// january
+		month == 3  ||		// march
+		month == 5  ||		// may
+		month == 7  ||		// july
+		month == 8  ||		// august
+		month == 10 ||		// october
+		month == 12) {		// december
+		return 31;
+	}
+	else if (month == 4 ||	// april
+			 month == 6 ||	// june
+			 month == 9 ||	// september
+			 month == 11) {	// november
+		return 30;
+	}
+
+	// february/leap year calculator
+	// leap year for every 4th year, but every 100th year is not a leap year except on every 400th year
+	// ex. 2020 is a leap year, 2100 is not a leap year, 2000 is a leap year.
+	else if (year % 400 == 0) return 29;
+	else if (year % 100 == 0) return 28;
+	else if (year % 4 == 0) return 29;
+	else return 28;
+}
+// ---- end of converters and calculators ----

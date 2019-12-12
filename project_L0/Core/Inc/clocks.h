@@ -17,12 +17,6 @@
  * RTC CALIBRATION FOR CLOCK CRYSTAL ON RTC EXTENSIONS FILE
  */
 
-// ---- variables ----
-struct alarmTimes watchAlarm;		// for keeping track of what alarms are in the RTC.
-struct times watchTimer;			// using RTC alarmB for this now
-volatile uint32_t watchTimerSeconds;
-// ---- end of variables ----
-
 // ---- personal structs ----
 struct times {
 	uint8_t hr;
@@ -51,48 +45,28 @@ struct alarmTimes {
 void setTime(struct times *t, RTC_HandleTypeDef *hrtc);
 void setDate(struct dates *d, RTC_HandleTypeDef *hrtc);
 void setDateTime(struct dates *d, struct times *t, RTC_HandleTypeDef *hrtc);
-//void setTime(struct times *t);
-//void setDate(struct dates *d);
-//void setDateTime(struct dates *d, struct times *t);
 // ---- end of rtc setters ----
 
 // ---- alarm setters ----
 void setAlarm(struct alarmTimes *a, RTC_HandleTypeDef *hrtc);
 void setClockAlarm(RTC_HandleTypeDef *hrtc);
-//void setTimer(struct times *t_in, RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *htim);
-//void setAlarm(struct alarmTimes *a);
-//void setTimer(struct times *t_in);
 // ---- end of alarm setters ----
 
 // ---- getting rtc times ----
 void getTime(struct times *t, RTC_HandleTypeDef *hrtc);
 void getDate(struct dates *d, RTC_HandleTypeDef *hrtc);
 void getDateTime(struct dates *d, struct times *t, RTC_HandleTypeDef *hrtc);
-//void getTime(struct times *t);
-//void getDate(struct dates *d);
-//void getDateTime(struct dates *d, struct times *t);
 // ---- end of getters ----
 
-// converters
+// rtc calibration functions
+void setRTCCalibration(int calibVal, RTC_HandleTypeDef *hrtc);
+void showRTCCalibration(int calibVal, RTC_HandleTypeDef *hrtc);
+
+// ---- converters and calculators ----
 uint32_t timeToSeconds(struct times *t);
 void secondsToTime(struct times *t, uint32_t seconds);
 uint8_t weekdayCalculator(uint16_t year, uint8_t month, uint8_t day);
-
-// ---- printing stuff ----
-//void printTime(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
-//void printDate(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
-//void printDateTime(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
-//void printTime();
-//void printDate();
-//void printDateTime();
-// ---- end of prints ----
-
-// ---- tests ----
-//void clockTest(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
-//void alarmTest(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
-//void clockTest();
-//void alarmTest();
-//void timerTest();
-// ---- end of tests ----
+uint8_t maxDaysInMonth(uint8_t month, uint16_t year);
+// ---- end of converters and calculators ----
 
 #endif

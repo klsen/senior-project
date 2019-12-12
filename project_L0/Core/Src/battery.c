@@ -2,38 +2,34 @@
 
 #include "battery.h"
 
-static volatile float batterySum = 0;
+volatile float batterySum = 0;
 static uint8_t sampleIndex = 0;
 static uint8_t bState = batteryNormal;
 static const float batteryCapacity[];
 static uint16_t batteryCapacityArraySize = 179;
 
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {
-	batterySum += 3.3*hadc->Instance->DR/(1<<12);
-	if (sampleIndex < NUM_SAMPLES) HAL_ADC_Start_IT(hadc);
-	else ++sampleIndex;
-}
-
+// spi used to turn display on/off only
 void batteryManager(ADC_HandleTypeDef *hadc, SPI_HandleTypeDef *hspi) {
 	if (canSampleBattery) {
 		canSampleBattery = 0;
 
 		battPercentage = getBatteryPercentage(hadc);
-
-		// start low-power mode and set flag
-		if (battPercentage <= 15) {
-			// start turning off some hardware
-			bState = batteryLow;
-		}
+		HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_3);
 		// start really shutting down & set flag
+		// disable power supply (setting enable pin to 0)
+		if (battPercentage == 0) {
+//			turnDisplayOff(hspi);
+			HAL_GPIO_WritePin(POWER_SUPPLY_ENABLE_PORT, POWER_SUPPLY_ENABLE_PIN, GPIO_PIN_RESET);
+		}
 		else if (battPercentage <= 5) {
 			// start turning off most hardware
-			turnDisplayOff(hspi);
+//			turnDisplayOff(hspi);
 			bState = batteryReallyLow;
 		}
-		// disable power supply (setting enable pin to 0)
-		else if (battPercentage == 0) {
-			HAL_GPIO_WritePin(POWER_SUPPLY_ENABLE_PORT, POWER_SUPPLY_ENABLE_PIN, GPIO_PIN_RESET);
+		// start low-power mode and set flag
+		else if (battPercentage <= 15) {
+			// start turning off some hardware
+			bState = batteryLow;
 		}
 		// set hardware to use power normally
 		else {
@@ -41,6 +37,7 @@ void batteryManager(ADC_HandleTypeDef *hadc, SPI_HandleTypeDef *hspi) {
 			if (bState == batteryLow || bState == batteryReallyLow) {
 				turnDisplayOn(hspi);
 			}
+			HAL_GPIO_WritePin(POWER_SUPPLY_ENABLE_PORT, POWER_SUPPLY_ENABLE_PIN, GPIO_PIN_SET);
 			bState = batteryNormal;
 		}
 	}
@@ -48,27 +45,26 @@ void batteryManager(ADC_HandleTypeDef *hadc, SPI_HandleTypeDef *hspi) {
 
 // should return a number from 0-100
 uint8_t getBatteryPercentage(ADC_HandleTypeDef *hadc) {
-	// uses c standard round(). included with stdlib.h
 	float averageVoltage, temp;
 	uint8_t index;
 
 	// enable adc voltage divider for measurements, disable after
 	HAL_GPIO_WritePin(ADC_DIVIDER_PORT, ADC_DIVIDER_PIN, GPIO_PIN_SET);
 	HAL_ADC_Start_IT(hadc);
-	while (sampleIndex != NUM_SAMPLES);		// wait until it's finished 10 samples
+	HAL_ADC_PollForConversion(hadc, HAL_MAX_DELAY);
+	averageVoltage = 3.3*HAL_ADC_GetValue(hadc)/(0xFFF);
+	HAL_ADC_Stop(hadc);
 	HAL_GPIO_WritePin(ADC_DIVIDER_PORT, ADC_DIVIDER_PIN, GPIO_PIN_RESET);
-
-	averageVoltage = batterySum / NUM_SAMPLES;
 
 	// trying to look only for 3.9-3.4. anything above 3.7 is 100%, anything below 3.4 is 0%
 	// scaled voltages at 3.0642-2.6714
-	// indices at 4-152. have to scale and flip to go from 100-0 since 4->100%
+	// indices at 6-151. have to scale and flip to go from 100-0 since 6->100%
 	index = search(averageVoltage);
-	if (index <= 4) return 100;
-	else if (index >= 152) return 0;
+	if (index <= 6) return 100;
+	else if (index >= 135) return 0;		// adjusting numbers because tests want to call 2.65V non-zero
 	else {
-		index -= 4;
-		temp = index*100.0/148;
+		index -= 6;
+		temp = index*100.0/129;
 		temp = 100-temp;
 		return temp;
 	}
@@ -95,6 +91,7 @@ void testBatteryCalculator(ADC_HandleTypeDef *hadc, SPI_HandleTypeDef *hspi) {
 	char str[40];
 	sprintf(str, "batt_level: %3d %%", battPercentage);
 	drawTextAt(0, 0, str, hspi);
+//	drawTextAt(0, 0, "hello", hspi);
 }
 
 // from some data set hosted hosted by nasa. should be replaced later with measurements from our own battery

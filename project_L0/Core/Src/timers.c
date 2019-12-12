@@ -59,19 +59,19 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
 	// motor's timer
 	else if (htim->Instance == TIM2) {
 		// just pulsing 3x
+		++motorStateCounter;
 		switch(motorStateCounter) {
-			case 0: HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_PIN, GPIO_PIN_SET); break;
-			case 1: HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_PIN, GPIO_PIN_RESET); break;
-			case 2: HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_PIN, GPIO_PIN_SET); break;
-			case 3: HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_PIN, GPIO_PIN_RESET); break;
-			case 4: HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_PIN, GPIO_PIN_SET); break;
-			case 5:
-				HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_PIN, GPIO_PIN_RESET);
+			case 1: HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_PIN, GPIO_PIN_SET); break;
+			case 2: HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_PIN, GPIO_PIN_RESET); break;
+			case 3: HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_PIN, GPIO_PIN_SET); break;
+			case 4: HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_PIN, GPIO_PIN_RESET); break;
+			case 5: HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_PIN, GPIO_PIN_SET); break;
+			case 6:
+				HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_PIN, GPIO_PIN_RESET); break;
 				stopMotor(htim);
 				break;
 			default: break;
 		}
-		++motorStateCounter;
 	}
 }
 
@@ -203,6 +203,7 @@ void runMotor(TIM_HandleTypeDef *htim) {
 	sConfig.OCFastMode = TIM_OCFAST_DISABLE;
 	sConfig.Pulse = htim->Instance->CNT;
 
+	HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_PIN, GPIO_PIN_SET);
 	HAL_TIM_OC_ConfigChannel(htim, &sConfig, TIM_CHANNEL_2);
 	HAL_TIM_OC_Start_IT(htim, TIM_CHANNEL_2);
 
