@@ -24,6 +24,7 @@ void runStopwatch(TIM_HandleTypeDef *htim);
 void pauseStopwatch(TIM_HandleTypeDef *htim);
 void clearStopwatch(TIM_HandleTypeDef *htim);
 
+// might not need base functions since HAL might be enabling them when running OC or PWM
 void runTimerStopwatchBase(TIM_HandleTypeDef *htim);
 void stopTimerStopwatchBase(TIM_HandleTypeDef *htim);
 // ---- important timer functions ----
@@ -41,7 +42,7 @@ void changeDisplayBacklight(uint8_t intensity, TIM_HandleTypeDef *htim);
 void stopDisplayBacklight(TIM_HandleTypeDef *htim);
 
 // should run on startup with tft_display and stop when motor and backlight are unused
-// flags?
+// might not need base functions since HAL might be enabling them when running OC or PWM
 void runBacklightMotorBase(TIM_HandleTypeDef *htim);
 void stopBacklightMotorBase(TIM_HandleTypeDef *htim);
 

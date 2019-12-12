@@ -58,9 +58,8 @@ void getDate(struct dates *d, RTC_HandleTypeDef *hrtc);
 void getDateTime(struct dates *d, struct times *t, RTC_HandleTypeDef *hrtc);
 // ---- end of getters ----
 
-// rtc calibration functions
+// rtc calibration function
 void setRTCCalibration(int calibVal, RTC_HandleTypeDef *hrtc);
-void showRTCCalibration(int calibVal, RTC_HandleTypeDef *hrtc);
 
 // ---- converters and calculators ----
 uint32_t timeToSeconds(struct times *t);

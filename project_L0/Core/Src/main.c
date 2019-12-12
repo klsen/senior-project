@@ -119,6 +119,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
   	/* initialization for display */
 	HAL_Delay(2000);
+//	setRTCCalibration(-6, &hrtc);
 	TFT_startup(&hspi1);
 	clearScreen(ST77XX_BLACK, &hspi1);
 
@@ -408,6 +409,12 @@ static void MX_RTC_Init(void)
   {
     Error_Handler();
   }
+  /** Enable Calibrartion 
+  */
+  if (HAL_RTCEx_SetCalibrationOutPut(&hrtc, RTC_CALIBOUTPUT_1HZ) != HAL_OK)
+  {
+    Error_Handler();
+  }
   /* USER CODE BEGIN RTC_Init 2 */
 
   /* USER CODE END RTC_Init 2 */
@@ -656,7 +663,7 @@ static void MX_TIM22_Init(void)
   htim22.Instance = TIM22;
   htim22.Init.Prescaler = 0x400;
   htim22.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim22.Init.Period = 31;
+  htim22.Init.Period = 1919;
   htim22.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim22.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim22) != HAL_OK)

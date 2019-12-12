@@ -91,7 +91,6 @@ void testBatteryCalculator(ADC_HandleTypeDef *hadc, SPI_HandleTypeDef *hspi) {
 	char str[40];
 	sprintf(str, "batt_level: %3d %%", battPercentage);
 	drawTextAt(0, 0, str, hspi);
-//	drawTextAt(0, 0, "hello", hspi);
 }
 
 // from some data set hosted hosted by nasa. should be replaced later with measurements from our own battery

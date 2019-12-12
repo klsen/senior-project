@@ -153,8 +153,8 @@ void clearStopwatch(TIM_HandleTypeDef *htim) {
 	stopwatchCounter = 0;
 }
 
-void runTimerStopwatchBase(TIM_HandleTypeDef *htim) {HAL_TIM_Base_Start_IT(htim);}
-void stopTimerStopwatchBase(TIM_HandleTypeDef *htim) {HAL_TIM_Base_Stop_IT(htim);}
+void runTimerStopwatchBase(TIM_HandleTypeDef *htim) {HAL_TIM_Base_Start(htim);}
+void stopTimerStopwatchBase(TIM_HandleTypeDef *htim) {HAL_TIM_Base_Stop(htim);}
 // ---- end of important timer functions ----
 
 // ---- motor and other things that use timer ----
@@ -217,6 +217,6 @@ void stopMotor(TIM_HandleTypeDef *htim) {
 }
 
 // should use TIM22
-void runBacklightMotorBase(TIM_HandleTypeDef *htim) {HAL_TIM_Base_Start_IT(htim);}
-void stopBacklightMotorBase(TIM_HandleTypeDef *htim) {HAL_TIM_Base_Stop_IT(htim);}
+void runBacklightMotorBase(TIM_HandleTypeDef *htim) {HAL_TIM_Base_Start(htim);}
+void stopBacklightMotorBase(TIM_HandleTypeDef *htim) {HAL_TIM_Base_Stop(htim);}
 // ---- end of motor (and other) functions ----

@@ -415,9 +415,9 @@ void updateAlarmState(RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *motorTim) {
 			HAL_RTC_DeactivateAlarm(hrtc, RTC_ALARM_A);
 		}
 	}
-	if (isAlarmDone) {
-		runMotor(motorTim);
-	}
+//	if (isAlarmDone) {
+//		runMotor(motorTim);
+//	}
 }
 
 /*
@@ -473,6 +473,8 @@ void updateStopwatchState(TIM_HandleTypeDef *timerStopwatchTim) {
 
 		// clear stopwatch hw
 		clearStopwatch(timerStopwatchTim);
+		stopwatchVars.lapCurrent = 0;
+		stopwatchVars.lapPrev = 0;
 		isStopwatchRunning = 0;
 		isStopwatchPaused = 0;
 	}
@@ -540,6 +542,9 @@ void updateDisplay(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 			updateStopwatchDisplay(hspi);
 		}
 	}
+
+	// is called a lot and redrawn every time. inefficient, but w/e
+	drawBattery(battPercentage, hspi);
 }
 
 void updateClockDisplay(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
@@ -688,6 +693,7 @@ void updateStopwatchDisplay(SPI_HandleTypeDef *hspi) {
 	else if (isStopwatchRunning == 1) drawButtonText("pause", "lap", "clear", hspi);
 }
 
+// ---- drawing functions related specifically to the user interface ----
 void drawButton(uint8_t x_center, uint8_t y_center, SPI_HandleTypeDef *hspi) {
 	// bounds checking. probably already done in draw/fillRect
 	if (x_center-5 < 0 || x_center+5 > WIDTH || y_center-5 < 0 || y_center+5 > HEIGHT) return;
@@ -732,6 +738,29 @@ void drawTitle(char *str, SPI_HandleTypeDef *hspi) {
 
 	setTextColor(ST77XX_BLACK);
 	drawText(str, hspi);
+}
+
+void drawBattery(uint8_t batteryLevel, SPI_HandleTypeDef *hspi) {
+	// doesn't move and is used on an empty screen, so shouldn't need to clear then print
+	char str[5];
+
+	// drawing battery symbol. hard coded to be 6x13, upper left corner on (49,28)
+	drawVLine(28, 30, 10, ST77XX_BLACK, hspi);		// left col
+	drawVLine(54, 30, 10, ST77XX_BLACK, hspi);		// right col
+	drawHLine(50, 41, 4, ST77XX_BLACK, hspi);		// bottom
+	drawHLine(50, 29, 4, ST77XX_BLACK, hspi);		// top bottom level
+	drawHLine(51, 28, 2, ST77XX_BLACK, hspi);		// top upper level
+
+	uint16_t color = ST77XX_GREEN;
+	if (batteryLevel < 20) color = ST77XX_RED;
+	fillRect(50, 28+(100-batteryLevel)/10, 4, batteryLevel/10, ST77XX_GREEN, hspi);
+	fillRect(50, 28, 4, (100-batteryLevel)/10, ST77XX_WHITE, hspi);
+
+	setTextSize(1);
+	if (batteryLevel >= 20) color = ST77XX_BLACK;		// reusing variable for more obfuscated code.
+	setTextColor(color);
+	sprintf(str, "%3d", batteryLevel);
+	drawTextAt(55, 33, str, hspi);
 }
 
 // draw time and date
@@ -816,7 +845,9 @@ void drawStopwatchLap(uint32_t seconds, SPI_HandleTypeDef *hspi) {
 	sprintf(str, "lap: %2d:%2d:%2d", t.hr, t.min, t.sec);
 	drawCenteredText(WIDTH/2, 84, str, hspi);
 }
+// ---- end of drawing functions ----
 
+// initializes variables. should be called at the start of the run
 void initFace() {
 	faceOnDisplay = faceClock;
 	updateFace.clock = 1;
