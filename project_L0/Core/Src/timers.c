@@ -161,6 +161,7 @@ void stopTimerStopwatchBase(TIM_HandleTypeDef *htim) {HAL_TIM_Base_Stop(htim);}
 // uses LSE timer TIM22
 void runADCSampler(TIM_HandleTypeDef *htim) {
 	HAL_TIM_Base_Start_IT(htim);
+	canSampleBattery = 1;
 }
 
 // uses LSE timer TIM2 CH1

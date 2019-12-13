@@ -206,7 +206,7 @@ void setRTCCalibration(int calibVal, RTC_HandleTypeDef *hrtc) {
 		}
 		else {
 			// math for setting CALM 9-bit register in RTC. formula in notes and in L0 programming reference manual
-			calm = calibVal*32768*32/86400;
+			calm = -calibVal*32768*32/86400;
 			HAL_RTCEx_SetSmoothCalib(hrtc, RTC_SMOOTHCALIB_PERIOD_32SEC, RTC_SMOOTHCALIB_PLUSPULSES_RESET, calm);
 		}
 	}
@@ -216,7 +216,7 @@ void setRTCCalibration(int calibVal, RTC_HandleTypeDef *hrtc) {
 		}
 		else {
 			// math
-			calm = 512+calibVal*32768*32/86400;
+			calm = 512-calibVal*32768*32/86400;
 			HAL_RTCEx_SetSmoothCalib(hrtc, RTC_SMOOTHCALIB_PERIOD_32SEC, RTC_SMOOTHCALIB_PLUSPULSES_SET, calm);
 		}
 	}

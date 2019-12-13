@@ -119,7 +119,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
   	/* initialization for display */
 	HAL_Delay(2000);
-//	setRTCCalibration(-6, &hrtc);
+	setRTCCalibration(-3, &hrtc);
 	TFT_startup(&hspi1);
 	clearScreen(ST77XX_BLACK, &hspi1);
 
@@ -168,18 +168,19 @@ int main(void)
 //			buttons.is1Pressed = buttons.is2Pressed = buttons.is3Pressed = buttons.is4Pressed = 0;
 			updateState(&hrtc, &htim21, &htim2, &htim6, &hspi1);
 		}
+
+		updateDisplay(&hrtc, &hspi1);
+		batteryManager(&hadc, &hspi1);
+
 		if (isTimerDone || isAlarmDone) {
 			runMotor(&htim2);
 			isTimerDone = isAlarmDone = 0;
 		}
-		batteryManager(&hadc, &hspi1);
-		updateDisplay(&hrtc, &hspi1);
 
 		// wait for interrupt instruction. CPU goes to sleep mode (listed as "sleep mode" by ST as one of their low-power modes)
 		// does it work on it's own, or do registers have to be configured first?
 		// put in bottom, since screen updates should run once at the start
 		__WFI();
-
   }
   /* USER CODE END 3 */
 }

@@ -9,6 +9,7 @@ static const float batteryCapacity[];
 static uint16_t batteryCapacityArraySize = 179;
 
 // spi used to turn display on/off only
+// also for drawing battery
 void batteryManager(ADC_HandleTypeDef *hadc, SPI_HandleTypeDef *hspi) {
 	if (canSampleBattery) {
 		canSampleBattery = 0;
@@ -40,6 +41,8 @@ void batteryManager(ADC_HandleTypeDef *hadc, SPI_HandleTypeDef *hspi) {
 			HAL_GPIO_WritePin(POWER_SUPPLY_ENABLE_PORT, POWER_SUPPLY_ENABLE_PIN, GPIO_PIN_SET);
 			bState = batteryNormal;
 		}
+
+		drawBattery(battPercentage, hspi);
 	}
 }
 

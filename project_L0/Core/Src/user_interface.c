@@ -77,20 +77,25 @@ void updateState(RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *timerStopwatchTim, 
 		}
 	}
 
+	// press 2 and 3 alternatively 5 times to reinit display
 	static uint8_t s = 0;
 	switch(s) {
 		case 0:	if (buttons.is2Pressed) s++; break;
-		case 1: if (buttons.is2Pressed) s++; else if (buttons.is1Pressed || buttons.is3Pressed || buttons.is4Pressed) s = 0; break;
-		case 2: if (buttons.is3Pressed) s++; else if (buttons.is1Pressed || buttons.is2Pressed || buttons.is4Pressed) s = 0; break;
+		case 1: if (buttons.is3Pressed) s++; else if (buttons.is1Pressed || buttons.is2Pressed || buttons.is4Pressed) s = 0; break;
+		case 2: if (buttons.is2Pressed) s++; else if (buttons.is1Pressed || buttons.is3Pressed || buttons.is4Pressed) s = 0; break;
 		case 3: if (buttons.is3Pressed) s++; else if (buttons.is1Pressed || buttons.is2Pressed || buttons.is4Pressed) s = 0; break;
-		case 4: if (buttons.is4Pressed) s++; else if (buttons.is1Pressed || buttons.is2Pressed || buttons.is3Pressed) s = 0; break;
-		case 5: if (buttons.is4Pressed) {TFT_startup(hspi); s = 0;} break;
+		case 4: if (buttons.is2Pressed) s++; else if (buttons.is1Pressed || buttons.is3Pressed || buttons.is4Pressed) s = 0; break;
+		case 5: if (buttons.is3Pressed) s++; else if (buttons.is1Pressed || buttons.is2Pressed || buttons.is4Pressed) s = 0; break;
+		case 6: if (buttons.is2Pressed) s++; else if (buttons.is1Pressed || buttons.is3Pressed || buttons.is4Pressed) s = 0; break;
+		case 7: if (buttons.is3Pressed) s++; else if (buttons.is1Pressed || buttons.is2Pressed || buttons.is4Pressed) s = 0; break;
+		case 8: if (buttons.is2Pressed) s++; else if (buttons.is1Pressed || buttons.is3Pressed || buttons.is4Pressed) s = 0; break;
+		case 9: if (buttons.is3Pressed) {TFT_startup(hspi); s = 0;} break;
 		default: break;
 	}
-	char str[10];
-	sprintf(str, "%d", s);
-	setTextSize(1);
-	drawTextAt(0, 0, str, hspi);
+//	char str[10];
+//	sprintf(str, "%d", s);
+//	setTextSize(1);
+//	drawTextAt(0, 0, str, hspi);
 
 //	if (buttons.is3Pressed) turnDisplayOn(hspi);
 //	if (buttons.is4Pressed) turnDisplayOff(hspi);
@@ -544,7 +549,7 @@ void updateDisplay(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 	}
 
 	// is called a lot and redrawn every time. inefficient, but w/e
-	drawBattery(battPercentage, hspi);
+//	drawBattery(battPercentage, hspi);
 }
 
 void updateClockDisplay(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
@@ -744,23 +749,23 @@ void drawBattery(uint8_t batteryLevel, SPI_HandleTypeDef *hspi) {
 	// doesn't move and is used on an empty screen, so shouldn't need to clear then print
 	char str[5];
 
-	// drawing battery symbol. hard coded to be 6x13, upper left corner on (49,28)
-	drawVLine(28, 30, 10, ST77XX_BLACK, hspi);		// left col
-	drawVLine(54, 30, 10, ST77XX_BLACK, hspi);		// right col
-	drawHLine(50, 41, 4, ST77XX_BLACK, hspi);		// bottom
-	drawHLine(50, 29, 4, ST77XX_BLACK, hspi);		// top bottom level
-	drawHLine(51, 28, 2, ST77XX_BLACK, hspi);		// top upper level
+	// drawing battery symbol. hard coded to be 6x13, upper left corner on (49,26)
+	drawVLine(49, 28, 10, ST77XX_BLACK, hspi);		// left col
+	drawVLine(54, 28, 10, ST77XX_BLACK, hspi);		// right col
+	drawHLine(50, 38, 4, ST77XX_BLACK, hspi);		// bottom
+	drawHLine(50, 27, 4, ST77XX_BLACK, hspi);		// top bottom level
+	drawHLine(51, 26, 2, ST77XX_BLACK, hspi);		// top upper level
 
 	uint16_t color = ST77XX_GREEN;
 	if (batteryLevel < 20) color = ST77XX_RED;
-	fillRect(50, 28+(100-batteryLevel)/10, 4, batteryLevel/10, ST77XX_GREEN, hspi);
+	fillRect(50, 28+(100-batteryLevel)/10, 4, batteryLevel/10, color, hspi);
 	fillRect(50, 28, 4, (100-batteryLevel)/10, ST77XX_WHITE, hspi);
 
 	setTextSize(1);
 	if (batteryLevel >= 20) color = ST77XX_BLACK;		// reusing variable for more obfuscated code.
 	setTextColor(color);
-	sprintf(str, "%3d", batteryLevel);
-	drawTextAt(55, 33, str, hspi);
+	sprintf(str, "%3d%%", batteryLevel);
+	drawTextAt(55, 31, str, hspi);
 }
 
 // draw time and date

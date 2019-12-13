@@ -4,6 +4,7 @@
 #include "stm32l0xx_hal.h"
 #include "timers.h"
 #include "TFT_display.h"
+#include "user_interface.h"
 
 #define POWER_SUPPLY_ENABLE_PORT 	GPIOC
 #define POWER_SUPPLY_ENABLE_PIN 	GPIO_PIN_4
