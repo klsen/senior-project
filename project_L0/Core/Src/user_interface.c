@@ -178,6 +178,10 @@ void updateClockState(RTC_HandleTypeDef *hrtc) {
 				getDateTime(clockVars.dateToSet, clockVars.timeToSet, hrtc);
 				HAL_RTC_DeactivateAlarm(hrtc, RTC_ALARM_B);
 			}
+
+			if (clockVars.dateToSet->date > maxDaysInMonth(clockVars.dateToSet->month, clockVars.dateToSet->yr)) {
+				clockVars.dateToSet->date = maxDaysInMonth(clockVars.dateToSet->month, clockVars.dateToSet->yr);
+			}
 		}
 		else {
 			clockVars.isBeingSet = 0;
@@ -512,6 +516,7 @@ void updateDisplay(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 			drawTitle("stopwatch", hspi);
 		}
 
+		drawBattery(battPercentage, hspi);
 		drawButtons(hspi);
 	}
 
@@ -556,6 +561,7 @@ void updateClockDisplay(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 	struct dates currentDate = {0};
 	struct times currentTime = {0};
 
+	setTextColor(ST77XX_BLACK);
 	if (clockVars.isBeingSet == 0) {
 		getDateTime(&currentDate, &currentTime, hrtc);
 		drawClock(&currentDate, &currentTime, hspi);
@@ -588,6 +594,7 @@ void updateClockDisplay(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 void updateTimerDisplay(SPI_HandleTypeDef *hspi) {
 	struct times currentTimer = {0};
 
+	setTextColor(ST77XX_BLACK);
 	if (timerVars.isBeingSet == 0) {
 		if (timerVars.isSet == 0) {
 			setTextSize(2);
@@ -647,6 +654,7 @@ void updateTimerDisplay(SPI_HandleTypeDef *hspi) {
 }
 
 void updateAlarmDisplay(SPI_HandleTypeDef *hspi) {
+	setTextColor(ST77XX_BLACK);
 	if (alarmVars.isBeingSet == 0) {
 		if (alarmVars.isSet == 0) {
 			setTextSize(3);
@@ -691,6 +699,7 @@ void updateAlarmDisplay(SPI_HandleTypeDef *hspi) {
 }
 
 void updateStopwatchDisplay(SPI_HandleTypeDef *hspi) {
+	setTextColor(ST77XX_BLACK);
 	drawStopwatch(stopwatchCounter, hspi);
 	drawStopwatchLap(stopwatchVars.lapCurrent-stopwatchVars.lapPrev, hspi);
 
@@ -718,6 +727,7 @@ void drawButtons(SPI_HandleTypeDef *hspi) {
 
 void drawButtonText(const char *str1, const char *str2, const char *str3, SPI_HandleTypeDef *hspi) {
 	setTextSize(1);
+	setTextColor(ST77XX_BLACK);
 	drawCenteredTextWithPadding(22, HEIGHT-28, 7, str1, hspi);		// button 1
 	drawCenteredTextWithPadding(64, HEIGHT-28, 7, str2, hspi);		// button 2
 	drawCenteredTextWithPadding(106, HEIGHT-28, 7, str3, hspi);		// button 3
@@ -806,6 +816,7 @@ void drawTimer(struct times *t, SPI_HandleTypeDef *hspi) {
 
 	// only drawing hr:min:sec of timer
 	setTextSize(2);
+	setTextColor(ST77XX_BLACK);
 	sprintf(str, "%2d:%2d:%2d", t->hr, t->min, t->sec);
 	drawCenteredText(WIDTH/2, HEIGHT/2-12, str, hspi);		// about y=68
 
@@ -817,6 +828,7 @@ void drawAlarm(struct alarmTimes *a, SPI_HandleTypeDef *hspi) {
 
 	// drawing hr:min:sec
 	setTextSize(2);
+	setTextColor(ST77XX_BLACK);
 	sprintf(str, "%2d:%2d:%2d", a->hr, a->min, a->sec);
 	drawCenteredText(WIDTH/2, 68, str, hspi);
 
@@ -833,6 +845,7 @@ void drawStopwatch(uint32_t seconds, SPI_HandleTypeDef *hspi) {
 
 	// drawing hr:min:sec
 	setTextSize(2);
+	setTextColor(ST77XX_BLACK);
 	sprintf(str, "%2d:%2d:%2d", t.hr, t.min, t.sec);
 	drawCenteredText(WIDTH/2, 68, str, hspi);
 
@@ -847,6 +860,7 @@ void drawStopwatchLap(uint32_t seconds, SPI_HandleTypeDef *hspi) {
 
 	// drawing hr:min:sec
 	setTextSize(1);
+	setTextColor(ST77XX_BLACK);
 	sprintf(str, "lap: %2d:%2d:%2d", t.hr, t.min, t.sec);
 	drawCenteredText(WIDTH/2, 84, str, hspi);
 }

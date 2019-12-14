@@ -20,7 +20,7 @@ void batteryManager(ADC_HandleTypeDef *hadc, SPI_HandleTypeDef *hspi) {
 		// disable power supply (setting enable pin to 0)
 		if (battPercentage == 0) {
 //			turnDisplayOff(hspi);
-			HAL_GPIO_WritePin(POWER_SUPPLY_ENABLE_PORT, POWER_SUPPLY_ENABLE_PIN, GPIO_PIN_RESET);
+//			HAL_GPIO_WritePin(POWER_SUPPLY_ENABLE_PORT, POWER_SUPPLY_ENABLE_PIN, GPIO_PIN_RESET);
 		}
 		else if (battPercentage <= 5) {
 			// start turning off most hardware
