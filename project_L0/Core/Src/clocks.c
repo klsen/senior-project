@@ -42,7 +42,7 @@ void setDate(struct dates *d, RTC_HandleTypeDef *hrtc) {
 
 	sdate.Month = d->month;
 	sdate.Date = d->date;
-	sdate.WeekDay = weekdayCalculator(d->yr, d->month, d->date) % 7;
+	sdate.WeekDay = weekdayCalculator(d->yr, d->month, d->date);
 	sdate.Year = d->yr % 100; 		// set only between 0-99. part of the library (!?)
 
 	HAL_RTC_SetDate(hrtc, &sdate, RTC_FORMAT_BIN);
@@ -250,7 +250,8 @@ uint8_t weekdayCalculator(uint16_t year, uint8_t month, uint8_t day) {
 	static uint8_t table[] = {0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4};
 	if (month < 3) year--;
 	uint16_t temp = (year + year/4 - year/100 + year/400 + table[month-1] + day) % 7;
-	return temp;
+	if (temp == 0) return RTC_WEEKDAY_SUNDAY;
+	else return temp;
 }
 
 // calculator for number of days in a month given a month and accounting for leap years
