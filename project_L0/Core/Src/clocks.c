@@ -198,27 +198,27 @@ void getDateTime(struct dates *d, struct times *t, RTC_HandleTypeDef *hrtc) {
 // calibration output on PC13. problems with using pins together with alarm?
 void setRTCCalibration(int calibVal, RTC_HandleTypeDef *hrtc) {
 	uint16_t calm = 0;
-	double temp;
+	uint32_t temp;
 	// need to recalculate the bounds
 	if (calibVal == 0) return;
 	else if (calibVal < 0) {		// drift offset is negative. need to slow rtc down
-		if (calibVal < -42) {		// bounds checking. just set to max
+		if (calibVal <= -42) {		// bounds checking. just set to max
 			HAL_RTCEx_SetSmoothCalib(hrtc, RTC_SMOOTHCALIB_PERIOD_32SEC, RTC_SMOOTHCALIB_PLUSPULSES_RESET, 0x1FF);
 		}
 		else {
 			// math for setting CALM 9-bit register in RTC. formula in notes and in L0 programming reference manual
-			temp = -calibVal*32768/86400*32;		// possible overflow when doing math, so reordering
+			temp = -calibVal*32768*32/86400;		// possible overflow when doing math, so reordering
 			calm = temp;
 			HAL_RTCEx_SetSmoothCalib(hrtc, RTC_SMOOTHCALIB_PERIOD_32SEC, RTC_SMOOTHCALIB_PLUSPULSES_RESET, calm);
 		}
 	}
 	else {
-		if (calibVal > 42) { 		// drift offset is positive. need to speed rtc up
-			HAL_RTCEx_SetSmoothCalib(hrtc, RTC_SMOOTHCALIB_PERIOD_32SEC, RTC_SMOOTHCALIB_PLUSPULSES_SET, 0x1FF);
+		if (calibVal >= 42) { 		// drift offset is positive. need to speed rtc up
+			HAL_RTCEx_SetSmoothCalib(hrtc, RTC_SMOOTHCALIB_PERIOD_32SEC, RTC_SMOOTHCALIB_PLUSPULSES_SET, 0);
 		}
 		else {
 			// math
-			temp = 512-calibVal*32768/86400*32;
+			temp = 512-(calibVal*32768*32/86400);
 			calm = temp;
 			HAL_RTCEx_SetSmoothCalib(hrtc, RTC_SMOOTHCALIB_PERIOD_32SEC, RTC_SMOOTHCALIB_PLUSPULSES_SET, calm);
 		}

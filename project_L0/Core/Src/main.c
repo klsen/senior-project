@@ -118,7 +118,6 @@ int main(void)
   MX_TIM6_Init();
   /* USER CODE BEGIN 2 */
   	/* initialization for display */
-	HAL_Delay(2000);
 	setRTCCalibration(-3, &hrtc);
 	TFT_startup(&hspi1);
 	clearScreen(ST77XX_BLACK, &hspi1);
