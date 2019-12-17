@@ -116,8 +116,4 @@ void basicTest(SPI_HandleTypeDef *hspi) {
 	HAL_Delay(500);
 
 	clearScreen(ST77XX_BLACK, hspi);
-//	drawPixel(0, 0, bg, hspi);
-//	drawHLine(0, 159, 128, bg, hspi);
-//	drawVLine(127, 0, 160, bg, hspi);
-//	drawRect(50, 50, 50, 50, bg, hspi);
 }

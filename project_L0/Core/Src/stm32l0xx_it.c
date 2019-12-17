@@ -60,6 +60,8 @@ extern LPTIM_HandleTypeDef hlptim1;
 extern RTC_HandleTypeDef hrtc;
 extern DMA_HandleTypeDef hdma_spi1_tx;
 extern SPI_HandleTypeDef hspi1;
+extern TIM_HandleTypeDef htim2;
+extern TIM_HandleTypeDef htim6;
 extern TIM_HandleTypeDef htim21;
 extern TIM_HandleTypeDef htim22;
 /* USER CODE BEGIN EV */
@@ -214,6 +216,34 @@ void LPTIM1_IRQHandler(void)
   /* USER CODE BEGIN LPTIM1_IRQn 1 */
 
   /* USER CODE END LPTIM1_IRQn 1 */
+}
+
+/**
+  * @brief This function handles TIM2 global interrupt.
+  */
+void TIM2_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM2_IRQn 0 */
+
+  /* USER CODE END TIM2_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim2);
+  /* USER CODE BEGIN TIM2_IRQn 1 */
+
+  /* USER CODE END TIM2_IRQn 1 */
+}
+
+/**
+  * @brief This function handles TIM6 global interrupt and DAC1/DAC2 underrun error interrupts.
+  */
+void TIM6_DAC_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM6_DAC_IRQn 0 */
+
+  /* USER CODE END TIM6_DAC_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim6);
+  /* USER CODE BEGIN TIM6_DAC_IRQn 1 */
+
+  /* USER CODE END TIM6_DAC_IRQn 1 */
 }
 
 /**

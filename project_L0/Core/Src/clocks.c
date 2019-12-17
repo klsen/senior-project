@@ -1,71 +1,56 @@
-/*
- * file for initializing and working with the real-time clock
- * only for time-keeping and alarm triggering functionality
- *
- * called in main(). uses global variables? might change back
- */
+// Implementation file for clocks.h
 
 #include "clocks.h"
 
-// set rtc time. uses perosnal struct as arg
-// assert members not null for set functions?
-void setTime(struct times *t) {
-	RTC_TimeTypeDef stime = {0};	// change to malloc call? does that work in embedded?
+// ---- RTC setters ----
+// set rtc time. uses personal struct as arg
+// assumes t's fields are aleady set to something or not null
+void setTime(struct times *t, RTC_HandleTypeDef *hrtc) {
+	RTC_TimeTypeDef stime = {0};
 
-	// set using args later
 	stime.Hours = t->hr;
 	stime.Minutes = t->min;
 	stime.Seconds = t->sec;
 
 	stime.TimeFormat = RTC_HOURFORMAT_24;
 
-	// not sure what these do, but probably fine if set to 0 or ignored
+	// not really using
 	stime.SubSeconds = 0;
 	stime.SecondFraction = 0;
+	stime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
+	stime.StoreOperation = RTC_STOREOPERATION_SET;
 
-	stime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;		// add daylight savings later?
-	stime.StoreOperation = RTC_STOREOPERATION_SET;		// not sure what this does
-
-	// do nothing until done
-	// not following BCD format (4-bit digit 1, 4-bit digit 2)
-	// while makes program hang? ignore instead?
-//	while (HAL_RTC_SetTime(hrtc, &stime, RTC_FORMAT_BIN) != HAL_OK);
-	HAL_RTC_SetTime(&hrtc, &stime, RTC_FORMAT_BIN);
-
-	runClockDisplay(&htim22);
+	HAL_RTC_SetTime(hrtc, &stime, RTC_FORMAT_BIN);
 }
 
-// set rtc date. uses personal struct
-void setDate(struct dates *d) {
-	// ---- date ----
+// set rtc date. uses personal struct as arg
+// assumes struct has values
+void setDate(struct dates *d, RTC_HandleTypeDef *hrtc) {
 	RTC_DateTypeDef sdate = {0};
 
 	sdate.Month = d->month;
 	sdate.Date = d->date;
-	sdate.WeekDay = d->weekday;
-	sdate.Year = d->yr % 100; 		// set only between 0-99. part of the library (!?)
+	sdate.Year = d->yr % 100; 		// set only between 0-99. limitation of RTC
 
-	HAL_RTC_SetDate(&hrtc, &sdate, RTC_FORMAT_BIN);
+	sdate.WeekDay = weekdayCalculator(d->yr, d->month, d->date);
 
-	runClockDisplay(&htim22);
+	HAL_RTC_SetDate(hrtc, &sdate, RTC_FORMAT_BIN);
 }
 
-void setDateTime(struct dates *d, struct times *t) {
-	setDate(d);
-	setTime(t);
+void setDateTime(struct dates *d, struct times *t, RTC_HandleTypeDef *hrtc) {
+	setDate(d, hrtc);
+	setTime(t, hrtc);
 }
 
 // for time of day+week
-void setAlarm(struct alarmTimes *a) {
+void setAlarm(struct alarmTimes *a, RTC_HandleTypeDef *hrtc) {
 	RTC_AlarmTypeDef salarm = {0};
 	RTC_TimeTypeDef salarmtime = {0};
 
-	watchAlarm = *a;	// this is probably fine (value at a is defined already)
-
-	// change to set with args
 	salarmtime.Hours = a->hr;
 	salarmtime.Minutes = a->min;
 	salarmtime.Seconds = a->sec;
+
 	salarmtime.TimeFormat = RTC_HOURFORMAT_24;
 	salarmtime.SubSeconds = 0;
 	salarmtime.SecondFraction = 0;
@@ -73,45 +58,37 @@ void setAlarm(struct alarmTimes *a) {
 	salarmtime.StoreOperation = RTC_STOREOPERATION_RESET;
 
 	salarm.AlarmTime = salarmtime;
-	salarm.AlarmMask = RTC_ALARMMASK_NONE;
+	salarm.AlarmMask = RTC_ALARMMASK_NONE;		// allows comparison for all fields (sec, min, hour, weekday)
 	salarm.AlarmSubSecondMask = RTC_ALARMSUBSECONDMASK_ALL;
 	salarm.AlarmDateWeekDaySel = RTC_ALARMDATEWEEKDAYSEL_WEEKDAY;
 	salarm.AlarmDateWeekDay = a->weekday;
-	salarm.Alarm = RTC_ALARM_A;			// change if using different alarm
+	salarm.Alarm = RTC_ALARM_A;
 
-	// do nothing until done
-	HAL_RTC_SetAlarm_IT(&hrtc, &salarm, RTC_FORMAT_BIN);
+	HAL_RTC_SetAlarm_IT(hrtc, &salarm, RTC_FORMAT_BIN);
 }
 
-// set alarm for timer function of watch project
-// using RTC alarm hardware
-void setTimer(struct times *t_in) {
+// set an alarm for the next second for triggering display updates
+void setClockAlarm(RTC_HandleTypeDef *hrtc) {
 	RTC_AlarmTypeDef salarm = {0};
 	RTC_TimeTypeDef salarmtime = {0};
 
-	// set global variables to hold value being set
-	watchTimer = *t_in;
-	watchTimerSeconds = t_in->sec + t_in->min*60 + t_in->hr*3600;
+	// pull current time
+	struct dates currentDate = {0};
+	struct times currentTime = {0};
+	getDateTime(&currentDate, &currentTime, hrtc);
 
-	// pull current RTC time
-	struct dates d;
-	struct times t;
-	getDateTime(&d, &t);
-
+	// start setting alarm
 	struct alarmTimes a = {0};
 	uint8_t s,m,h,w;
-
-	// adding timer value to current time so we can set an alarm time
-	s = t.sec + t_in->sec;
-	m = t.min + t_in->min + s/60;
-	h = t.hr + t_in->hr + m/60;
-	w = d.weekday + h/24;
+	s = currentTime.sec + 1;
+	m = currentTime.min + s/60;
+	h = currentTime.hr + m/60;
+	w = currentDate.weekday + h/24;
 	a.sec = s % 60;
 	a.min = m % 60;
 	a.hr = h % 24;
 	a.weekday = (w-1) % 7 + 1;
 
-	// setting RTC parameters
 	salarmtime.Hours = a.hr;
 	salarmtime.Minutes = a.min;
 	salarmtime.Seconds = a.sec;
@@ -126,93 +103,115 @@ void setTimer(struct times *t_in) {
 	salarm.AlarmSubSecondMask = RTC_ALARMSUBSECONDMASK_ALL;
 	salarm.AlarmDateWeekDaySel = RTC_ALARMDATEWEEKDAYSEL_WEEKDAY;
 	salarm.AlarmDateWeekDay = a.weekday;
-	salarm.Alarm = RTC_ALARM_B;			// change if using different alarm
+	salarm.Alarm = RTC_ALARM_B;
 
-	HAL_RTC_SetAlarm_IT(&hrtc, &salarm, RTC_FORMAT_BIN);
-
-	runTimerDisplay();
+	// do nothing until done
+	HAL_RTC_SetAlarm_IT(hrtc, &salarm, RTC_FORMAT_BIN);
 }
+// ---- end of RTC setters ----
 
 // ---- callbacks for interrupts ----
 // used for alarm function in project
 // meant to send signal to use motor
-// change to use hw timer so signal is temporary
 void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc) {
-	// change pin to whatever's accessible
-	// using PC0
-	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_0);
-	HAL_RTC_DeactivateAlarm(hrtc, RTC_ALARM_A);
-	isAlarmRunning = 0;
+	HAL_GPIO_TogglePin(LED1_PORT, LED1_PIN);
+	isAlarmDone = 1;
 	updateFace.alarm = 1;
-//	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET);
-//	HAL_Delay(500);			// does this work in interrupt/callback? might not
-//	HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_1);
 }
 
+// used to trigger display refresh every second. used because then it's synchronous with RTC updates
 void HAL_RTCEx_AlarmBEventCallback(RTC_HandleTypeDef *hrtc) {
-	// toggles pin on end of timer. clears alarm
-	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_1);
-	HAL_RTC_DeactivateAlarm(hrtc, RTC_ALARM_B);
-	isTimerRunning = 0;
-	updateFace.timer = 1;
-	/*
-	 * should run motor thing and update display to signal user
-	 * also clear alarm
-	 */
+	updateFace.clock = 1;
+	setClockAlarm(hrtc);		// set something for next second
 }
 // ---- end of callbacks ----
 
-// ---- clock get functions ----
-// maybe needs subseconds?
-void getTime(struct times *t) {
+// ---- RTC getters ----
+void getTime(struct times *t, RTC_HandleTypeDef *hrtc) {
 	RTC_TimeTypeDef stime;
 
 	// programming manual says to read time after date. something shadow registers.
 	// not done automatically in HAL
-	HAL_RTC_GetTime(&hrtc, &stime, RTC_FORMAT_BIN);
-	HAL_RTC_GetDate(&hrtc, NULL, RTC_FORMAT_BIN);
+	HAL_RTC_GetTime(hrtc, &stime, RTC_FORMAT_BIN);
+	HAL_RTC_GetDate(hrtc, NULL, RTC_FORMAT_BIN);
 
 	t->hr = stime.Hours;
 	t->min = stime.Minutes;
 	t->sec = stime.Seconds;
 }
 
-void getDate(struct dates *d) {
+void getDate(struct dates *d, RTC_HandleTypeDef *hrtc) {
 	RTC_DateTypeDef sdate;
 
 	// programming manual says to read time after date. something shadow registers.
 	// not done automatically in HAL
-	HAL_RTC_GetTime(&hrtc, NULL, RTC_FORMAT_BIN);
-	HAL_RTC_GetDate(&hrtc, &sdate, RTC_FORMAT_BIN);
+	HAL_RTC_GetTime(hrtc, NULL, RTC_FORMAT_BIN);
+	HAL_RTC_GetDate(hrtc, &sdate, RTC_FORMAT_BIN);
 
+	// extrapolates year from last 2 digits stored in RTC
+	d->yr = sdate.Year > 50 ? sdate.Year+1900 : sdate.Year+2000;
+
+	d->month = sdate.Month;
+	d->date = sdate.Date;
+	d->weekday = sdate.WeekDay;
+}
+
+// not using getDate and getTime for possible efficiency
+void getDateTime(struct dates *d, struct times *t, RTC_HandleTypeDef *hrtc) {
+	RTC_DateTypeDef sdate;
+	RTC_TimeTypeDef stime;
+
+	// programming manual says to read time after date. something shadow registers.
+	// not done automatically in HAL
+	HAL_RTC_GetTime(hrtc, &stime, RTC_FORMAT_BIN);
+	HAL_RTC_GetDate(hrtc, &sdate, RTC_FORMAT_BIN);
+
+	// make assumptions on whether it's 19xx or 20xx
 	d->yr = sdate.Year > 50 ? sdate.Year+1900 : sdate.Year+2000;
 	d->month = sdate.Month;
 	d->date = sdate.Date;
 	d->weekday = sdate.WeekDay;
-}
-
-// not using getDate and getTime for efficiency (?)
-void getDateTime(struct dates *d, struct times *t) {
-	RTC_DateTypeDef sdate;
-	RTC_TimeTypeDef stime;
-
-	// programming manual says to read time after date. something shadow registers.
-	// not done automatically in HAL
-	HAL_RTC_GetTime(&hrtc, &stime, RTC_FORMAT_BIN);
-	HAL_RTC_GetDate(&hrtc, &sdate, RTC_FORMAT_BIN);
-
-	d->yr = sdate.Year > 50 ? sdate.Year+1900 : sdate.Year+2000;		// make assumptions on whether it's 19xx or 20xx
-	d->month = sdate.Month;
-	d->date = sdate.Date;
-	d->weekday = sdate.WeekDay;
 
 	t->hr = stime.Hours;
 	t->min = stime.Minutes;
 	t->sec = stime.Seconds;
 }
-// ---- end of clock get functions ----
+// ---- end of RTC getters ----
 
-// converters
+// ---- RTC calibration function ----
+// calibVal should be given in drift/day in seconds
+// calibration output on PC13
+void setRTCCalibration(int calibVal, RTC_HandleTypeDef *hrtc) {
+	uint16_t calm = 0;
+	uint32_t temp;
+
+	if (calibVal == 0) return;
+	else if (calibVal < 0) {		// drift offset is negative. need to slow rtc down
+		if (calibVal <= -42) {		// bounds checking. just set to max
+			HAL_RTCEx_SetSmoothCalib(hrtc, RTC_SMOOTHCALIB_PERIOD_32SEC, RTC_SMOOTHCALIB_PLUSPULSES_RESET, 0x1FF);
+		}
+		else {
+			// math for setting CALM 9-bit register in RTC. formula in notes and in L0 programming reference manual
+			temp = -calibVal*32768*32/86400;		// possible overflow when doing math, so reordering
+			calm = temp;
+			HAL_RTCEx_SetSmoothCalib(hrtc, RTC_SMOOTHCALIB_PERIOD_32SEC, RTC_SMOOTHCALIB_PLUSPULSES_RESET, calm);
+		}
+	}
+	else {
+		if (calibVal >= 42) { 		// drift offset is positive. need to speed rtc up
+			HAL_RTCEx_SetSmoothCalib(hrtc, RTC_SMOOTHCALIB_PERIOD_32SEC, RTC_SMOOTHCALIB_PLUSPULSES_SET, 0);
+		}
+		else {
+			// math
+			temp = 512-(calibVal*32768*32/86400);
+			calm = temp;
+			HAL_RTCEx_SetSmoothCalib(hrtc, RTC_SMOOTHCALIB_PERIOD_32SEC, RTC_SMOOTHCALIB_PLUSPULSES_SET, calm);
+		}
+	}
+}
+// ---- end of RTC calibration function ----
+
+// ---- converters and calculators ----
 uint32_t timeToSeconds(struct times *t) {
 	return t->sec + t->min*60 + t->hr*3600;
 }
@@ -224,48 +223,50 @@ void secondsToTime(struct times *t, uint32_t seconds) {
 	seconds %= 60;
 	t->sec = seconds;
 }
-
-// ---- clock print functions ----
-// print functions for RTC
-// assumes we're using SPI display and file TFT_display.c
-// pulls date and time structs automatically to only print current time in RTC
-// not really needed anymore, almost pretty much a test function
-void printTime() {
-	char str[40];		// problems when using only char*
-
-	struct times t;
-	getTime(&t);
-
-	setTextColor(ST77XX_WHITE);
-	setBackgroundColor(ST77XX_BLACK);
-	sprintf(str, "sec: %2d", t.sec);
-	drawTextAt(0, 0, str, &hspi1);
-	sprintf(str, "min: %2d", t.min);
-	drawTextAt(0, 10, str, &hspi1);
-	sprintf(str, "hr: %3d", t.hr);
-	drawTextAt(0, 20, str, &hspi1);
+/*
+ * returns weekday from given year, month, and day.
+ * algorithm stolen from wikipedia.
+ * weekdays is 0-6, with 0 being sunday. hal uses 1=monday, 7=sunday - just call with % 7 to integrate with hal
+ * months given in 1-12, with 1 being january. hal uses the same setup
+ * rtc represents years with last 2 digits only. make sure year has all 4 numbers
+ * should be accurate for any gregorian date
+ */
+uint8_t weekdayCalculator(uint16_t year, uint8_t month, uint8_t day) {
+	static uint8_t table[] = {0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4};
+	if (month < 3) year--;
+	uint16_t temp = (year + year/4 - year/100 + year/400 + table[month-1] + day) % 7;
+	if (temp == 0) return RTC_WEEKDAY_SUNDAY;
+	else return temp;
 }
 
-void printDate() {
-	char str[40];		// problems when using only char*
+// calculator for number of days in a month given a month and accounting for leap years
+// assumes month is 1-12, 1=january, 12=december
+uint8_t maxDaysInMonth(uint8_t month, uint16_t year) {
+	if (month == 0 || month > 12) return 0;		// bounds checking
 
-	struct dates d;
-	getDate(&d);
+	// not using built-in defines, because they're in BCD
+	if (month == 1  ||		// january
+		month == 3  ||		// march
+		month == 5  ||		// may
+		month == 7  ||		// july
+		month == 8  ||		// august
+		month == 10 ||		// october
+		month == 12) {		// december
+		return 31;
+	}
+	else if (month == 4 ||	// april
+			 month == 6 ||	// june
+			 month == 9 ||	// september
+			 month == 11) {	// november
+		return 30;
+	}
 
-	setTextColor(ST77XX_WHITE);
-	setBackgroundColor(ST77XX_BLACK);
-	sprintf(str, "year: %3d", d.yr);
-	drawTextAt(0, 40, str, &hspi1);
-	sprintf(str, "month: %4d", d.month);
-	drawTextAt(0, 50, str, &hspi1);
-	sprintf(str, "day: %2d", d.date);
-	drawTextAt(0, 60, str, &hspi1);
-	sprintf(str, "day: %2d", d.weekday);	// probably not gonna show nice since its an enum
-	drawTextAt(0, 70, str, &hspi1);
+	// february/leap year calculator
+	// leap year for every 4th year, but every 100th year is not a leap year except on every 400th year
+	// ex. 2020 is a leap year, 2100 is not a leap year, 2000 is a leap year.
+	else if (year % 400 == 0) return 29;
+	else if (year % 100 == 0) return 28;
+	else if (year % 4 == 0) return 29;
+	else return 28;
 }
-
-void printDateTime() {
-	printTime();
-	printDate();
-}
-// ---- end of clock print functions ----
+// ---- end of converters and calculators ----

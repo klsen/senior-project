@@ -32,11 +32,12 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "navigation.h"
+#include "user_interface.h"
 #include "TFT_display.h"
 #include "TFT_display_test.h"
 #include "clocks.h"
 #include "timers.h"
+#include "battery.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -54,6 +55,8 @@ extern "C" {
 
 /* USER CODE END EM */
 
+void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
+
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
 
@@ -63,11 +66,7 @@ void Error_Handler(void);
 
 /* Private defines -----------------------------------------------------------*/
 /* USER CODE BEGIN Private defines */
-SPI_HandleTypeDef hspi1;
-LPTIM_HandleTypeDef hlptim1;
-RTC_HandleTypeDef hrtc;
-TIM_HandleTypeDef htim21;
-TIM_HandleTypeDef htim22;
+TIM_HandleTypeDef htim6;		// used to run software debouncing timer. global since it's called in callback
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

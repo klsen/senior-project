@@ -8,6 +8,7 @@
 
 #include "stm32l0xx_hal.h"
 #include "TFT_display.h"
+#include "timers.h"
 
 // draws diagonal, horizontal, and vertical lines
 void lineTest(SPI_HandleTypeDef *hspi);
@@ -21,5 +22,7 @@ void textTest(SPI_HandleTypeDef *hspi);
 
 // draws pixels, horizontal lines, and vertical lines
 void basicTest(SPI_HandleTypeDef *hspi);
+
+void displayOnOffTest(SPI_HandleTypeDef *hspi);
 
 #endif

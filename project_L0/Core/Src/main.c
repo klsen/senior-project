@@ -51,6 +51,7 @@ SPI_HandleTypeDef hspi1;
 DMA_HandleTypeDef hdma_spi1_tx;
 
 TIM_HandleTypeDef htim2;
+TIM_HandleTypeDef htim6;
 TIM_HandleTypeDef htim21;
 TIM_HandleTypeDef htim22;
 
@@ -69,24 +70,13 @@ static void MX_LPTIM1_Init(void);
 static void MX_DMA_Init(void);
 static void MX_TIM22_Init(void);
 static void MX_TIM2_Init(void);
+static void MX_TIM6_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-// change if using more peripherals that use LSE
-//void peripheralClockConfig() {
-//	RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
-//	PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC|RCC_PERIPHCLK_LPTIM1;
-//	PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
-//	PeriphClkInit.LptimClockSelection = RCC_LPTIM1CLKSOURCE_LSE;
-//
-//	if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
-//	{
-//		Error_Handler();
-//	}
-//}
 /* USER CODE END 0 */
 
 /**
@@ -95,85 +85,74 @@ static void MX_TIM2_Init(void);
   */
 int main(void)
 {
-  /* USER CODE BEGIN 1 */
+	/* USER CODE BEGIN 1 */
 
-  /* USER CODE END 1 */
-  
+	/* USER CODE END 1 */
 
-  /* MCU Configuration--------------------------------------------------------*/
 
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+	/* MCU Configuration--------------------------------------------------------*/
 
-  /* USER CODE BEGIN Init */
+	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+	HAL_Init();
 
-  /* USER CODE END Init */
+	/* USER CODE BEGIN Init */
 
-  /* Configure the system clock */
-  SystemClock_Config();
+	/* USER CODE END Init */
 
-  /* USER CODE BEGIN SysInit */
-//  peripheralClockConfig();
-  /* USER CODE END SysInit */
+	/* Configure the system clock */
+	SystemClock_Config();
 
-  /* Initialize all configured peripherals */
-  MX_GPIO_Init();
-  MX_SPI1_Init();
-  MX_ADC_Init();
-  MX_RTC_Init();
-  MX_TIM21_Init();
-  MX_LPTIM1_Init();
-  MX_DMA_Init();
-  MX_TIM22_Init();
-  MX_TIM2_Init();
-  /* USER CODE BEGIN 2 */
-  	/* initialization for display */
-	HAL_Delay(2000);
+	/* USER CODE BEGIN SysInit */
+	/* USER CODE END SysInit */
+
+	/* Initialize all configured peripherals */
+	MX_GPIO_Init();
+	MX_SPI1_Init();
+	MX_ADC_Init();
+	MX_RTC_Init();
+	MX_TIM21_Init();
+	MX_LPTIM1_Init();
+	MX_DMA_Init();
+	MX_TIM22_Init();
+	MX_TIM2_Init();
+	MX_TIM6_Init();
+	/* USER CODE BEGIN 2 */
+	// rtc software calibration
+	setRTCCalibration(-3, &hrtc);
+
+  	// initialization for display
 	TFT_startup(&hspi1);
 	clearScreen(ST77XX_BLACK, &hspi1);
 
-	/* start updating display for ui */
+	// initialization for ui and hardware
 	initFace();
-	runClockDisplay();
+	setClockAlarm(&hrtc);
+	runTimerStopwatchBase(&htim21);		// running time bases
+	runBacklightMotorBase(&htim2);
+	runADCSampler(&htim22);
+	/* USER CODE END 2 */
 
-	/* tests that are only meant to run once */
-//	runStopwatch(&hlptim1);
-//	runTimerDisplay();
-//	alarmTest();
-//	timerTest();
-  /* USER CODE END 2 */
-
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
-  while (1)
-  {
+	/* Infinite loop */
+	/* USER CODE BEGIN WHILE */
+	while (1)
+	{
     /* USER CODE END WHILE */
 
-    /* USER CODE BEGIN 3 */
-	  // default
-	  /* test to make sure code isn't hanging */
-//	  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_3);
-//	  HAL_Delay(1000);
+		/* USER CODE BEGIN 3 */
+		updateState(&hrtc, &htim21, &htim2, &htim6, &hspi1);
+		updateDisplay(&hrtc, &hspi1);
+		batteryManager(&hadc, &hspi1);
 
-	  /* repeatable tests */
-	  // clock and timer tests
-//	  clockTest(&hrtc, &hspi1);
+		if (isTimerDone || isAlarmDone) {
+			runMotor(&htim2);
+			isTimerDone = isAlarmDone = 0;
+		}
 
-	  // display tests
-//	  lineTest(&hspi1);
-//	  charTest(&hspi1);
-//	  textTest(bg, &hspi1);
-
-	  // ui/nav tests or full run. uncomment when ready
-	  updateWithButtons();
-	  updateDisplay(&hspi1);
-
-	  // wait for interrupt instruction. CPU goes to sleep mode (listed as "sleep mode" by ST as one of their low-power modes)
-	  // does it work on it's own, or do registers have to be configured first?
-	  // put in bottom, since screen updates should run once at the start
-	  __WFI();
-  }
-  /* USER CODE END 3 */
+		// wait for interrupt instruction. CPU goes to sleep mode (listed as "sleep mode" by ST as one of their low-power modes)
+		// put in bottom, since screen updates should run once at the start
+		__WFI();
+	}
+	/* USER CODE END 3 */
 }
 
 /**
@@ -201,7 +180,10 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
   RCC_OscInitStruct.HSI48State = RCC_HSI48_ON;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
+  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLLMUL_4;
+  RCC_OscInitStruct.PLL.PLLDIV = RCC_PLLDIV_2;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -210,12 +192,12 @@ void SystemClock_Config(void)
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
   {
     Error_Handler();
   }
@@ -250,9 +232,9 @@ static void MX_ADC_Init(void)
   */
   hadc.Instance = ADC1;
   hadc.Init.OversamplingMode = DISABLE;
-  hadc.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV1;
+  hadc.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
   hadc.Init.Resolution = ADC_RESOLUTION_12B;
-  hadc.Init.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
+  hadc.Init.SamplingTime = ADC_SAMPLETIME_79CYCLES_5;
   hadc.Init.ScanConvMode = ADC_SCAN_DIRECTION_FORWARD;
   hadc.Init.DataAlign = ADC_DATAALIGN_RIGHT;
   hadc.Init.ContinuousConvMode = DISABLE;
@@ -364,10 +346,10 @@ static void MX_RTC_Init(void)
   {
     Error_Handler();
   }
-  sDate.WeekDay = RTC_WEEKDAY_MONDAY;
-  sDate.Month = RTC_MONTH_JANUARY;
+  sDate.WeekDay = RTC_WEEKDAY_SUNDAY;
+  sDate.Month = RTC_MONTH_DECEMBER;
   sDate.Date = 1;
-  sDate.Year = 0;
+  sDate.Year = 19;
 
   if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BIN) != HAL_OK)
   {
@@ -395,6 +377,12 @@ static void MX_RTC_Init(void)
   sAlarm.AlarmDateWeekDay = 1;
   sAlarm.Alarm = RTC_ALARM_B;
   if (HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BIN) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Enable Calibrartion 
+  */
+  if (HAL_RTCEx_SetCalibrationOutPut(&hrtc, RTC_CALIBOUTPUT_1HZ) != HAL_OK)
   {
     Error_Handler();
   }
@@ -456,6 +444,7 @@ static void MX_TIM2_Init(void)
 
   TIM_ClockConfigTypeDef sClockSourceConfig = {0};
   TIM_MasterConfigTypeDef sMasterConfig = {0};
+  TIM_OC_InitTypeDef sConfigOC = {0};
 
   /* USER CODE BEGIN TIM2_Init 1 */
 
@@ -463,7 +452,7 @@ static void MX_TIM2_Init(void)
   htim2.Instance = TIM2;
   htim2.Init.Prescaler = 0;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 0;
+  htim2.Init.Period = 0x3FFF;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
@@ -478,6 +467,14 @@ static void MX_TIM2_Init(void)
   {
     Error_Handler();
   }
+  if (HAL_TIM_PWM_Init(&htim2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_TIM_OC_Init(&htim2) != HAL_OK)
+  {
+    Error_Handler();
+  }
   sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
   if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
@@ -488,9 +485,61 @@ static void MX_TIM2_Init(void)
   {
     Error_Handler();
   }
+  sConfigOC.OCMode = TIM_OCMODE_PWM1;
+  sConfigOC.Pulse = 0;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sConfigOC.OCMode = TIM_OCMODE_TIMING;
+  if (HAL_TIM_OC_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
+  {
+    Error_Handler();
+  }
   /* USER CODE BEGIN TIM2_Init 2 */
 
   /* USER CODE END TIM2_Init 2 */
+  HAL_TIM_MspPostInit(&htim2);
+
+}
+
+/**
+  * @brief TIM6 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM6_Init(void)
+{
+
+  /* USER CODE BEGIN TIM6_Init 0 */
+
+  /* USER CODE END TIM6_Init 0 */
+
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM6_Init 1 */
+
+  /* USER CODE END TIM6_Init 1 */
+  htim6.Instance = TIM6;
+  htim6.Init.Prescaler = 0x40;
+  htim6.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim6.Init.Period = 65535;
+  htim6.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim6) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim6, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM6_Init 2 */
+
+  /* USER CODE END TIM6_Init 2 */
 
 }
 
@@ -515,8 +564,8 @@ static void MX_TIM21_Init(void)
   /* USER CODE END TIM21_Init 1 */
   htim21.Instance = TIM21;
   htim21.Init.Prescaler = 0;
-  htim21.Init.CounterMode = TIM_COUNTERMODE_DOWN;
-  htim21.Init.Period = 0x8000;
+  htim21.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim21.Init.Period = 0x7FFF;
   htim21.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim21.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim21) != HAL_OK)
@@ -553,6 +602,10 @@ static void MX_TIM21_Init(void)
   {
     Error_Handler();
   }
+  if (HAL_TIM_OC_ConfigChannel(&htim21, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
+  {
+    Error_Handler();
+  }
   /* USER CODE BEGIN TIM21_Init 2 */
 
   /* USER CODE END TIM21_Init 2 */
@@ -579,9 +632,9 @@ static void MX_TIM22_Init(void)
 
   /* USER CODE END TIM22_Init 1 */
   htim22.Instance = TIM22;
-  htim22.Init.Prescaler = 0;
-  htim22.Init.CounterMode = TIM_COUNTERMODE_DOWN;
-  htim22.Init.Period = 0x8000;
+  htim22.Init.Prescaler = 0x400;
+  htim22.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim22.Init.Period = 1919;
   htim22.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim22.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim22) != HAL_OK)
@@ -655,20 +708,26 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_3|GPIO_PIN_7, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_3|GPIO_PIN_5 
+                          |GPIO_PIN_7, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1|GPIO_PIN_6, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_4, GPIO_PIN_SET);
 
-  /*Configure GPIO pins : PC0 PC1 PC3 PC7 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_3|GPIO_PIN_7;
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_6, GPIO_PIN_RESET);
+
+  /*Configure GPIO pins : PC0 PC1 PC3 PC4 
+                           PC5 PC7 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_3|GPIO_PIN_4 
+                          |GPIO_PIN_5|GPIO_PIN_7;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PB1 PB6 */
-  GPIO_InitStruct.Pin = GPIO_PIN_1|GPIO_PIN_6;
+  /*Configure GPIO pins : PB0 PB1 PB6 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_6;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;

@@ -8,17 +8,19 @@
  *   Draw lines between 2 points
  *   Draw rectangles
  *   Print characters
+ *   set text color, background color, and text size
  */
 
 #ifndef TFT_DISPLAY_H
 #define TFT_DISPLAY_H
 
 #include "stm32l0xx_hal.h"
-#include "font.h"
-#include <string.h>			// just for using strlen() :I
+#include "font.h"			// include for byte array used with character drawing
+#include <string.h>			// for strlen()
 
-// ---- Start of library constants ----
+// ---- driver command constants ----
 // pulled from Adafruit ST77XX driver library.
+// read ST7735R data sheet for more info on these constants
 #define ST7735_MADCTL_BGR 0x08
 #define ST7735_MADCTL_MH  0x04
 
@@ -82,7 +84,7 @@
 #define ST77XX_RDID2      0xDB
 #define ST77XX_RDID3      0xDC
 #define ST77XX_RDID4      0xDD
-// ---- End of library constants ----
+// ---- end of driver constants ----
 
 // ---- 16-bit (5-6-5) color constants ----
 #define	ST77XX_BLACK      0x0000
@@ -96,11 +98,11 @@
 #define	ST77XX_ORANGE     0xFC00
 // ---- End of 16-bit color constants ----
 
-// ---- Pin definitions and constants ----
+// ---- pin definitions and constants ----
+#define CS_PORT 	GPIOC
 #define CS_PIN		GPIO_PIN_7
-#define CS_GPIO		GPIOC
+#define DC_PORT		GPIOB
 #define DC_PIN		GPIO_PIN_6
-#define DC_GPIO		GPIOB
 #define _xstart		0
 #define _ystart 	0
 
@@ -110,24 +112,42 @@
 
 // ---- Function Macros ----
 #define swap_ints(x,y) (x)=(x)+(y); (y)=(x)-(y); (x)=(x)-(y)
-#define abs(x) ((x) > 0 ? (x) : -(x))
+//#define abs(x) ((x) > 0 ? (x) : -(x))
 // ---- End of function macros ----
 
 // ---- Lower level functions ----
+// toggles gpio pins for SPI chip select and data/command pin on ST77XX driver
 void SPI_CS_LOW();
 void SPI_CS_HIGH();
 void SPI_DC_LOW();
 void SPI_DC_HIGH();
+
+// sendCommand, TFT_startup, displayInit, and setAddrWindow are heavily based code from Adafruit's Arduino library
+// sends ST77XX instruction and its necessary arguments
 void sendCommand(uint8_t cmd, uint8_t* args, uint16_t numArgs, SPI_HandleTypeDef *hspi);
-void displayInit(uint8_t *args, SPI_HandleTypeDef *hspi);
+
+// runs initialization for display. contains an array with a list of arguments for initialization
 void TFT_startup(SPI_HandleTypeDef *hspi);
+
+// array parser for TFT_startup
+void displayInit(uint8_t *args, SPI_HandleTypeDef *hspi);
+
+// sets display region that incoming pixel data should write to
 void setAddrWindow(uint16_t x, uint16_t y, uint16_t w, uint16_t h, SPI_HandleTypeDef *hspi);
+
+// turns display on/off by sending ST77XX instruction
+void turnDisplayOn(SPI_HandleTypeDef *hspi);
+void turnDisplayOff(SPI_HandleTypeDef *hspi);
 // ---- End of lower level functions ----
 
 // ---- Graphics functions ----
 // ---- base functions ----
 // convention: spi handle is last argument of funct
-uint16_t colorFixer(uint16_t);
+uint16_t colorFixer(uint16_t);		// helper function involved with 16-bit pixel data and 8-bit SPI data bus
+
+// draws pixels, lines, and an input 16-bit buffer
+// coordinates are for upper left corner. screen is oriented vertically with pins on bottom by default
+// hline x and y are for left point, vline x and y are for top point
 void drawPixel(uint8_t x, uint8_t y, uint16_t color, SPI_HandleTypeDef* hspi);
 void drawHLine(uint8_t x, uint8_t y, uint8_t size, uint16_t color, SPI_HandleTypeDef* hspi);
 void drawVLine(uint8_t x, uint8_t y, uint8_t size, uint16_t color, SPI_HandleTypeDef* hspi);
@@ -136,62 +156,58 @@ void drawBuffer(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t *buffer, uin
 
 // ---- basic shapes and lines ----
 // these functions are based completely on above functions
-void drawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint16_t color, SPI_HandleTypeDef* hspi);
+// draws lines and rectangles
 void drawRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t color, SPI_HandleTypeDef* hspi);
 void fillRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t color, SPI_HandleTypeDef* hspi);
+
+// draws a line from point to point
+void drawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint16_t color, SPI_HandleTypeDef* hspi);
+
+// completely fills screen with 1 color
 void fillScreen(uint16_t color, SPI_HandleTypeDef* hspi);
+
+// like fillScreen, but sets background color
+void clearScreen(uint16_t backgroundColor, SPI_HandleTypeDef* hspi);
 // ---- end of basic shapes and lines ----
 
-// ---- other more complicated graphics ----
-// pls sort this garbage. move some funcs to nav?
-void drawCenteredText(uint8_t x_center, uint8_t y, const char *str, SPI_HandleTypeDef *hspi);
-void clearTextLine(uint8_t y, SPI_HandleTypeDef *hspi);
-// ---- end of other stuff ----
-
 // ---- text functions ----
+// functions use textColor, textSize, cursor, and backgroundColor functions
+// draws any ASCII character. based on characters mapped in font.h. printout in font.txt
 void drawChar(uint8_t ch, SPI_HandleTypeDef *hspi);
-void drawText(const char *str, SPI_HandleTypeDef *hspi);
-void drawTextAt(uint8_t x, uint8_t y, const char *str, SPI_HandleTypeDef *hspi);
-void setBackgroundColor(uint16_t color);
-void setCursor(uint8_t x, uint8_t y);
-void setTextSize(uint8_t size);
-void setTextColor(uint16_t color);
-void clearScreen(uint16_t backgroundColor, SPI_HandleTypeDef* hspi);
 
-uint16_t getBackgroundColor();
-uint16_t getTextColor();
+// draws a string
+void drawText(const char *str, SPI_HandleTypeDef *hspi);
+
+// drawText, but coordinates specified
+void drawTextAt(uint8_t x, uint8_t y, const char *str, SPI_HandleTypeDef *hspi);
+
+// text but centered on screen
+void drawCenteredText(uint8_t x_center, uint8_t y, const char *str, SPI_HandleTypeDef *hspi);
+
+// centered text, but left and right spaces are filled
+// used for printing text in the same space with different sizes
+void drawCenteredTextWithPadding(uint8_t x_center, uint8_t y, uint8_t maxLength, const char *str, SPI_HandleTypeDef *hspi);
+
+// clears a line of text at a given upper bound point
+void clearTextLine(uint8_t y, SPI_HandleTypeDef *hspi);
 // ---- end of text functions ----
 
-/* some more ideas for graphics:
- *   canvas system: a data structure or array representing the layout of the screen
- *     not sure if the L0 can hold the whole screen with 16-bit pixels because the L4 didn't show promising results
- *     declare as static so it can go into flash? might make things slower but might not really
- *       if we can do this, we can use DMA to do the whole screen transfer, and we'd need to do no work on it
- *     can use palette system so each pixel can be represented with much less bits (2, 4, or 8)
- *     can switch palettes on the fly (probably implied, why am i typing this out)
- *     rewrite graphics functions to work with this system
- *   draw bitmaps: import a file and read, or whatever
- *   draw other shapes: circles, triangles, polygons, rounded rectangles, etc.
- *     some are already in Adafruit library and would be easy to write in
- *     is it really necessary
- *   draw gradients: you know, maybe it'd be pretty
- *   display rotation: sometimes we might want display rotated to be horizontal instead of vertical
- *   invert display: quick and easy way to alter the whole screen for some sort of spooky effect
- *
- *   convenience:
- *     variables for cursor, textcolor, bg, textsize
- *     clear line
- *     newline/textwrap
- */
+// ---- setters and getters ----
+// used in text functions to color behind characters
+void setBackgroundColor(uint16_t color);
 
-/* comments:
- *   character and text functions are slow and you can easily see characters scroll by
- *   due to a lot of checks and a lot of calls for each pixel in the character. character
- *   info needs very little memory, but how can we make this faster?
- *     retranslate 1-bit data structure into 16-bit data structure and pass as one call to SPI?
- *   is very slow on L0 nucleo
- *   ram is only 20kB, and can't use flash for variables that aren't const. 2-bit palette system and
- *     translate 1/4 of display at a time might fit into ram
- */
+// sets cursor position. used in drawText
+void setCursor(uint8_t x, uint8_t y);
+
+// sets text size to scale characters. input is a multiplier on 6x8.
+void setTextSize(uint8_t size);
+
+// sets color of text
+void setTextColor(uint16_t color);
+
+// returns static variables that hold background color and text color
+uint16_t getBackgroundColor();
+uint16_t getTextColor();
+// ---- end of setters and getters ----
 // ---- End of graphics functions ----
 #endif
