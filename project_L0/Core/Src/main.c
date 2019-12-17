@@ -85,91 +85,61 @@ static void MX_TIM6_Init(void);
   */
 int main(void)
 {
-  /* USER CODE BEGIN 1 */
+	/* USER CODE BEGIN 1 */
 
-  /* USER CODE END 1 */
-  
+	/* USER CODE END 1 */
 
-  /* MCU Configuration--------------------------------------------------------*/
 
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+	/* MCU Configuration--------------------------------------------------------*/
 
-  /* USER CODE BEGIN Init */
+	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+	HAL_Init();
 
-  /* USER CODE END Init */
+	/* USER CODE BEGIN Init */
 
-  /* Configure the system clock */
-  SystemClock_Config();
+	/* USER CODE END Init */
 
-  /* USER CODE BEGIN SysInit */
-  /* USER CODE END SysInit */
+	/* Configure the system clock */
+	SystemClock_Config();
 
-  /* Initialize all configured peripherals */
-  MX_GPIO_Init();
-  MX_SPI1_Init();
-  MX_ADC_Init();
-  MX_RTC_Init();
-  MX_TIM21_Init();
-  MX_LPTIM1_Init();
-  MX_DMA_Init();
-  MX_TIM22_Init();
-  MX_TIM2_Init();
-  MX_TIM6_Init();
-  /* USER CODE BEGIN 2 */
-  	/* initialization for display */
+	/* USER CODE BEGIN SysInit */
+	/* USER CODE END SysInit */
+
+	/* Initialize all configured peripherals */
+	MX_GPIO_Init();
+	MX_SPI1_Init();
+	MX_ADC_Init();
+	MX_RTC_Init();
+	MX_TIM21_Init();
+	MX_LPTIM1_Init();
+	MX_DMA_Init();
+	MX_TIM22_Init();
+	MX_TIM2_Init();
+	MX_TIM6_Init();
+	/* USER CODE BEGIN 2 */
+	// rtc software calibration
 	setRTCCalibration(-3, &hrtc);
-//	HAL_Delay(2000);
-//	HAL_GPIO_WritePin(POWER_SUPPLY_ENABLE_PORT, POWER_SUPPLY_ENABLE_PIN, GPIO_PIN_SET);
+
+  	// initialization for display
 	TFT_startup(&hspi1);
 	clearScreen(ST77XX_BLACK, &hspi1);
 
-	/* start updating display for ui */
+	// initialization for ui and hardware
 	initFace();
 	setClockAlarm(&hrtc);
-	runTimerStopwatchBase(&htim21);
+	runTimerStopwatchBase(&htim21);		// running time bases
 	runBacklightMotorBase(&htim2);
 	runADCSampler(&htim22);
+	/* USER CODE END 2 */
 
-	/* tests that are only meant to run once */
-//	runStopwatch(&hlptim1);
-//	runTimerDisplay();
-//	alarmTest();
-//	timerTest();
-  /* USER CODE END 2 */
-
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
+	/* Infinite loop */
+	/* USER CODE BEGIN WHILE */
 	while (1)
 	{
     /* USER CODE END WHILE */
 
-    /* USER CODE BEGIN 3 */
-		/* test to make sure code isn't hanging */
-//		HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_3);
-//		HAL_Delay(1000);
-
-		/* repeatable tests */
-		/* clock and timer tests */
-//		clockTest(&hrtc, &hspi1);
-
-		/* display tests */
-//		lineTest(&hspi1);
-//		charTest(&hspi1);
-//		textTest(bg, &hspi1);
-
-		/* adc/battery test */
-//		testBatteryCalculator(&hadc, &hspi1);
-
-		// ui/nav tests or full run. uncomment when ready
-		// to have state code execute in order from top-down, instead of executing wherever
-		// need to note sections that need to execute outside of buttons
-		if (buttons.is1Pressed || buttons.is2Pressed || buttons.is3Pressed || buttons.is4Pressed) {
-//			runMotor(&htim2);
-//			buttons.is1Pressed = buttons.is2Pressed = buttons.is3Pressed = buttons.is4Pressed = 0;
-			updateState(&hrtc, &htim21, &htim2, &htim6, &hspi1);
-		}
-
+		/* USER CODE BEGIN 3 */
+		updateState(&hrtc, &htim21, &htim2, &htim6, &hspi1);
 		updateDisplay(&hrtc, &hspi1);
 		batteryManager(&hadc, &hspi1);
 
@@ -179,11 +149,10 @@ int main(void)
 		}
 
 		// wait for interrupt instruction. CPU goes to sleep mode (listed as "sleep mode" by ST as one of their low-power modes)
-		// does it work on it's own, or do registers have to be configured first?
 		// put in bottom, since screen updates should run once at the start
 		__WFI();
-  }
-  /* USER CODE END 3 */
+	}
+	/* USER CODE END 3 */
 }
 
 /**

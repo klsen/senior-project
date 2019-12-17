@@ -1,30 +1,27 @@
-// file for measuring and calculating battery capacity
+// Implementation file for battery.h
 
 #include "battery.h"
 
-volatile float batterySum = 0;
-static uint8_t sampleIndex = 0;
 static uint8_t bState = batteryNormal;
 static const float batteryCapacity[];
 static uint16_t batteryCapacityArraySize = 179;
 
-// spi used to turn display on/off only
-// also for drawing battery
+// spi used to turn display on/off and drawing battery graphic
 void batteryManager(ADC_HandleTypeDef *hadc, SPI_HandleTypeDef *hspi) {
 	if (canSampleBattery) {
 		canSampleBattery = 0;
 
 		battPercentage = getBatteryPercentage(hadc);
-		HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_3);
+
 		// start really shutting down & set flag
 		// disable power supply (setting enable pin to 0)
 		if (battPercentage == 0) {
-//			turnDisplayOff(hspi);
-//			HAL_GPIO_WritePin(POWER_SUPPLY_ENABLE_PORT, POWER_SUPPLY_ENABLE_PIN, GPIO_PIN_RESET);
+			turnDisplayOff(hspi);
+			HAL_GPIO_WritePin(POWER_SUPPLY_ENABLE_PORT, POWER_SUPPLY_ENABLE_PIN, GPIO_PIN_RESET);
 		}
 		else if (battPercentage <= 5) {
 			// start turning off most hardware
-//			turnDisplayOff(hspi);
+			turnDisplayOff(hspi);
 			bState = batteryReallyLow;
 		}
 		// start low-power mode and set flag
@@ -34,7 +31,6 @@ void batteryManager(ADC_HandleTypeDef *hadc, SPI_HandleTypeDef *hspi) {
 		}
 		// set hardware to use power normally
 		else {
-			// do nothing? maybe might need to check previous state and make sure everything is normal
 			if (bState == batteryLow || bState == batteryReallyLow) {
 				turnDisplayOn(hspi);
 			}
@@ -48,21 +44,23 @@ void batteryManager(ADC_HandleTypeDef *hadc, SPI_HandleTypeDef *hspi) {
 
 // should return a number from 0-100
 uint8_t getBatteryPercentage(ADC_HandleTypeDef *hadc) {
-	float averageVoltage, temp;
+	float v, temp;
 	uint8_t index;
 
 	// enable adc voltage divider for measurements, disable after
 	HAL_GPIO_WritePin(ADC_DIVIDER_PORT, ADC_DIVIDER_PIN, GPIO_PIN_SET);
 	HAL_ADC_Start_IT(hadc);
+
 	HAL_ADC_PollForConversion(hadc, HAL_MAX_DELAY);
-	averageVoltage = 3.3*HAL_ADC_GetValue(hadc)/(0xFFF);
+	v = 3.3*HAL_ADC_GetValue(hadc)/(0xFFF);
+
 	HAL_ADC_Stop(hadc);
 	HAL_GPIO_WritePin(ADC_DIVIDER_PORT, ADC_DIVIDER_PIN, GPIO_PIN_RESET);
 
 	// trying to look only for 3.9-3.4. anything above 3.7 is 100%, anything below 3.4 is 0%
 	// scaled voltages at 3.0642-2.6714
 	// indices at 6-151. have to scale and flip to go from 100-0 since 6->100%
-	index = search(averageVoltage);
+	index = search(v);
 	if (index <= 6) return 100;
 	else if (index >= 135) return 0;		// adjusting numbers because tests want to call 2.65V non-zero
 	else {
@@ -75,8 +73,7 @@ uint8_t getBatteryPercentage(ADC_HandleTypeDef *hadc) {
 
 // should return index in array
 uint8_t search(float val) {
-	// write binary search for efficiency?
-	// size not related to 2. size is not that big. maybe in the future
+	// O(n) lookup. array is only size=179.
 	uint8_t i;
 	for (i = 0; i < batteryCapacityArraySize; i++) {
 		if (val > batteryCapacity[i]) return i;
@@ -84,7 +81,7 @@ uint8_t search(float val) {
 	return batteryCapacityArraySize;
 }
 
-// might need to put into different file so it can use display includes
+// small tester for battery functions
 void testBatteryCalculator(ADC_HandleTypeDef *hadc, SPI_HandleTypeDef *hspi) {
 	batteryManager(hadc, hspi);
 
@@ -99,6 +96,7 @@ void testBatteryCalculator(ADC_HandleTypeDef *hadc, SPI_HandleTypeDef *hspi) {
 // from some data set hosted hosted by nasa. should be replaced later with measurements from our own battery
 // thx for the data Prognostics CoE at NASA Ames
 // already scaled for 3.3V ADC. sorted by largest to smallest, so should do a conversion when indexing
+// only looking at a certain section when curve looks mostly linear
 static const float batteryCapacity[] = {
 	3.293315,
 	3.292731,

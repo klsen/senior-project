@@ -1,12 +1,8 @@
-/*
- * File for handling navigation between different apps/interfaces.
- * uses global flags (concurrency problem?).
- */
+// Implementation file for user_interface.h
 
 #include "user_interface.h"
 
-// use static for timer/alarm/stopwatch variables, changeface, and face used.
-// needed only in updatedisplay/buttons, but each func shares these variables
+// each function in this file shares these variables, but these are not used in other files.
 static struct clockVariables clockVars = {0};
 static struct timerVariables timerVars = {0};
 static struct alarmVariables alarmVars = {0};
@@ -26,7 +22,7 @@ const char* weekdayNames[8] = {
 };
 
 const char* monthNames[13] = {
-	"",			// month names also start with 1
+	"",			// month values also start with 1
 	"Jan",
 	"Feb",
 	"Mar",
@@ -41,83 +37,70 @@ const char* monthNames[13] = {
 	"Dec"
 };
 
-// button interrupt(s)
+// callback for button interrupts.
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+	// toggles LED whenever a button is pressed
+	HAL_GPIO_TogglePin(LED3_PORT, LED3_PIN);
+
+	// disables interrupts for software debouncing
 	HAL_NVIC_DisableIRQ(EXTI2_3_IRQn);
 	HAL_NVIC_DisableIRQ(EXTI4_15_IRQn);
 	HAL_NVIC_ClearPendingIRQ(EXTI2_3_IRQn);
 	HAL_NVIC_ClearPendingIRQ(EXTI4_15_IRQn);
 
+	// updates flags
 	if (GPIO_Pin == BUTTON1) buttons.is1Pressed = 1;
 	if (GPIO_Pin == BUTTON2) buttons.is2Pressed = 1;
 	if (GPIO_Pin == BUTTON3) buttons.is3Pressed = 1;
 	if (GPIO_Pin == BUTTON4) buttons.is4Pressed = 1;
 
+	// runs timer for software debouncing delay
 	HAL_TIM_Base_Start_IT(&htim6);
-
-	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_3);		// should run for any button
 }
 
+//
 void updateState(RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *timerStopwatchTim, TIM_HandleTypeDef *motorBacklightTim, TIM_HandleTypeDef *buttonTim, SPI_HandleTypeDef *hspi) {
-	/* program flow:
-	 *   check current face used
-	 *   check current variables and check button pressed
-	 */
-	// button 1 changes the face on screen.
-	if (buttons.is1Pressed) {
-		buttons.is1Pressed = 0;
-		isFaceBeingChanged = 1;
-		faceOnDisplay = (faceOnDisplay + 1) % NUM_FACES;
-		switch (faceOnDisplay) {
-			case faceClock: updateFace.clock = 1; break;
-			case faceTimer: updateFace.timer = 1; break;
-			case faceAlarm: updateFace.alarm = 1; break;
-			case faceStopwatch: updateFace.stopwatch = 1; break;
+	if (buttons.is1Pressed || buttons.is2Pressed || buttons.is3Pressed || buttons.is4Pressed) {
+
+		// button 1 changes the face on screen.
+		if (buttons.is1Pressed) {
+			isFaceBeingChanged = 1;
+			faceOnDisplay = (faceOnDisplay + 1) % NUM_FACES;
+			switch (faceOnDisplay) {
+				case faceClock: updateFace.clock = 1; break;
+				case faceTimer: updateFace.timer = 1; break;
+				case faceAlarm: updateFace.alarm = 1; break;
+				case faceStopwatch: updateFace.stopwatch = 1; break;
+				default: break;
+			}
+		}
+
+		// button combo: press 2 and 3 alternatively 5 times to reinit display.
+		// needed since screen often turns white when its power supply is rustled, and there's no way to show the information
+		static uint8_t s = 0;
+		switch(s) {
+			case 0:	if (buttons.is2Pressed) s++; break;
+			case 1: if (buttons.is3Pressed) s++; else if (buttons.is1Pressed || buttons.is2Pressed || buttons.is4Pressed) s = 0; break;
+			case 2: if (buttons.is2Pressed) s++; else if (buttons.is1Pressed || buttons.is3Pressed || buttons.is4Pressed) s = 0; break;
+			case 3: if (buttons.is3Pressed) s++; else if (buttons.is1Pressed || buttons.is2Pressed || buttons.is4Pressed) s = 0; break;
+			case 4: if (buttons.is2Pressed) s++; else if (buttons.is1Pressed || buttons.is3Pressed || buttons.is4Pressed) s = 0; break;
+			case 5: if (buttons.is3Pressed) s++; else if (buttons.is1Pressed || buttons.is2Pressed || buttons.is4Pressed) s = 0; break;
+			case 6: if (buttons.is2Pressed) s++; else if (buttons.is1Pressed || buttons.is3Pressed || buttons.is4Pressed) s = 0; break;
+			case 7: if (buttons.is3Pressed) s++; else if (buttons.is1Pressed || buttons.is2Pressed || buttons.is4Pressed) s = 0; break;
+			case 8: if (buttons.is2Pressed) s++; else if (buttons.is1Pressed || buttons.is3Pressed || buttons.is4Pressed) s = 0; break;
+			case 9: if (buttons.is3Pressed) {TFT_startup(hspi); s = 0;} break;
 			default: break;
 		}
+
+		// run helper functions when their face is on screen
+		if (faceOnDisplay == faceClock) updateClockState(hrtc);
+		else if (faceOnDisplay == faceTimer) updateTimerState(timerStopwatchTim, motorBacklightTim);
+		else if (faceOnDisplay == faceAlarm) updateAlarmState(hrtc, motorBacklightTim);
+		else if (faceOnDisplay == faceStopwatch) updateStopwatchState(timerStopwatchTim);
+
+		// flags cleared only when state code has finished executing once
+		buttons.is1Pressed = buttons.is2Pressed = buttons.is3Pressed = buttons.is4Pressed = 0;
 	}
-
-	// press 2 and 3 alternatively 5 times to reinit display
-	static uint8_t s = 0;
-	switch(s) {
-		case 0:	if (buttons.is2Pressed) s++; break;
-		case 1: if (buttons.is3Pressed) s++; else if (buttons.is1Pressed || buttons.is2Pressed || buttons.is4Pressed) s = 0; break;
-		case 2: if (buttons.is2Pressed) s++; else if (buttons.is1Pressed || buttons.is3Pressed || buttons.is4Pressed) s = 0; break;
-		case 3: if (buttons.is3Pressed) s++; else if (buttons.is1Pressed || buttons.is2Pressed || buttons.is4Pressed) s = 0; break;
-		case 4: if (buttons.is2Pressed) s++; else if (buttons.is1Pressed || buttons.is3Pressed || buttons.is4Pressed) s = 0; break;
-		case 5: if (buttons.is3Pressed) s++; else if (buttons.is1Pressed || buttons.is2Pressed || buttons.is4Pressed) s = 0; break;
-		case 6: if (buttons.is2Pressed) s++; else if (buttons.is1Pressed || buttons.is3Pressed || buttons.is4Pressed) s = 0; break;
-		case 7: if (buttons.is3Pressed) s++; else if (buttons.is1Pressed || buttons.is2Pressed || buttons.is4Pressed) s = 0; break;
-		case 8: if (buttons.is2Pressed) s++; else if (buttons.is1Pressed || buttons.is3Pressed || buttons.is4Pressed) s = 0; break;
-		case 9: if (buttons.is3Pressed) {TFT_startup(hspi); s = 0;} break;
-		default: break;
-	}
-
-	// button combo to turn off system. press 2 5x to
-//	static uint8_t s2 = 0;
-//	switch(s2) {
-//		case 0:	if (buttons.is2Pressed) s2++; break;
-//		case 1: if (buttons.is2Pressed) s2++; else if (buttons.is1Pressed || buttons.is3Pressed || buttons.is4Pressed) s2 = 0; break;
-//		case 2: if (buttons.is2Pressed) s2++; else if (buttons.is1Pressed || buttons.is3Pressed || buttons.is4Pressed) s2 = 0; break;
-//		case 3: if (buttons.is2Pressed) s2++; else if (buttons.is1Pressed || buttons.is3Pressed || buttons.is4Pressed) s2 = 0; break;
-//		case 4: if (buttons.is2Pressed) {HAL_GPIO_WritePin(POWER_SUPPLY_ENABLE_PORT, POWER_SUPPLY_ENABLE_PIN, GPIO_PIN_RESET); s2 = 0;} break;
-//		default: break;
-//	}
-//	char str[10];
-//	sprintf(str, "%d", s2);
-//	setTextSize(1);
-//	drawTextAt(0, 0, str, hspi);
-
-//	if (buttons.is3Pressed) turnDisplayOn(hspi);
-//	if (buttons.is4Pressed) turnDisplayOff(hspi);
-
-	if (faceOnDisplay == faceClock) updateClockState(hrtc);
-	else if (faceOnDisplay == faceTimer) updateTimerState(timerStopwatchTim, motorBacklightTim);
-	else if (faceOnDisplay == faceAlarm) updateAlarmState(hrtc, motorBacklightTim);
-	else if (faceOnDisplay == faceStopwatch) updateStopwatchState(timerStopwatchTim);
-
-	// some decisions in respective state functions dont clear these flags
-	buttons.is1Pressed = buttons.is2Pressed = buttons.is3Pressed = buttons.is4Pressed = 0;
 }
 
 /*
@@ -133,9 +116,6 @@ void updateState(RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *timerStopwatchTim, 
  *   button 3 changes value down
  *   button 4 changes field being set. changes between min, hr, year, month, and day. once it finishes cycling through it once,
  *     the clock is updated and we revert back to default mode.
- *
- * notes:
- *   make date setting more robust (invalidate date entries when that day of month doesn't exist or just change modulo)
  */
 void updateClockState(RTC_HandleTypeDef *hrtc) {
 	// change fields up, do nothing if not setting clock

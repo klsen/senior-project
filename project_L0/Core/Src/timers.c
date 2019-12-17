@@ -1,22 +1,19 @@
-// file for using hardware timers for various things
-// who knows if im doing this right lmao
-
-// should set flags to update screen? hmmmmmmm....
+// Implementation file for timer.h
 
 #include "timers.h"
 
-// static variables
+// static variables to help with implementation
 static uint32_t timerStartMarker = 0;
 static uint32_t timerPauseMarker = 0;
 static uint32_t stopwatchStartMarker = 0;
 static uint32_t stopwatchPauseMarker = 0;
 static uint8_t motorStateCounter = 0;
 
-// important boye that is called for a bunch of different timers
+// called for a bunch of timers when timer has to circle back (arr->0, 0->arr)
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 	// button's timer
 	if (htim->Instance == TIM6) {
-		// renable button interrupts and clear pending
+		// stop timer, renable button interrupts, and clear pending
 		HAL_TIM_Base_Stop_IT(htim);
 		HAL_NVIC_ClearPendingIRQ(EXTI2_3_IRQn);
 		HAL_NVIC_ClearPendingIRQ(EXTI4_15_IRQn);
@@ -30,15 +27,19 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 	}
 	// sampler's timer
 	else if (htim->Instance == TIM22) {
+		// set flag to start ADC sample
 		canSampleBattery = 1;
 	}
 }
 
+// called for a bunch of timers when channel value = counter value
 void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
 	if (htim->Instance == TIM21) {
 		// timer's channel
 		if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_1) {
-			updateFace.timer = 1;
+			updateFace.timer = 1;		// set update screen flag
+
+			// decrement value if non-zero, else set done flag
 			if (timerCounter != 1) --timerCounter;
 			else {
 				--timerCounter;
@@ -100,13 +101,14 @@ void runTimer(TIM_HandleTypeDef *htim) {
 	HAL_TIM_OC_Start_IT(htim, TIM_CHANNEL_1);
 }
 
-// flags should be set in nav
 void pauseTimer(TIM_HandleTypeDef *htim) {
+	// stop timer, but hold marker so you can track milliseconds to next second
 	HAL_TIM_OC_Stop_IT(htim, TIM_CHANNEL_1);
 	timerPauseMarker = htim->Instance->CNT;
 }
 
 void stopTimer(TIM_HandleTypeDef *htim) {
+	// clear everything
 	HAL_TIM_OC_Stop_IT(htim, TIM_CHANNEL_1);
 	timerStartMarker = 0;
 	timerPauseMarker = 0;
@@ -138,14 +140,14 @@ void runStopwatch(TIM_HandleTypeDef *htim) {
 	HAL_TIM_OC_Start_IT(htim, TIM_CHANNEL_2);
 }
 
-// stop the timer or pause it or whatever.
-// counter value might reset and screw up timekeeping? should save?
 void pauseStopwatch(TIM_HandleTypeDef *htim) {
+	// save marker to hold milliseconds
 	HAL_TIM_OC_Stop_IT(htim, TIM_CHANNEL_2);
 	stopwatchPauseMarker = htim->Instance->CNT;
 }
 
 void clearStopwatch(TIM_HandleTypeDef *htim) {
+	// clear everything
 	HAL_TIM_OC_Stop_IT(htim, TIM_CHANNEL_2);
 	stopwatchPauseMarker = htim->Instance->CNT;
 	stopwatchStartMarker = htim->Instance->CNT;
@@ -161,11 +163,12 @@ void stopTimerStopwatchBase(TIM_HandleTypeDef *htim) {HAL_TIM_Base_Stop(htim);}
 // uses LSE timer TIM22
 void runADCSampler(TIM_HandleTypeDef *htim) {
 	HAL_TIM_Base_Start_IT(htim);
-	canSampleBattery = 1;
+	canSampleBattery = 1;			// set flag to let ADC run at the start
 }
 
 // uses LSE timer TIM2 CH1
 void runDisplayBacklight(TIM_HandleTypeDef *htim) {
+	// start PWM for near 100%
 	TIM_OC_InitTypeDef sConfig = {0};
 	sConfig.OCMode = TIM_OCMODE_PWM1;
 	sConfig.Pulse = htim->Instance->ARR-1;
@@ -191,11 +194,11 @@ void changeDisplayBacklight(uint8_t intensity, TIM_HandleTypeDef *htim) {
 }
 
 void stopDisplayBacklight(TIM_HandleTypeDef *htim) {
+	// stop pwm
 	HAL_TIM_PWM_Stop_IT(htim, TIM_CHANNEL_1);
 }
 
-// running motor for vibration. should run for a finite time
-// connect motor enable line to timer output line
+// running motor for vibration. runs for a finite amount of time
 // uses LSE timer TIM2 CH2
 void runMotor(TIM_HandleTypeDef *htim) {
 	TIM_OC_InitTypeDef sConfig = {0};
@@ -212,7 +215,6 @@ void runMotor(TIM_HandleTypeDef *htim) {
 }
 
 void stopMotor(TIM_HandleTypeDef *htim) {
-	// set flag only? to start looking at period complete interrupt for motor's timer?
 	HAL_TIM_OC_Stop_IT(htim, TIM_CHANNEL_2);
 	motorStateCounter = 0;
 }

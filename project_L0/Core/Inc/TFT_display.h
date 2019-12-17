@@ -8,17 +8,19 @@
  *   Draw lines between 2 points
  *   Draw rectangles
  *   Print characters
+ *   set text color, background color, and text size
  */
 
 #ifndef TFT_DISPLAY_H
 #define TFT_DISPLAY_H
 
 #include "stm32l0xx_hal.h"
-#include "font.h"
-#include <string.h>			// just for using strlen() :I
+#include "font.h"			// include for byte array used with character drawing
+#include <string.h>			// for strlen()
 
-// ---- Start of library constants ----
+// ---- driver command constants ----
 // pulled from Adafruit ST77XX driver library.
+// read ST7735R data sheet for more info on these constants
 #define ST7735_MADCTL_BGR 0x08
 #define ST7735_MADCTL_MH  0x04
 
@@ -82,7 +84,7 @@
 #define ST77XX_RDID2      0xDB
 #define ST77XX_RDID3      0xDC
 #define ST77XX_RDID4      0xDD
-// ---- End of library constants ----
+// ---- end of driver constants ----
 
 // ---- 16-bit (5-6-5) color constants ----
 #define	ST77XX_BLACK      0x0000
@@ -96,11 +98,11 @@
 #define	ST77XX_ORANGE     0xFC00
 // ---- End of 16-bit color constants ----
 
-// ---- Pin definitions and constants ----
+// ---- pin definitions and constants ----
+#define CS_PORT 	GPIOC
 #define CS_PIN		GPIO_PIN_7
-#define CS_GPIO		GPIOC
+#define DC_PORT		GPIOB
 #define DC_PIN		GPIO_PIN_6
-#define DC_GPIO		GPIOB
 #define _xstart		0
 #define _ystart 	0
 

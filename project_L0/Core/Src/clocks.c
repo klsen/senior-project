@@ -1,53 +1,40 @@
-/*
- * file for initializing and working with the real-time clock
- * only for time-keeping and alarm triggering functionality
- *
- * called in main(). uses global variables? might change back
- */
+// Implementation file for clocks.h
 
 #include "clocks.h"
 
-// set rtc time. uses perosnal struct as arg
-// assert members not null for set functions?
+// ---- RTC setters ----
+// set rtc time. uses personal struct as arg
+// assumes t's fields are aleady set to something or not null
 void setTime(struct times *t, RTC_HandleTypeDef *hrtc) {
-	RTC_TimeTypeDef stime = {0};	// change to malloc call? does that work in embedded?
+	RTC_TimeTypeDef stime = {0};
 
-	// set using args later
 	stime.Hours = t->hr;
 	stime.Minutes = t->min;
 	stime.Seconds = t->sec;
 
 	stime.TimeFormat = RTC_HOURFORMAT_24;
 
-	// not sure what these do, but probably fine if set to 0 or ignored
+	// not really using
 	stime.SubSeconds = 0;
 	stime.SecondFraction = 0;
+	stime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
+	stime.StoreOperation = RTC_STOREOPERATION_SET;
 
-	stime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;		// add daylight savings later?
-	stime.StoreOperation = RTC_STOREOPERATION_SET;		// not sure what this does
-
-	// do nothing until done
-	// not following BCD format (4-bit digit 1, 4-bit digit 2)
-	// while makes program hang? ignore instead?
-//	while (HAL_RTC_SetTime(hrtc, &stime, RTC_FORMAT_BIN) != HAL_OK);
 	HAL_RTC_SetTime(hrtc, &stime, RTC_FORMAT_BIN);
-
-//	runClockDisplay(&htim22);
 }
 
-// set rtc date. uses personal struct
+// set rtc date. uses personal struct as arg
+// assumes struct has values
 void setDate(struct dates *d, RTC_HandleTypeDef *hrtc) {
-	// ---- date ----
 	RTC_DateTypeDef sdate = {0};
 
 	sdate.Month = d->month;
 	sdate.Date = d->date;
+	sdate.Year = d->yr % 100; 		// set only between 0-99. limitation of RTC
+
 	sdate.WeekDay = weekdayCalculator(d->yr, d->month, d->date);
-	sdate.Year = d->yr % 100; 		// set only between 0-99. part of the library (!?)
 
 	HAL_RTC_SetDate(hrtc, &sdate, RTC_FORMAT_BIN);
-
-//	runClockDisplay(&htim22);
 }
 
 void setDateTime(struct dates *d, struct times *t, RTC_HandleTypeDef *hrtc) {
@@ -57,13 +44,13 @@ void setDateTime(struct dates *d, struct times *t, RTC_HandleTypeDef *hrtc) {
 
 // for time of day+week
 void setAlarm(struct alarmTimes *a, RTC_HandleTypeDef *hrtc) {
-	RTC_AlarmTypeDef salarm = {0};		// is there a problem with using pointers instead?
+	RTC_AlarmTypeDef salarm = {0};
 	RTC_TimeTypeDef salarmtime = {0};
 
-	// change to set with args
 	salarmtime.Hours = a->hr;
 	salarmtime.Minutes = a->min;
 	salarmtime.Seconds = a->sec;
+
 	salarmtime.TimeFormat = RTC_HOURFORMAT_24;
 	salarmtime.SubSeconds = 0;
 	salarmtime.SecondFraction = 0;
@@ -71,28 +58,26 @@ void setAlarm(struct alarmTimes *a, RTC_HandleTypeDef *hrtc) {
 	salarmtime.StoreOperation = RTC_STOREOPERATION_RESET;
 
 	salarm.AlarmTime = salarmtime;
-	salarm.AlarmMask = RTC_ALARMMASK_NONE;
+	salarm.AlarmMask = RTC_ALARMMASK_NONE;		// allows comparison for all fields (sec, min, hour, weekday)
 	salarm.AlarmSubSecondMask = RTC_ALARMSUBSECONDMASK_ALL;
 	salarm.AlarmDateWeekDaySel = RTC_ALARMDATEWEEKDAYSEL_WEEKDAY;
 	salarm.AlarmDateWeekDay = a->weekday;
-	salarm.Alarm = RTC_ALARM_A;			// change if using different alarm
+	salarm.Alarm = RTC_ALARM_A;
 
-	// do nothing until done
 	HAL_RTC_SetAlarm_IT(hrtc, &salarm, RTC_FORMAT_BIN);
 }
 
-// set an alarm for the next second.
-// for triggering display updates.
-// uses rtc weekday. should have weekday calculator integrated before using
+// set an alarm for the next second for triggering display updates
 void setClockAlarm(RTC_HandleTypeDef *hrtc) {
-	RTC_AlarmTypeDef salarm = {0};			// malloc if using pointers
+	RTC_AlarmTypeDef salarm = {0};
 	RTC_TimeTypeDef salarmtime = {0};
 
+	// pull current time
 	struct dates currentDate = {0};
 	struct times currentTime = {0};
-
 	getDateTime(&currentDate, &currentTime, hrtc);
 
+	// start setting alarm
 	struct alarmTimes a = {0};
 	uint8_t s,m,h,w;
 	s = currentTime.sec + 1;
@@ -118,20 +103,18 @@ void setClockAlarm(RTC_HandleTypeDef *hrtc) {
 	salarm.AlarmSubSecondMask = RTC_ALARMSUBSECONDMASK_ALL;
 	salarm.AlarmDateWeekDaySel = RTC_ALARMDATEWEEKDAYSEL_WEEKDAY;
 	salarm.AlarmDateWeekDay = a.weekday;
-	salarm.Alarm = RTC_ALARM_B;			// change if using different alarm
+	salarm.Alarm = RTC_ALARM_B;
 
 	// do nothing until done
 	HAL_RTC_SetAlarm_IT(hrtc, &salarm, RTC_FORMAT_BIN);
 }
+// ---- end of RTC setters ----
 
 // ---- callbacks for interrupts ----
 // used for alarm function in project
 // meant to send signal to use motor
-// change to use hw timer so signal is temporary
 void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc) {
-	// change pin to whatever's accessible
-	// using PC0
-	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_0);
+	HAL_GPIO_TogglePin(LED1_PORT, LED1_PIN);
 	isAlarmDone = 1;
 	updateFace.alarm = 1;
 }
@@ -139,12 +122,11 @@ void HAL_RTC_AlarmAEventCallback(RTC_HandleTypeDef *hrtc) {
 // used to trigger display refresh every second. used because then it's synchronous with RTC updates
 void HAL_RTCEx_AlarmBEventCallback(RTC_HandleTypeDef *hrtc) {
 	updateFace.clock = 1;
-	setClockAlarm(hrtc);
+	setClockAlarm(hrtc);		// set something for next second
 }
 // ---- end of callbacks ----
 
-// ---- clock get functions ----
-// maybe needs subseconds?
+// ---- RTC getters ----
 void getTime(struct times *t, RTC_HandleTypeDef *hrtc) {
 	RTC_TimeTypeDef stime;
 
@@ -166,13 +148,15 @@ void getDate(struct dates *d, RTC_HandleTypeDef *hrtc) {
 	HAL_RTC_GetTime(hrtc, NULL, RTC_FORMAT_BIN);
 	HAL_RTC_GetDate(hrtc, &sdate, RTC_FORMAT_BIN);
 
+	// extrapolates year from last 2 digits stored in RTC
 	d->yr = sdate.Year > 50 ? sdate.Year+1900 : sdate.Year+2000;
+
 	d->month = sdate.Month;
 	d->date = sdate.Date;
 	d->weekday = sdate.WeekDay;
 }
 
-// not using getDate and getTime for efficiency (?)
+// not using getDate and getTime for possible efficiency
 void getDateTime(struct dates *d, struct times *t, RTC_HandleTypeDef *hrtc) {
 	RTC_DateTypeDef sdate;
 	RTC_TimeTypeDef stime;
@@ -182,7 +166,8 @@ void getDateTime(struct dates *d, struct times *t, RTC_HandleTypeDef *hrtc) {
 	HAL_RTC_GetTime(hrtc, &stime, RTC_FORMAT_BIN);
 	HAL_RTC_GetDate(hrtc, &sdate, RTC_FORMAT_BIN);
 
-	d->yr = sdate.Year > 50 ? sdate.Year+1900 : sdate.Year+2000;		// make assumptions on whether it's 19xx or 20xx
+	// make assumptions on whether it's 19xx or 20xx
+	d->yr = sdate.Year > 50 ? sdate.Year+1900 : sdate.Year+2000;
 	d->month = sdate.Month;
 	d->date = sdate.Date;
 	d->weekday = sdate.WeekDay;
@@ -191,15 +176,15 @@ void getDateTime(struct dates *d, struct times *t, RTC_HandleTypeDef *hrtc) {
 	t->min = stime.Minutes;
 	t->sec = stime.Seconds;
 }
-// ---- end of clock get functions ----
+// ---- end of RTC getters ----
 
 // ---- RTC calibration function ----
 // calibVal should be given in drift/day in seconds
-// calibration output on PC13. problems with using pins together with alarm?
+// calibration output on PC13
 void setRTCCalibration(int calibVal, RTC_HandleTypeDef *hrtc) {
 	uint16_t calm = 0;
 	uint32_t temp;
-	// need to recalculate the bounds
+
 	if (calibVal == 0) return;
 	else if (calibVal < 0) {		// drift offset is negative. need to slow rtc down
 		if (calibVal <= -42) {		// bounds checking. just set to max

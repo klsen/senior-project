@@ -66,12 +66,7 @@ void Error_Handler(void);
 
 /* Private defines -----------------------------------------------------------*/
 /* USER CODE BEGIN Private defines */
-//SPI_HandleTypeDef hspi1;
-//LPTIM_HandleTypeDef hlptim1;
-//RTC_HandleTypeDef hrtc;
-//TIM_HandleTypeDef htim21;
-//TIM_HandleTypeDef htim22;
-TIM_HandleTypeDef htim6;
+TIM_HandleTypeDef htim6;		// used to run software debouncing timer. global since it's called in callback
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
