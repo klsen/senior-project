@@ -92,8 +92,19 @@ void updateState(RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *timerStopwatchTim, 
 		case 9: if (buttons.is3Pressed) {TFT_startup(hspi); s = 0;} break;
 		default: break;
 	}
+
+	// button combo to turn off system. press 2 5x to
+//	static uint8_t s2 = 0;
+//	switch(s2) {
+//		case 0:	if (buttons.is2Pressed) s2++; break;
+//		case 1: if (buttons.is2Pressed) s2++; else if (buttons.is1Pressed || buttons.is3Pressed || buttons.is4Pressed) s2 = 0; break;
+//		case 2: if (buttons.is2Pressed) s2++; else if (buttons.is1Pressed || buttons.is3Pressed || buttons.is4Pressed) s2 = 0; break;
+//		case 3: if (buttons.is2Pressed) s2++; else if (buttons.is1Pressed || buttons.is3Pressed || buttons.is4Pressed) s2 = 0; break;
+//		case 4: if (buttons.is2Pressed) {HAL_GPIO_WritePin(POWER_SUPPLY_ENABLE_PORT, POWER_SUPPLY_ENABLE_PIN, GPIO_PIN_RESET); s2 = 0;} break;
+//		default: break;
+//	}
 //	char str[10];
-//	sprintf(str, "%d", s);
+//	sprintf(str, "%d", s2);
 //	setTextSize(1);
 //	drawTextAt(0, 0, str, hspi);
 

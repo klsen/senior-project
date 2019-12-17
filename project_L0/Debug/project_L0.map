@@ -6030,34 +6030,34 @@ LOAD c:/st/stm32cubeide_1.0.2/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.exte
                 0x0000000000000b5a       0x1e c:/st/stm32cubeide_1.0.2/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.7-2018-q2-update.win32_1.0.0.201904181610/tools/bin/../lib/gcc/arm-none-eabi/7.3.1/thumb/v6-m/crtn.o
 OUTPUT(project_L0.elf elf32-littlearm)
 
-.debug_info     0x0000000000000000    0x1a100
+.debug_info     0x0000000000000000    0x1a101
  .debug_info    0x0000000000000000     0x1ab0 Core/Src/TFT_display.o
  .debug_info    0x0000000000001ab0     0x131a Core/Src/TFT_display_test.o
  .debug_info    0x0000000000002dca     0x1704 Core/Src/battery.o
  .debug_info    0x00000000000044ce     0x186d Core/Src/clocks.o
  .debug_info    0x0000000000005d3b       0x5c Core/Src/font.o
- .debug_info    0x0000000000005d97     0x2340 Core/Src/main.o
- .debug_info    0x00000000000080d7     0x1e73 Core/Src/stm32l0xx_hal_msp.o
- .debug_info    0x0000000000009f4a     0x17bc Core/Src/stm32l0xx_it.o
- .debug_info    0x000000000000b706      0x91c Core/Src/sysmem.o
- .debug_info    0x000000000000c022      0x390 Core/Src/system_stm32l0xx.o
- .debug_info    0x000000000000c3b2     0x156d Core/Src/timers.o
- .debug_info    0x000000000000d91f     0x1d76 Core/Src/user_interface.o
- .debug_info    0x000000000000f695       0x22 Core/Startup/startup_stm32l073rztx.o
- .debug_info    0x000000000000f6b7      0x7f2 Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal.o
- .debug_info    0x000000000000fea9      0xcec Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_adc.o
- .debug_info    0x0000000000010b95      0x8e5 Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_cortex.o
- .debug_info    0x000000000001147a      0x77c Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_dma.o
- .debug_info    0x0000000000011bf6      0x6cb Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_gpio.o
- .debug_info    0x00000000000122c1      0xd9b Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_lptim.o
- .debug_info    0x000000000001305c      0x667 Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_pwr.o
- .debug_info    0x00000000000136c3      0x9a0 Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_rcc.o
- .debug_info    0x0000000000014063      0x824 Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_rcc_ex.o
- .debug_info    0x0000000000014887      0xaab Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_rtc.o
- .debug_info    0x0000000000015332      0xde9 Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_rtc_ex.o
- .debug_info    0x000000000001611b     0x159d Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_spi.o
- .debug_info    0x00000000000176b8     0x23bf Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_tim.o
- .debug_info    0x0000000000019a77      0x689 Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_tim_ex.o
+ .debug_info    0x0000000000005d97     0x2341 Core/Src/main.o
+ .debug_info    0x00000000000080d8     0x1e73 Core/Src/stm32l0xx_hal_msp.o
+ .debug_info    0x0000000000009f4b     0x17bc Core/Src/stm32l0xx_it.o
+ .debug_info    0x000000000000b707      0x91c Core/Src/sysmem.o
+ .debug_info    0x000000000000c023      0x390 Core/Src/system_stm32l0xx.o
+ .debug_info    0x000000000000c3b3     0x156d Core/Src/timers.o
+ .debug_info    0x000000000000d920     0x1d76 Core/Src/user_interface.o
+ .debug_info    0x000000000000f696       0x22 Core/Startup/startup_stm32l073rztx.o
+ .debug_info    0x000000000000f6b8      0x7f2 Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal.o
+ .debug_info    0x000000000000feaa      0xcec Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_adc.o
+ .debug_info    0x0000000000010b96      0x8e5 Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_cortex.o
+ .debug_info    0x000000000001147b      0x77c Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_dma.o
+ .debug_info    0x0000000000011bf7      0x6cb Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_gpio.o
+ .debug_info    0x00000000000122c2      0xd9b Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_lptim.o
+ .debug_info    0x000000000001305d      0x667 Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_pwr.o
+ .debug_info    0x00000000000136c4      0x9a0 Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_rcc.o
+ .debug_info    0x0000000000014064      0x824 Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_rcc_ex.o
+ .debug_info    0x0000000000014888      0xaab Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_rtc.o
+ .debug_info    0x0000000000015333      0xde9 Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_rtc_ex.o
+ .debug_info    0x000000000001611c     0x159d Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_spi.o
+ .debug_info    0x00000000000176b9     0x23bf Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_tim.o
+ .debug_info    0x0000000000019a78      0x689 Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_tim_ex.o
 
 .debug_abbrev   0x0000000000000000     0x3362
  .debug_abbrev  0x0000000000000000      0x2fa Core/Src/TFT_display.o

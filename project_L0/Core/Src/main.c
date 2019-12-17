@@ -119,6 +119,8 @@ int main(void)
   /* USER CODE BEGIN 2 */
   	/* initialization for display */
 	setRTCCalibration(-3, &hrtc);
+//	HAL_Delay(2000);
+//	HAL_GPIO_WritePin(POWER_SUPPLY_ENABLE_PORT, POWER_SUPPLY_ENABLE_PIN, GPIO_PIN_SET);
 	TFT_startup(&hspi1);
 	clearScreen(ST77XX_BLACK, &hspi1);
 
