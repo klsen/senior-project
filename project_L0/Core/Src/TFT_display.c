@@ -66,6 +66,9 @@ void displayInit(uint8_t *args, SPI_HandleTypeDef *hspi) {
 			HAL_Delay(ms);
 		}
 	}
+
+	data = 0xC0;
+	sendCommand(ST77XX_MADCTL, &data, 1, hspi);
 }
 
 void TFT_startup(SPI_HandleTypeDef *hspi) {
