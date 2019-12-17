@@ -17,7 +17,7 @@
 
 // defines for motor enable gpio
 #define MOTOR_PORT 	GPIOB
-#define MOTOR_PIN 	GPIO_PIN_0
+#define MOTOR_PIN 	GPIO_PIN_5
 
 // volatile variables to hold a long-term counter for timer and stopwatch
 // 16-bit can't hold a day's worth of seconds

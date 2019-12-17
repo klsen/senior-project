@@ -85,38 +85,38 @@ static void MX_TIM6_Init(void);
   */
 int main(void)
 {
-	/* USER CODE BEGIN 1 */
+  /* USER CODE BEGIN 1 */
 
-	/* USER CODE END 1 */
+  /* USER CODE END 1 */
+  
 
+  /* MCU Configuration--------------------------------------------------------*/
 
-	/* MCU Configuration--------------------------------------------------------*/
+  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+  HAL_Init();
 
-	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-	HAL_Init();
+  /* USER CODE BEGIN Init */
 
-	/* USER CODE BEGIN Init */
+  /* USER CODE END Init */
 
-	/* USER CODE END Init */
+  /* Configure the system clock */
+  SystemClock_Config();
 
-	/* Configure the system clock */
-	SystemClock_Config();
+  /* USER CODE BEGIN SysInit */
+  /* USER CODE END SysInit */
 
-	/* USER CODE BEGIN SysInit */
-	/* USER CODE END SysInit */
-
-	/* Initialize all configured peripherals */
-	MX_GPIO_Init();
-	MX_SPI1_Init();
-	MX_ADC_Init();
-	MX_RTC_Init();
-	MX_TIM21_Init();
-	MX_LPTIM1_Init();
-	MX_DMA_Init();
-	MX_TIM22_Init();
-	MX_TIM2_Init();
-	MX_TIM6_Init();
-	/* USER CODE BEGIN 2 */
+  /* Initialize all configured peripherals */
+  MX_GPIO_Init();
+  MX_SPI1_Init();
+  MX_ADC_Init();
+  MX_RTC_Init();
+  MX_TIM21_Init();
+  MX_LPTIM1_Init();
+  MX_DMA_Init();
+  MX_TIM22_Init();
+  MX_TIM2_Init();
+  MX_TIM6_Init();
+  /* USER CODE BEGIN 2 */
 	// rtc software calibration
 	setRTCCalibration(-3, &hrtc);
 
@@ -130,15 +130,15 @@ int main(void)
 	runTimerStopwatchBase(&htim21);		// running time bases
 	runBacklightMotorBase(&htim2);
 	runADCSampler(&htim22);
-	/* USER CODE END 2 */
+  /* USER CODE END 2 */
 
-	/* Infinite loop */
-	/* USER CODE BEGIN WHILE */
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
 	while (1)
 	{
     /* USER CODE END WHILE */
 
-		/* USER CODE BEGIN 3 */
+    /* USER CODE BEGIN 3 */
 		updateState(&hrtc, &htim21, &htim2, &htim6, &hspi1);
 		updateDisplay(&hrtc, &hspi1);
 		batteryManager(&hadc, &hspi1);
@@ -152,7 +152,7 @@ int main(void)
 		// put in bottom, since screen updates should run once at the start
 		__WFI();
 	}
-	/* USER CODE END 3 */
+  /* USER CODE END 3 */
 }
 
 /**
@@ -253,7 +253,7 @@ static void MX_ADC_Init(void)
   }
   /** Configure for the selected ADC regular channel to be converted. 
   */
-  sConfig.Channel = ADC_CHANNEL_0;
+  sConfig.Channel = ADC_CHANNEL_3;
   sConfig.Rank = ADC_RANK_CHANNEL_NUMBER;
   if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK)
   {
@@ -708,26 +708,29 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_3|GPIO_PIN_5 
-                          |GPIO_PIN_7, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_4, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_6, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5|GPIO_PIN_7, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : PC0 PC1 PC3 PC4 
-                           PC5 PC7 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_3|GPIO_PIN_4 
-                          |GPIO_PIN_5|GPIO_PIN_7;
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_3|GPIO_PIN_4 
+                          |GPIO_PIN_5|GPIO_PIN_6, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_RESET);
+
+  /*Configure GPIO pins : PC4 PC5 PC7 */
+  GPIO_InitStruct.Pin = GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_7;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PB0 PB1 PB6 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_6;
+  /*Configure GPIO pins : PB0 PB1 PB3 PB4 
+                           PB5 PB6 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_3|GPIO_PIN_4 
+                          |GPIO_PIN_5|GPIO_PIN_6;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -738,6 +741,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PA10 */
+  GPIO_InitStruct.Pin = GPIO_PIN_10;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI2_3_IRQn, 0, 0);

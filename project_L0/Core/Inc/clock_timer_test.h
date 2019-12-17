@@ -8,6 +8,7 @@
 #include "clocks.h"
 #include "timers.h"
 #include "TFT_display.h"
+#include <stdio.h>		// for sprintf
 
 void printTime(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
 void printDate(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);

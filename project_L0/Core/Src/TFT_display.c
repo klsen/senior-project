@@ -20,10 +20,10 @@ static uint16_t textColor;		// color of characters
 static uint16_t bg;				// background color
 
 // ---- lower level functions ----
-void SPI_CS_LOW() {HAL_GPIO_WritePin(CS_GPIO, CS_PIN, GPIO_PIN_RESET);}
-void SPI_CS_HIGH() {HAL_GPIO_WritePin(CS_GPIO, CS_PIN, GPIO_PIN_SET);}
-void SPI_DC_LOW() {HAL_GPIO_WritePin(DC_GPIO, DC_PIN, GPIO_PIN_RESET);}
-void SPI_DC_HIGH() {HAL_GPIO_WritePin(DC_GPIO, DC_PIN, GPIO_PIN_SET);}
+void SPI_CS_LOW() {HAL_GPIO_WritePin(CS_PORT, CS_PIN, GPIO_PIN_RESET);}
+void SPI_CS_HIGH() {HAL_GPIO_WritePin(CS_PORT, CS_PIN, GPIO_PIN_SET);}
+void SPI_DC_LOW() {HAL_GPIO_WritePin(DC_PORT, DC_PIN, GPIO_PIN_RESET);}
+void SPI_DC_HIGH() {HAL_GPIO_WritePin(DC_PORT, DC_PIN, GPIO_PIN_SET);}
 
 void sendCommand(uint8_t cmd, uint8_t *args, uint16_t numArgs, SPI_HandleTypeDef *hspi) {
 	while (HAL_SPI_GetState(hspi) == HAL_SPI_STATE_BUSY_TX);		// block next transfer request while DMA transfer is ongoing
@@ -41,7 +41,7 @@ void sendCommand(uint8_t cmd, uint8_t *args, uint16_t numArgs, SPI_HandleTypeDef
 // using only for sending data, but not commands
 // dont send request when transfer is ongoing
 void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
-	if (HAL_GPIO_ReadPin(CS_GPIO, CS_PIN) == GPIO_PIN_RESET) SPI_CS_HIGH();	// chip select disable
+	if (HAL_GPIO_ReadPin(CS_PORT, CS_PIN) == GPIO_PIN_RESET) SPI_CS_HIGH();	// chip select disable
 }
 
 // array parser heavily based on Adafruit library code
@@ -308,6 +308,11 @@ void fillScreen(uint16_t color, SPI_HandleTypeDef *hspi) {
 		drawBuffer(0, HEIGHT/4*i, WIDTH, HEIGHT/4, buffer, bufferSize, hspi);
 	}
 }
+
+void clearScreen(uint16_t backgroundColor, SPI_HandleTypeDef *hspi) {
+	bg = backgroundColor;
+	fillScreen(backgroundColor, hspi);
+}
 // ---- end of basic shapes and lines ----
 
 // ---- text functions ----
@@ -456,11 +461,6 @@ void setCursor(uint8_t x, uint8_t y) {
 void setTextSize(uint8_t size) {textSize = size;}
 
 void setTextColor(uint16_t color) {textColor = color;}
-
-void clearScreen(uint16_t backgroundColor, SPI_HandleTypeDef *hspi) {
-	bg = backgroundColor;
-	fillScreen(backgroundColor, hspi);
-}
 
 uint16_t getBackgroundColor() {return bg;}
 uint16_t getTextColor() {return textColor;}

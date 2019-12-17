@@ -9,6 +9,7 @@
 #include "timers.h"
 #include "TFT_display.h"
 #include "user_interface.h"
+#include <stdio.h>		// for sprintf
 
 // defines for gpios used for enable lines
 #define POWER_SUPPLY_ENABLE_PORT 	GPIOC

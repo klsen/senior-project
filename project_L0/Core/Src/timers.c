@@ -47,14 +47,14 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
 				stopTimer(htim);
 				updateFace.timer = 1;
 
-				HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_1);
+				HAL_GPIO_TogglePin(LED2_PORT, LED2_PIN);
 			}
 		}
 		// stopwatch's channel
 		else if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_2) {
 			updateFace.stopwatch = 1;
 			++stopwatchCounter;
-			HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_1);
+			HAL_GPIO_TogglePin(LED2_PORT, LED2_PIN);
 		}
 	}
 	// motor's timer
