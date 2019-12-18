@@ -123,7 +123,7 @@ void updateClockState(RTC_HandleTypeDef *hrtc) {
 		switch (clockVars.fieldBeingSet) {
 			case 1: clockVars.timeToSet->min = (clockVars.timeToSet->min+1) % 60; break;
 			case 2: clockVars.timeToSet->hr = (clockVars.timeToSet->hr+1) % 24; break;
-			case 3: clockVars.dateToSet->yr++; break;		// supposed to be between large numbers. no need for bounds checking
+			case 3: clockVars.dateToSet->yr = (clockVars.dateToSet->yr + 1) % 10000; break;		// fit in 4 characters
 			case 4: clockVars.dateToSet->month = (clockVars.dateToSet->month) % 12 + 1; break;
 			case 5: clockVars.dateToSet->date = ((clockVars.dateToSet->date) % maxDaysInMonth(clockVars.dateToSet->month, clockVars.dateToSet->yr)) + 1; break;
 			default: break;
@@ -141,7 +141,7 @@ void updateClockState(RTC_HandleTypeDef *hrtc) {
 				if (clockVars.timeToSet->hr == 0) clockVars.timeToSet->hr = 23;
 				else clockVars.timeToSet->hr--;
 				break;
-			case 3: clockVars.dateToSet->yr--; break;		// supposed to be from 1950-2050. no need to do bounds checking
+			case 3: if (clockVars.dateToSet->yr != 0) clockVars.dateToSet->yr--; break;		// limit to positive numbers
 			case 4: //clockVars.dateToSet->month = clockVars.dateToSet->month == 1 ? 12 : clockVars.dateToSet->month-1; break;
 				if (clockVars.dateToSet->month == 1) clockVars.dateToSet->month = 12;
 				else clockVars.dateToSet->month--;

@@ -2,6 +2,7 @@
 
 #include "clocks.h"
 
+static uint16_t century = 20;		// holds upper 2 digits of year that RTC doesn't hold
 // ---- RTC setters ----
 // set rtc time. uses personal struct as arg
 // assumes t's fields are aleady set to something or not null
@@ -31,6 +32,7 @@ void setDate(struct dates *d, RTC_HandleTypeDef *hrtc) {
 	sdate.Month = d->month;
 	sdate.Date = d->date;
 	sdate.Year = d->yr % 100; 		// set only between 0-99. limitation of RTC
+	century = d->yr / 100;
 
 	sdate.WeekDay = weekdayCalculator(d->yr, d->month, d->date);
 
@@ -80,17 +82,36 @@ void setClockAlarm(RTC_HandleTypeDef *hrtc) {
 	// start setting alarm
 	struct alarmTimes a = {0};
 	uint8_t s,m,h,w;
+	// set for only 1/min on low battery mode
 	if (bState == batteryLow || bState == batteryReallyLow) {
 		s = currentTime.sec;
 		m = currentTime.min + s/60 + 1;
 		h = currentTime.hr + m/60;
 		w = currentDate.weekday + h/24;
+
+		if (currentTime.min == 59 &&
+			currentTime.hr == 23 &&
+			currentDate.yr % 100 == 99 &&
+			currentDate.month == 12 &&
+			currentDate.date == maxDaysInMonth(currentDate.month, currentDate.yr)) {
+			century++;
+		}
 	}
+	// else set 1/s
 	else {
 		s = currentTime.sec + 1;
 		m = currentTime.min + s/60;
 		h = currentTime.hr + m/60;
 		w = currentDate.weekday + h/24;
+
+		if (currentTime.sec == 59 &&
+			currentTime.min == 59 &&
+			currentTime.hr == 23 &&
+			currentDate.yr % 100 == 99 &&
+			currentDate.month == 12 &&
+			currentDate.date == maxDaysInMonth(currentDate.month, currentDate.yr)) {
+			century++;
+		}
 	}
 	a.sec = s % 60;
 	a.min = m % 60;
@@ -156,8 +177,8 @@ void getDate(struct dates *d, RTC_HandleTypeDef *hrtc) {
 	HAL_RTC_GetTime(hrtc, NULL, RTC_FORMAT_BIN);
 	HAL_RTC_GetDate(hrtc, &sdate, RTC_FORMAT_BIN);
 
-	// extrapolates year from last 2 digits stored in RTC
-	d->yr = sdate.Year > 50 ? sdate.Year+1900 : sdate.Year+2000;
+	// pulls last 2 digits from RTC and upper 2 digits from static variable
+	d->yr = century*100 + sdate.Year;
 
 	d->month = sdate.Month;
 	d->date = sdate.Date;
@@ -174,8 +195,8 @@ void getDateTime(struct dates *d, struct times *t, RTC_HandleTypeDef *hrtc) {
 	HAL_RTC_GetTime(hrtc, &stime, RTC_FORMAT_BIN);
 	HAL_RTC_GetDate(hrtc, &sdate, RTC_FORMAT_BIN);
 
-	// make assumptions on whether it's 19xx or 20xx
-	d->yr = sdate.Year > 50 ? sdate.Year+1900 : sdate.Year+2000;
+	// pulls last 2 digits from RTC and upper 2 digits from static variable
+	d->yr = century*100 + sdate.Year;
 	d->month = sdate.Month;
 	d->date = sdate.Date;
 	d->weekday = sdate.WeekDay;
