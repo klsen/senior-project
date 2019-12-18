@@ -117,7 +117,7 @@ void updateState(RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *timerStopwatchTim, 
  *     the clock is updated and we revert back to default mode.
  */
 void updateClockState(RTC_HandleTypeDef *hrtc) {
-	// change fields up, do nothing if not setting clock
+	// check button pressed -> perform action
 	if (buttons.is2Pressed && clockVars.isBeingSet) {
 		updateFace.clock = 1;
 		switch (clockVars.fieldBeingSet) {
@@ -308,8 +308,8 @@ void updateTimerState(TIM_HandleTypeDef *timerStopwatchTim, TIM_HandleTypeDef *m
  *     cycling through fields once.
  */
 void updateAlarmState(RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *motorTim) {
+	// check button pressed -> perform action
 	if (buttons.is2Pressed && alarmVars.isBeingSet) {
-		buttons.is2Pressed = 0;
 		updateFace.alarm = 1;
 
 		// change fields up
@@ -322,7 +322,6 @@ void updateAlarmState(RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *motorTim) {
 		}
 	}
 	if (buttons.is3Pressed && alarmVars.isBeingSet) {
-		buttons.is3Pressed = 0;
 		updateFace.alarm = 1;
 
 		// change fields down
@@ -347,7 +346,6 @@ void updateAlarmState(RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *motorTim) {
 		}
 	}
 	if (buttons.is4Pressed) {
-		buttons.is4Pressed = 0;
 		updateFace.alarm = 1;
 
 		if (alarmVars.isSet == 0) {
@@ -400,7 +398,6 @@ void updateAlarmState(RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *motorTim) {
 void updateStopwatchState(TIM_HandleTypeDef *timerStopwatchTim) {
 	// start/stop
 	if (buttons.is2Pressed) {
-		buttons.is2Pressed = 0;
 		updateFace.stopwatch = 1;
 
 		if (isStopwatchRunning == 0) {
@@ -415,7 +412,6 @@ void updateStopwatchState(TIM_HandleTypeDef *timerStopwatchTim) {
 		}
 	}
 	if (buttons.is3Pressed && stopwatchCounter != 0) {
-		buttons.is3Pressed = 0;
 		updateFace.stopwatch = 1;
 
 		// pull data and set lap
@@ -423,7 +419,6 @@ void updateStopwatchState(TIM_HandleTypeDef *timerStopwatchTim) {
 		stopwatchVars.lapCurrent = stopwatchCounter;
 	}
 	if (buttons.is4Pressed) {
-		buttons.is4Pressed = 0;
 		updateFace.stopwatch = 1;
 
 		// clear stopwatch hw
@@ -496,9 +491,6 @@ void updateDisplay(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 			updateStopwatchDisplay(hspi);
 		}
 	}
-
-	// is called a lot and redrawn every time. inefficient, but w/e
-//	drawBattery(battPercentage, hspi);
 }
 
 // helper function for drawing all elements for clock display
