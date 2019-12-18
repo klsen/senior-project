@@ -459,37 +459,41 @@ void updateDisplay(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 		drawButtons(hspi);
 	}
 
-	// update clock face
-	if (faceOnDisplay == faceClock) {
-		if (updateFace.clock == 1) {
-			updateFace.clock = 0;
-			setBackgroundColor(ST77XX_CYAN);
-			updateClockDisplay(hrtc, hspi);
+
+	if (updateFace.clock || updateFace.timer || updateFace.alarm || updateFace.stopwatch) {
+		// update clock face
+		if (faceOnDisplay == faceClock) {
+			if (updateFace.clock == 1) {
+				setBackgroundColor(ST77XX_CYAN);
+				updateClockDisplay(hrtc, hspi);
+			}
 		}
-	}
-	// update timer face
-	else if (faceOnDisplay == faceTimer) {
-		if (updateFace.timer == 1) {
-			updateFace.timer = 0;
-			setBackgroundColor(ST77XX_GREEN);
-			updateTimerDisplay(hspi);
+		// update timer face
+		else if (faceOnDisplay == faceTimer) {
+			if (updateFace.timer == 1) {
+				setBackgroundColor(ST77XX_GREEN);
+				updateTimerDisplay(hspi);
+			}
+			if (updateFace.clock == 1) drawTopClock(hrtc, hspi);
 		}
-	}
-	// update alarm face
-	else if (faceOnDisplay == faceAlarm) {
-		if (updateFace.alarm == 1) {
-			updateFace.alarm = 0;
-			setBackgroundColor(ST77XX_MAGENTA);
-			updateAlarmDisplay(hspi);
+		// update alarm face
+		else if (faceOnDisplay == faceAlarm) {
+			if (updateFace.alarm == 1) {
+				setBackgroundColor(ST77XX_MAGENTA);
+				updateAlarmDisplay(hspi);
+			}
+			if (updateFace.clock == 1) drawTopClock(hrtc, hspi);
 		}
-	}
-	// update stopwatch face
-	else if (faceOnDisplay == faceStopwatch) {
-		if (updateFace.stopwatch == 1) {
-			updateFace.stopwatch = 0;
-			setBackgroundColor(ST77XX_YELLOW);
-			updateStopwatchDisplay(hspi);
+		// update stopwatch face
+		else if (faceOnDisplay == faceStopwatch) {
+			if (updateFace.stopwatch == 1) {
+				setBackgroundColor(ST77XX_YELLOW);
+				updateStopwatchDisplay(hspi);
+			}
+			if (updateFace.clock == 1) drawTopClock(hrtc, hspi);
 		}
+
+		updateFace.clock = updateFace.timer = updateFace.alarm = updateFace.stopwatch = 0;
 	}
 }
 
@@ -595,12 +599,13 @@ void updateTimerDisplay(SPI_HandleTypeDef *hspi) {
 void updateAlarmDisplay(SPI_HandleTypeDef *hspi) {
 	setTextColor(ST77XX_BLACK);
 	if (alarmVars.isBeingSet == 0) {
+		setTextSize(1);
+		clearTextLine(52, hspi);	// clear "setting..." text
 		if (alarmVars.isSet == 0) {
 			setTextSize(3);
 			clearTextLine(68, hspi);	// clear alarm time text
 
 			setTextSize(1);
-			clearTextLine(52, hspi);	// clear "setting..." text
 			drawCenteredTextWithPadding(WIDTH/2, 100, 11, "alarm unset", hspi);
 
 			// draw button text
@@ -759,6 +764,22 @@ void drawClock(struct dates *d, struct times *t, SPI_HandleTypeDef *hspi) {
 	drawCenteredTextWithPadding(WIDTH/2, 92, 9, weekdayNames[d->weekday], hspi);
 }
 
+void drawTopClock(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
+// drawing current time on top of screen when other faces are displayed
+	char str[40];
+	struct times currentTime = {0};
+	getTime(&currentTime, hrtc);
+
+	if (currentTime.hr % 12 == 0) sprintf(str, "%2d:%02d", 12, currentTime.min);
+	else sprintf(str, "%2d:%02d", currentTime.hr%12, currentTime.min);
+	setTextSize(1);
+	setTextColor(ST77XX_BLACK);
+	drawTextAt(WIDTH/2-21, 0, str, hspi);
+
+	if (currentTime.hr < 12) drawCenteredText(WIDTH/2+9, 0, "AM", hspi);
+	else drawTextAt(WIDTH/2+9, 0, "PM", hspi);
+}
+
 // drawing timer on screen
 void drawTimer(struct times *t, SPI_HandleTypeDef *hspi) {
 	char str[40];
@@ -779,8 +800,14 @@ void drawAlarm(struct alarmTimes *a, SPI_HandleTypeDef *hspi) {
 	// drawing hr:min:sec
 	setTextSize(2);
 	setTextColor(ST77XX_BLACK);
-	sprintf(str, "%2d:%2d:%2d", a->hr, a->min, a->sec);
+	if (a->hr % 12 == 0) sprintf(str, "%2d:%2d:%2d", 12, a->min, a->sec);
+	else sprintf(str, "%2d:%2d:%2d", a->hr%12, a->min, a->sec);
 	drawCenteredText(WIDTH/2, 68, str, hspi);
+
+	setTextSize(1);
+	if (a->hr < 12) drawCenteredText(100, 60, "AM", hspi);
+	else drawCenteredText(100, 60, "PM", hspi);
+
 
 	// drawing weekday
 	setTextSize(1);

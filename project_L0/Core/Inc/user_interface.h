@@ -146,6 +146,9 @@ void drawBattery(uint8_t batteryLevel, SPI_HandleTypeDef *hspi);
 // draws the primary clock display. hr:min:sec, mm/dd/yyyy, weekday
 void drawClock(struct dates *d, struct times *t, SPI_HandleTypeDef *hspi);
 
+// draws current time on top of screen
+void drawTopClock(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
+
 // draws the primary timer display. hr:min:sec
 void drawTimer(struct times *t, SPI_HandleTypeDef *hspi);
 
