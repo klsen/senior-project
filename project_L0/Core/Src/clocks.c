@@ -89,6 +89,7 @@ void setClockAlarm(RTC_HandleTypeDef *hrtc) {
 		h = currentTime.hr + m/60;
 		w = currentDate.weekday + h/24;
 
+		// for transitioning between centuries
 		if (currentTime.min == 59 &&
 			currentTime.hr == 23 &&
 			currentDate.yr % 100 == 99 &&
@@ -104,6 +105,7 @@ void setClockAlarm(RTC_HandleTypeDef *hrtc) {
 		h = currentTime.hr + m/60;
 		w = currentDate.weekday + h/24;
 
+		// for transitioning between centuries
 		if (currentTime.sec == 59 &&
 			currentTime.min == 59 &&
 			currentTime.hr == 23 &&
