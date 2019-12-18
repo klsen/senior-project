@@ -16,14 +16,12 @@ void batteryManager(ADC_HandleTypeDef *hadc, SPI_HandleTypeDef *hspi, TIM_Handle
 		// disable power supply (setting enable pin to 0)
 		if (battPercentage == 0) {
 			// power off supply
-//			turnDisplayOff(hspi);
-//			HAL_GPIO_WritePin(POWER_SUPPLY_ENABLE_PORT, POWER_SUPPLY_ENABLE_PIN, GPIO_PIN_RESET);
-			startLowPowerMode(timerStopwatchTim, backlightTim);
-			bState = batteryReallyLow;
+			turnDisplayOff(hspi);
+			HAL_GPIO_WritePin(POWER_SUPPLY_ENABLE_PORT, POWER_SUPPLY_ENABLE_PIN, GPIO_PIN_RESET);
 		}
 		else if (battPercentage <= 5) {
 			// start turning off hardware
-//			turnDisplayOff(hspi);
+			turnDisplayOff(hspi);
 			startLowPowerMode(timerStopwatchTim, backlightTim);
 			bState = batteryReallyLow;
 		}

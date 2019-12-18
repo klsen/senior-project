@@ -76,10 +76,6 @@ void alarmTest(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 
 	getDateTime(&d, &t, hrtc);
 
-//	if (t.sec > 60) t.min += 1;
-//	t.sec = (t.sec+10) % 60;
-//	struct alarmTimes a = {t.hr, t.min, t.sec, d.weekday};
-//	struct alarmTimes a = {0, 1, 0, RTC_WEEKDAY_MONDAY};
 	struct alarmTimes a = {0, 0, 30, RTC_WEEKDAY_MONDAY};
 
 	HAL_Delay(1000);
@@ -114,51 +110,3 @@ void alarmTest(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 	sprintf(str, "%2u:%2u:%2u %2u", t.hr, t.min, t.sec, d.weekday);
 	drawTextAt(0, 0, str, hspi);
 }
-
-// set a timer for a short time (10s) and watch it go
-//void timerTest() {
-//	struct times timerTime = {0, 0, 20};
-//
-//	setTimer(&timerTime);
-//
-//	// print current time and timer value set
-//	struct dates currentDate;
-//	struct times currentTime;
-//	getDateTime(&currentDate, &currentTime);
-//
-//	char str[40];
-//	sprintf(str, "current: %2u:%2u:%2u", currentTime.hr, currentTime.min, currentTime.sec);
-//	drawTextAt(0, 0, str, hspi);
-//	sprintf(str, "       : %2u:%2u:%2u", currentDate.month, currentDate.date, currentDate.yr);
-//	drawTextAt(0, 10, str, hspi);
-//	sprintf(str, "timer: %2u:%2u:%2u", timerTime.hr, timerTime.min, timerTime.sec);
-//	drawTextAt(0, 20, str, hspi);
-//
-//	HAL_Delay(20000);
-//	getDateTime(&currentDate, &currentTime);
-//	sprintf(str, "current: %2u:%2u:%2u", currentTime.hr, currentTime.min, currentTime.sec);
-//	drawTextAt(0, 0, str, hspi);
-//	sprintf(str, "       : %2u:%2u:%2u", currentDate.month, currentDate.date, currentDate.yr);
-//	drawTextAt(0, 10, str, hspi);
-//
-//
-//	timerTime.sec+=20;
-//	setTimer(&timerTime);
-//
-//	// print current time and timer value set
-//	getDateTime(&currentDate, &currentTime);
-//
-//	sprintf(str, "current: %2u:%2u:%2u", currentTime.hr, currentTime.min, currentTime.sec);
-//	drawTextAt(0, 0, str, hspi);
-//	sprintf(str, "       : %2u:%2u:%2u", currentDate.month, currentDate.date, currentDate.yr);
-//	drawTextAt(0, 10, str, hspi);
-//	sprintf(str, "timer: %2u:%2u:%2u", timerTime.hr, timerTime.min, timerTime.sec);
-//	drawTextAt(0, 20, str, hspi);
-//
-//	HAL_Delay(40000);
-//	getDateTime(&currentDate, &currentTime);
-//	sprintf(str, "current: %2u:%2u:%2u", currentTime.hr, currentTime.min, currentTime.sec);
-//	drawTextAt(0, 0, str, hspi);
-//	sprintf(str, "       : %2u:%2u:%2u", currentDate.month, currentDate.date, currentDate.yr);
-//	drawTextAt(0, 10, str, hspi);
-//}

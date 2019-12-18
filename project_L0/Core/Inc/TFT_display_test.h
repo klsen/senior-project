@@ -23,6 +23,4 @@ void textTest(SPI_HandleTypeDef *hspi);
 // draws pixels, horizontal lines, and vertical lines
 void basicTest(SPI_HandleTypeDef *hspi);
 
-void displayOnOffTest(SPI_HandleTypeDef *hspi);
-
 #endif

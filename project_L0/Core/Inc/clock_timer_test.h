@@ -16,10 +16,5 @@ void printDateTime(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
 
 void clockTest(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
 void alarmTest(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
-//void timerTest(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
-
-//void clockTest();
-//void alarmTest();
-//void timerTest();
 
 #endif
