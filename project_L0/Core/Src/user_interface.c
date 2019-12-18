@@ -119,7 +119,6 @@ void updateState(RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *timerStopwatchTim, 
 void updateClockState(RTC_HandleTypeDef *hrtc) {
 	// change fields up, do nothing if not setting clock
 	if (buttons.is2Pressed && clockVars.isBeingSet) {
-		buttons.is2Pressed = 0;
 		updateFace.clock = 1;
 		switch (clockVars.fieldBeingSet) {
 			case 1: clockVars.timeToSet->min = (clockVars.timeToSet->min+1) % 60; break;
@@ -132,7 +131,6 @@ void updateClockState(RTC_HandleTypeDef *hrtc) {
 	}
 	// change fields down, do nothing if not setting clock
 	if (buttons.is3Pressed && clockVars.isBeingSet) {
-		buttons.is3Pressed = 0;
 		updateFace.clock = 1;
 		switch (clockVars.fieldBeingSet) {
 			case 1:
@@ -157,7 +155,6 @@ void updateClockState(RTC_HandleTypeDef *hrtc) {
 	}
 	// switches between setting mode and default mode. changes between different clock fields
 	if (buttons.is4Pressed) {
-		buttons.is4Pressed = 0;
 		updateFace.clock = 1;
 		clockVars.fieldBeingSet = (clockVars.fieldBeingSet + 1) % (NUM_CLOCKFIELDS + 1);
 		if (clockVars.fieldBeingSet != 0) {
@@ -208,11 +205,10 @@ void updateClockState(RTC_HandleTypeDef *hrtc) {
  *     cycling through fields once.
  */
 void updateTimerState(TIM_HandleTypeDef *timerStopwatchTim, TIM_HandleTypeDef *motorTim) {
-	if (timerVars.isBeingSet) {
-		if (buttons.is2Pressed) {
-			buttons.is2Pressed = 0;
-			updateFace.timer = 1;
-
+	// check which button is pressed -> perform action
+	if (buttons.is2Pressed) {
+		updateFace.timer = 1;
+		if (timerVars.isBeingSet) {
 			// set field up
 			switch (timerVars.fieldBeingSet) {
 				case 1: timerVars.timeToSet->sec = (timerVars.timeToSet->sec+1) % 60; break;
@@ -221,10 +217,16 @@ void updateTimerState(TIM_HandleTypeDef *timerStopwatchTim, TIM_HandleTypeDef *m
 				default: break;
 			}
 		}
-		if (buttons.is3Pressed) {
-			buttons.is3Pressed = 0;
-			updateFace.timer = 1;
-
+		else if (timerVars.isSet && isTimerRunning == 0 && timerCounter != 0) {
+			// start timer
+			runTimer(timerStopwatchTim);
+			isTimerRunning = 1;
+			isTimerPaused = 0;
+		}
+	}
+	else if (buttons.is3Pressed) {
+		updateFace.timer = 1;
+		if (timerVars.isBeingSet) {
 			// set field down
 			switch (timerVars.fieldBeingSet) {
 				case 1:
@@ -242,64 +244,46 @@ void updateTimerState(TIM_HandleTypeDef *timerStopwatchTim, TIM_HandleTypeDef *m
 				default: break;
 			}
 		}
-	}
-	// set and ready to run
-	else if (timerVars.isSet) {
-		if (buttons.is2Pressed && isTimerRunning == 0 && timerCounter != 0) {
-			buttons.is2Pressed = 0;
-			updateFace.timer = 1;
-
-			// start timer
-			runTimer(timerStopwatchTim);
-			isTimerRunning = 1;
-			isTimerPaused = 0;
-		}
-		if (buttons.is3Pressed && isTimerRunning && timerCounter != 0) {
-			buttons.is3Pressed = 0;
-			updateFace.timer = 1;
-
+		else if (timerVars.isSet && isTimerRunning && timerCounter != 0) {
 			// pause timer
 			pauseTimer(timerStopwatchTim);
 			isTimerRunning = 0;
 			isTimerPaused = 1;
 		}
-		if (buttons.is4Pressed) {
-			buttons.is4Pressed = 0;
-			updateFace.timer = 1;
-
+	}
+	else if (buttons.is4Pressed) {
+		updateFace.timer = 1;
+		if (timerVars.isSet) {
 			// stop and clear timer
 			stopTimer(timerStopwatchTim);
 			timerVars.isSet = 0;
 			isTimerRunning = 0;
 			isTimerPaused = 0;
 		}
-	}
-	if (buttons.is4Pressed) {
-		buttons.is4Pressed = 0;
-		updateFace.timer = 1;
-
-		// change field/mode
-		timerVars.fieldBeingSet = (timerVars.fieldBeingSet + 1) % (NUM_TIMERFIELDS + 1);
-		if (timerVars.fieldBeingSet != 0) {
-			timerVars.isBeingSet = 1;
-			timerVars.isSet = 0;
-
-			// set temp fields to 0 when first entering setting mode
-			if (timerVars.fieldBeingSet == 1) {
-				timerVars.timeToSet->sec = 0;
-				timerVars.timeToSet->min = 0;
-				timerVars.timeToSet->hr = 0;
-			}
-		}
-		else if (timeToSeconds(timerVars.timeToSet) != 0) {
-			timerVars.isBeingSet = 0;
-			timerVars.isSet = 1;
-			isTimerDone = 0;
-			timerCounter = timeToSeconds(timerVars.timeToSet);
-		}
 		else {
-			timerVars.isBeingSet = 0;
-			timerVars.isSet = 0;
+			// change field/mode
+			timerVars.fieldBeingSet = (timerVars.fieldBeingSet + 1) % (NUM_TIMERFIELDS + 1);
+			if (timerVars.fieldBeingSet != 0) {
+				timerVars.isBeingSet = 1;
+				timerVars.isSet = 0;
+
+				// set temp fields to 0 when first entering setting mode
+				if (timerVars.fieldBeingSet == 1) {
+					timerVars.timeToSet->sec = 0;
+					timerVars.timeToSet->min = 0;
+					timerVars.timeToSet->hr = 0;
+				}
+			}
+			else if (timeToSeconds(timerVars.timeToSet) != 0) {
+				timerVars.isBeingSet = 0;
+				timerVars.isSet = 1;
+				isTimerDone = 0;
+				timerCounter = timeToSeconds(timerVars.timeToSet);
+			}
+			else {
+				timerVars.isBeingSet = 0;
+				timerVars.isSet = 0;
+			}
 		}
 	}
 }
@@ -673,6 +657,7 @@ void updateStopwatchDisplay(SPI_HandleTypeDef *hspi) {
 }
 
 // ---- drawing functions related specifically to the user interface ----
+// draws a 10x10 box representing a button onto the screen
 void drawButton(uint8_t x_center, uint8_t y_center, SPI_HandleTypeDef *hspi) {
 	// bounds checking. probably already done in draw/fillRect
 	if (x_center-5 < 0 || x_center+5 > WIDTH || y_center-5 < 0 || y_center+5 > HEIGHT) return;
@@ -683,6 +668,7 @@ void drawButton(uint8_t x_center, uint8_t y_center, SPI_HandleTypeDef *hspi) {
 	fillRect(x_center-4, y_center-4, 8, 8, ST77XX_WHITE, hspi);
 }
 
+// draws 3 buttons to represent important ui buttons and tell the user their action
 void drawButtons(SPI_HandleTypeDef *hspi) {
 	// 3 buttons. positioned so their text boxes, which are centered over button, can have equal spacing left and right
 	drawButton(22, HEIGHT-15, hspi);		// button 1
@@ -690,6 +676,7 @@ void drawButtons(SPI_HandleTypeDef *hspi) {
 	drawButton(106, HEIGHT-15, hspi);		// button 3
 }
 
+// draws text that goes a few pixels over the button
 void drawButtonText(const char *str1, const char *str2, const char *str3, SPI_HandleTypeDef *hspi) {
 	setTextSize(1);
 	setTextColor(ST77XX_BLACK);
@@ -698,10 +685,12 @@ void drawButtonText(const char *str1, const char *str2, const char *str3, SPI_Ha
 	drawCenteredTextWithPadding(106, HEIGHT-28, 7, str3, hspi);		// button 3
 }
 
+// draws big text on top of the display
 void drawTitle(char *str, SPI_HandleTypeDef *hspi) {
 	uint8_t strSize = strlen(str);
 
 	// drawing title
+	// bounds checking
 	if (12*strSize < WIDTH) {			// about string size = 10 for width = 128
 		setTextSize(2);
 		setCursor((WIDTH-12*strSize)/2, 10);
@@ -720,6 +709,7 @@ void drawTitle(char *str, SPI_HandleTypeDef *hspi) {
 	drawText(str, hspi);
 }
 
+// draws a battery graphic to represent current battery level
 void drawBattery(uint8_t batteryLevel, SPI_HandleTypeDef *hspi) {
 	// doesn't move and is used on an empty screen, so shouldn't need to clear then print
 	char str[5];
@@ -731,11 +721,13 @@ void drawBattery(uint8_t batteryLevel, SPI_HandleTypeDef *hspi) {
 	drawHLine(50, 27, 4, ST77XX_BLACK, hspi);		// top bottom level
 	drawHLine(51, 26, 2, ST77XX_BLACK, hspi);		// top upper level
 
+	// start filling in green/red box depending on battery level
 	uint16_t color = ST77XX_GREEN;
 	if (batteryLevel < 20) color = ST77XX_RED;
 	fillRect(50, 28+(100-batteryLevel)/10, 4, (batteryLevel+9)/10, color, hspi);	// +9 to avoid having to use float and round()
 	fillRect(50, 28, 4, (100-batteryLevel)/10, ST77XX_WHITE, hspi);
 
+	// draw numerical text
 	setTextSize(1);
 	if (batteryLevel >= 20) color = ST77XX_BLACK;		// reusing variable for more obfuscated code.
 	setTextColor(color);
@@ -743,8 +735,7 @@ void drawBattery(uint8_t batteryLevel, SPI_HandleTypeDef *hspi) {
 	drawTextAt(55, 31, str, hspi);
 }
 
-// draw time and date
-// should optimize to only redraw part that changed
+// draw time and date on screen
 void drawClock(struct dates *d, struct times *t, SPI_HandleTypeDef *hspi) {
 	// notes on paper.
 	char str[40];
@@ -776,6 +767,7 @@ void drawClock(struct dates *d, struct times *t, SPI_HandleTypeDef *hspi) {
 	drawCenteredTextWithPadding(WIDTH/2, 92, 9, weekdayNames[d->weekday], hspi);
 }
 
+// drawing timer on screen
 void drawTimer(struct times *t, SPI_HandleTypeDef *hspi) {
 	char str[40];
 
@@ -785,9 +777,10 @@ void drawTimer(struct times *t, SPI_HandleTypeDef *hspi) {
 	sprintf(str, "%2d:%2d:%2d", t->hr, t->min, t->sec);
 	drawCenteredText(WIDTH/2, HEIGHT/2-12, str, hspi);		// about y=68
 
-	// leaving room to draw "timer set!/unset"
+	// leaving room to draw "timer set!/unset" text
 }
 
+// drawing alarm on screen
 void drawAlarm(struct alarmTimes *a, SPI_HandleTypeDef *hspi) {
 	char str[40];
 
@@ -802,6 +795,7 @@ void drawAlarm(struct alarmTimes *a, SPI_HandleTypeDef *hspi) {
 	drawCenteredTextWithPadding(WIDTH/2, 84, 9, weekdayNames[a->weekday], hspi);
 }
 
+// drawing stopwatch on screen
 void drawStopwatch(uint32_t seconds, SPI_HandleTypeDef *hspi) {
 	struct times t = {0};
 	char str[40];
@@ -814,14 +808,15 @@ void drawStopwatch(uint32_t seconds, SPI_HandleTypeDef *hspi) {
 	sprintf(str, "%2d:%2d:%2d", t.hr, t.min, t.sec);
 	drawCenteredText(WIDTH/2, 68, str, hspi);
 
-	// leaving room for lap
+	// leaving room for lap text
 }
 
+// drawing lap text
 void drawStopwatchLap(uint32_t seconds, SPI_HandleTypeDef *hspi) {
 	struct times t = {0};
 	char str[40];
 
-	secondsToTime(&t, seconds);
+	secondsToTime(&t, seconds);		// converting
 
 	// drawing hr:min:sec
 	setTextSize(1);
@@ -831,11 +826,12 @@ void drawStopwatchLap(uint32_t seconds, SPI_HandleTypeDef *hspi) {
 }
 // ---- end of drawing functions ----
 
-// initializes variables. should be called at the start of the run
+// initializes variables. should be called at the start of program
 void initFace() {
 	faceOnDisplay = faceClock;
 	updateFace.clock = 1;
 
+	// initializing pointers
 	clockVars.dateToSet = (struct dates *)calloc(1, sizeof(struct dates *));
 	clockVars.timeToSet = (struct times *)calloc(1, sizeof(struct times *));
 	timerVars.timeToSet = (struct times *)calloc(1, sizeof(struct times *));
