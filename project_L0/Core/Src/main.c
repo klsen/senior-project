@@ -127,7 +127,7 @@ int main(void)
 	initFace();
 	setClockAlarm(&hrtc);
 	runTimerStopwatchBase(&htim21);		// running time bases
-//	runBacklightMotorBase(&htim2);
+	runMotorBase(&htim2);
 	runADCSampler(&htim22);
 	setDisplayBacklight(100, &htim3);
   /* USER CODE END 2 */
@@ -434,10 +434,6 @@ static void MX_TIM2_Init(void)
   {
     Error_Handler();
   }
-  if (HAL_TIM_PWM_Init(&htim2) != HAL_OK)
-  {
-    Error_Handler();
-  }
   if (HAL_TIM_OC_Init(&htim2) != HAL_OK)
   {
     Error_Handler();
@@ -452,19 +448,10 @@ static void MX_TIM2_Init(void)
   {
     Error_Handler();
   }
-  sConfigOC.OCMode = TIM_OCMODE_PWM1;
+  sConfigOC.OCMode = TIM_OCMODE_TIMING;
   sConfigOC.Pulse = 0;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-  if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_TIMEx_RemapConfig(&htim2, TIM3_TI1_GPIO) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sConfigOC.OCMode = TIM_OCMODE_TIMING;
   if (HAL_TIM_OC_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
   {
     Error_Handler();
@@ -472,7 +459,6 @@ static void MX_TIM2_Init(void)
   /* USER CODE BEGIN TIM2_Init 2 */
 
   /* USER CODE END TIM2_Init 2 */
-  HAL_TIM_MspPostInit(&htim2);
 
 }
 

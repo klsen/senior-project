@@ -166,26 +166,6 @@ void runADCSampler(TIM_HandleTypeDef *htim) {
 	canSampleBattery = 1;			// set flag to let ADC run at the start
 }
 
-// should change display brightness by changing PWM pulse width. input should be from 0-100
-// uses LSE timer TIM2 CH1
-void setDisplayBacklight(uint8_t intensity, TIM_HandleTypeDef *htim) {
-	if (intensity > 100) return;		// bounds checking
-
-	TIM_OC_InitTypeDef sConfig = {0};
-	sConfig.OCMode = TIM_OCMODE_PWM1;
-	sConfig.OCPolarity = TIM_OCPOLARITY_HIGH;
-	sConfig.OCFastMode = TIM_OCFAST_DISABLE;
-	sConfig.Pulse = (htim->Instance->ARR-1)*((float)intensity/100);
-
-	HAL_TIM_PWM_ConfigChannel(htim, &sConfig, TIM_CHANNEL_1);
-	HAL_TIM_PWM_Start_IT(htim, TIM_CHANNEL_1);
-}
-
-void stopDisplayBacklight(TIM_HandleTypeDef *htim) {
-	// stop pwm
-	HAL_TIM_PWM_Stop_IT(htim, TIM_CHANNEL_1);
-}
-
 // running motor for vibration. runs for a finite amount of time
 // uses LSE timer TIM2 CH2
 void runMotor(TIM_HandleTypeDef *htim) {
@@ -207,7 +187,27 @@ void stopMotor(TIM_HandleTypeDef *htim) {
 	motorStateCounter = 0;
 }
 
-// should use TIM22
-void runBacklightMotorBase(TIM_HandleTypeDef *htim) {HAL_TIM_Base_Start(htim);}
-void stopBacklightMotorBase(TIM_HandleTypeDef *htim) {HAL_TIM_Base_Stop(htim);}
+// should use TIM2
+void runMotorBase(TIM_HandleTypeDef *htim) {HAL_TIM_Base_Start(htim);}
+void stopMotorBase(TIM_HandleTypeDef *htim) {HAL_TIM_Base_Stop(htim);}
+
+// should change display brightness by changing PWM pulse width. input should be from 0-100
+// uses 32MHz timer TIM3 CH1
+void setDisplayBacklight(uint8_t intensity, TIM_HandleTypeDef *htim) {
+	if (intensity > 100) return;		// bounds checking
+
+	TIM_OC_InitTypeDef sConfig = {0};
+	sConfig.OCMode = TIM_OCMODE_PWM1;
+	sConfig.OCPolarity = TIM_OCPOLARITY_HIGH;
+	sConfig.OCFastMode = TIM_OCFAST_DISABLE;
+	sConfig.Pulse = (htim->Instance->ARR-1)*((float)intensity/100);
+
+	HAL_TIM_PWM_ConfigChannel(htim, &sConfig, TIM_CHANNEL_1);
+	HAL_TIM_PWM_Start_IT(htim, TIM_CHANNEL_1);
+}
+
+void stopDisplayBacklight(TIM_HandleTypeDef *htim) {
+	// stop pwm
+	HAL_TIM_PWM_Stop_IT(htim, TIM_CHANNEL_1);
+}
 // ---- end of motor (and other) functions ----

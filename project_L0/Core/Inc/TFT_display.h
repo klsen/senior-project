@@ -100,10 +100,10 @@
 // ---- End of 16-bit color constants ----
 
 // ---- pin definitions and constants ----
-#define CS_PORT 	GPIOC
-#define CS_PIN		GPIO_PIN_7
-#define DC_PORT		GPIOB
-#define DC_PIN		GPIO_PIN_6
+#define CS_PORT 	GPIOB
+#define CS_PIN		GPIO_PIN_6
+#define DC_PORT		GPIOC
+#define DC_PIN		GPIO_PIN_7
 #define _xstart		0
 #define _ystart 	0
 

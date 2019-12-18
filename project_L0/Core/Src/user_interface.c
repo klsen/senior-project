@@ -444,14 +444,17 @@ void updateDisplay(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 		}
 		if (faceOnDisplay == faceTimer) {
 			clearScreen(ST77XX_GREEN, hspi);
+			drawTopClock(hrtc, hspi);
 			drawTitle("timer", hspi);
 		}
 		if (faceOnDisplay == faceAlarm) {
 			clearScreen(ST77XX_MAGENTA, hspi);
+			drawTopClock(hrtc, hspi);
 			drawTitle("alarm", hspi);
 		}
 		if (faceOnDisplay == faceStopwatch) {
 			clearScreen(ST77XX_YELLOW, hspi);
+			drawTopClock(hrtc, hspi);
 			drawTitle("stopwatch", hspi);
 		}
 
@@ -601,6 +604,7 @@ void updateAlarmDisplay(SPI_HandleTypeDef *hspi) {
 	if (alarmVars.isBeingSet == 0) {
 		setTextSize(1);
 		clearTextLine(52, hspi);	// clear "setting..." text
+		clearTextLine(60, hspi);	// clear am/pm text
 		if (alarmVars.isSet == 0) {
 			setTextSize(3);
 			clearTextLine(68, hspi);	// clear alarm time text
@@ -774,10 +778,10 @@ void drawTopClock(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 	else sprintf(str, "%2d:%02d", currentTime.hr%12, currentTime.min);
 	setTextSize(1);
 	setTextColor(ST77XX_BLACK);
-	drawTextAt(WIDTH/2-21, 0, str, hspi);
+	drawTextAt(WIDTH/2-21, 1, str, hspi);
 
-	if (currentTime.hr < 12) drawCenteredText(WIDTH/2+9, 0, "AM", hspi);
-	else drawTextAt(WIDTH/2+9, 0, "PM", hspi);
+	if (currentTime.hr < 12) drawCenteredText(WIDTH/2+15, 1, "AM", hspi);
+	else drawTextAt(WIDTH/2+15, 1, "PM", hspi);
 }
 
 // drawing timer on screen

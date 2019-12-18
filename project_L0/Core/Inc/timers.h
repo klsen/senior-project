@@ -45,16 +45,16 @@ void stopTimerStopwatchBase(TIM_HandleTypeDef *htim);
 // samples battery on set timing of about a sample/min
 void runADCSampler(TIM_HandleTypeDef *htim);
 
-// motor and backlight use LSE TIM2, backlight uses CH1, motor uses CH2 respectively
+// motor uses LSE TIM2 CH2
 // uses timers configured to use LSE crystal with 0.5s period
 void runMotor(TIM_HandleTypeDef *htim);
 void stopMotor(TIM_HandleTypeDef *htim);
+void runMotorBase(TIM_HandleTypeDef *htim);
+void stopMotorBase(TIM_HandleTypeDef *htim);
+
+// backlight uses 32MHz TIM3 CH1
 void setDisplayBacklight(uint8_t intensity, TIM_HandleTypeDef *htim);
 void stopDisplayBacklight(TIM_HandleTypeDef *htim);
-
-// should run on startup with tft_display and stop when motor and backlight are unused
-void runBacklightMotorBase(TIM_HandleTypeDef *htim);
-void stopBacklightMotorBase(TIM_HandleTypeDef *htim);
 // ---- end of other functions ----
 
 #endif
