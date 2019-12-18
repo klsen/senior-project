@@ -8230,9 +8230,9 @@ int main(void)
  8003b9a:	f000 fadb 	bl	8004154 <MX_TIM3_Init>
   /* USER CODE BEGIN 2 */
 	// rtc software calibration
-	setRTCCalibration(-3, &hrtc);
+	setRTCCalibration(-5, &hrtc);
  8003b9e:	4a2c      	ldr	r2, [pc, #176]	; (8003c50 <main+0xe8>)
- 8003ba0:	2303      	movs	r3, #3
+ 8003ba0:	2305      	movs	r3, #5
  8003ba2:	425b      	negs	r3, r3
  8003ba4:	0011      	movs	r1, r2
  8003ba6:	0018      	movs	r0, r3
@@ -15658,13 +15658,13 @@ void drawClock(struct dates *d, struct times *t, SPI_HandleTypeDef *hspi) {
 
 08006a04 <drawTopClock>:
 
+// drawing current time on top of screen when other faces are displayed
 void drawTopClock(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
  8006a04:	b590      	push	{r4, r7, lr}
  8006a06:	b08f      	sub	sp, #60	; 0x3c
  8006a08:	af00      	add	r7, sp, #0
  8006a0a:	6078      	str	r0, [r7, #4]
  8006a0c:	6039      	str	r1, [r7, #0]
-// drawing current time on top of screen when other faces are displayed
 	char str[40];
 	struct times currentTime = {0};
  8006a0e:	240c      	movs	r4, #12

@@ -117,7 +117,7 @@ int main(void)
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
 	// rtc software calibration
-	setRTCCalibration(-3, &hrtc);
+	setRTCCalibration(-5, &hrtc);
 
   	// initialization for display
 	TFT_startup(&hspi1);
