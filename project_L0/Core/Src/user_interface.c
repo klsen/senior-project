@@ -780,8 +780,8 @@ void drawTopClock(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 	setTextColor(ST77XX_BLACK);
 	drawTextAt(WIDTH/2-21, 1, str, hspi);
 
-	if (currentTime.hr < 12) drawCenteredText(WIDTH/2+15, 1, "AM", hspi);
-	else drawTextAt(WIDTH/2+15, 1, "PM", hspi);
+	if (currentTime.hr < 12) drawTextAt(WIDTH/2+9, 1, "AM", hspi);
+	else drawTextAt(WIDTH/2+9, 1, "PM", hspi);
 }
 
 // drawing timer on screen

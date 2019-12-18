@@ -15730,7 +15730,7 @@ void drawTopClock(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
  8006a88:	202b      	movs	r0, #43	; 0x2b
  8006a8a:	f7fc f8e1 	bl	8002c50 <drawTextAt>
 
-	if (currentTime.hr < 12) drawCenteredText(WIDTH/2+15, 1, "AM", hspi);
+	if (currentTime.hr < 12) drawTextAt(WIDTH/2+9, 1, "AM", hspi);
  8006a8e:	230c      	movs	r3, #12
  8006a90:	18fb      	adds	r3, r7, r3
  8006a92:	781b      	ldrb	r3, [r3, #0]
@@ -15739,16 +15739,16 @@ void drawTopClock(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
  8006a98:	683b      	ldr	r3, [r7, #0]
  8006a9a:	4a09      	ldr	r2, [pc, #36]	; (8006ac0 <drawTopClock+0xbc>)
  8006a9c:	2101      	movs	r1, #1
- 8006a9e:	204f      	movs	r0, #79	; 0x4f
- 8006aa0:	f7fc f91e 	bl	8002ce0 <drawCenteredText>
-	else drawTextAt(WIDTH/2+15, 1, "PM", hspi);
+ 8006a9e:	2049      	movs	r0, #73	; 0x49
+ 8006aa0:	f7fc f8d6 	bl	8002c50 <drawTextAt>
+	else drawTextAt(WIDTH/2+9, 1, "PM", hspi);
 }
  8006aa4:	e005      	b.n	8006ab2 <drawTopClock+0xae>
-	else drawTextAt(WIDTH/2+15, 1, "PM", hspi);
+	else drawTextAt(WIDTH/2+9, 1, "PM", hspi);
  8006aa6:	683b      	ldr	r3, [r7, #0]
  8006aa8:	4a06      	ldr	r2, [pc, #24]	; (8006ac4 <drawTopClock+0xc0>)
  8006aaa:	2101      	movs	r1, #1
- 8006aac:	204f      	movs	r0, #79	; 0x4f
+ 8006aac:	2049      	movs	r0, #73	; 0x49
  8006aae:	f7fc f8cf 	bl	8002c50 <drawTextAt>
 }
  8006ab2:	46c0      	nop			; (mov r8, r8)
