@@ -768,8 +768,8 @@ void drawClock(struct dates *d, struct times *t, SPI_HandleTypeDef *hspi) {
 	drawCenteredTextWithPadding(WIDTH/2, 92, 9, weekdayNames[d->weekday], hspi);
 }
 
-void drawTopClock(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 // drawing current time on top of screen when other faces are displayed
+void drawTopClock(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 	char str[40];
 	struct times currentTime = {0};
 	getTime(&currentTime, hrtc);
