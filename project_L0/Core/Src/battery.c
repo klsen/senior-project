@@ -2,12 +2,11 @@
 
 #include "battery.h"
 
-static uint8_t bState = batteryNormal;
 static const float batteryCapacity[];
 static uint16_t batteryCapacityArraySize = 179;
 
 // spi used to turn display on/off and drawing battery graphic
-void batteryManager(ADC_HandleTypeDef *hadc, SPI_HandleTypeDef *hspi) {
+void batteryManager(ADC_HandleTypeDef *hadc, SPI_HandleTypeDef *hspi, TIM_HandleTypeDef *timerStopwatchTim, TIM_HandleTypeDef *backlightTim) {
 	if (canSampleBattery) {
 		canSampleBattery = 0;
 
@@ -16,23 +15,28 @@ void batteryManager(ADC_HandleTypeDef *hadc, SPI_HandleTypeDef *hspi) {
 		// start really shutting down & set flag
 		// disable power supply (setting enable pin to 0)
 		if (battPercentage == 0) {
-			turnDisplayOff(hspi);
-			HAL_GPIO_WritePin(POWER_SUPPLY_ENABLE_PORT, POWER_SUPPLY_ENABLE_PIN, GPIO_PIN_RESET);
+			// power off supply
+//			turnDisplayOff(hspi);
+//			HAL_GPIO_WritePin(POWER_SUPPLY_ENABLE_PORT, POWER_SUPPLY_ENABLE_PIN, GPIO_PIN_RESET);
+			startLowPowerMode(timerStopwatchTim, backlightTim);
+			bState = batteryReallyLow;
 		}
 		else if (battPercentage <= 5) {
-			// start turning off most hardware
-			turnDisplayOff(hspi);
+			// start turning off hardware
+//			turnDisplayOff(hspi);
+			startLowPowerMode(timerStopwatchTim, backlightTim);
 			bState = batteryReallyLow;
 		}
 		// start low-power mode and set flag
 		else if (battPercentage <= 15) {
-			// start turning off some hardware
+			// start turning off hardware
 			bState = batteryLow;
 		}
 		// set hardware to use power normally
 		else {
 			if (bState == batteryLow || bState == batteryReallyLow) {
 				turnDisplayOn(hspi);
+				stopLowPowerMode(timerStopwatchTim, backlightTim);
 			}
 			HAL_GPIO_WritePin(POWER_SUPPLY_ENABLE_PORT, POWER_SUPPLY_ENABLE_PIN, GPIO_PIN_SET);
 			bState = batteryNormal;
@@ -40,6 +44,16 @@ void batteryManager(ADC_HandleTypeDef *hadc, SPI_HandleTypeDef *hspi) {
 
 		drawBattery(battPercentage, hspi);
 	}
+}
+
+void startLowPowerMode(TIM_HandleTypeDef *timerStopwatchTim, TIM_HandleTypeDef *backlightTim) {
+	setDisplayBacklight(50, backlightTim);
+	stopTimerStopwatchBase(timerStopwatchTim);
+}
+
+void stopLowPowerMode(TIM_HandleTypeDef *timerStopwatchTim, TIM_HandleTypeDef *backlightTim) {
+	setDisplayBacklight(100, backlightTim);
+	runTimerStopwatchBase(timerStopwatchTim);
 }
 
 // should return a number from 0-100
@@ -82,8 +96,8 @@ uint8_t search(float val) {
 }
 
 // small tester for battery functions
-void testBatteryCalculator(ADC_HandleTypeDef *hadc, SPI_HandleTypeDef *hspi) {
-	batteryManager(hadc, hspi);
+void testBatteryCalculator(ADC_HandleTypeDef *hadc, SPI_HandleTypeDef *hspi, TIM_HandleTypeDef *timerStopwatchTim, TIM_HandleTypeDef *backlightTim) {
+	batteryManager(hadc, hspi, timerStopwatchTim, backlightTim);
 
 	setTextSize(1);
 	setTextColor(ST77XX_ORANGE);

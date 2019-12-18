@@ -49,8 +49,7 @@ void runADCSampler(TIM_HandleTypeDef *htim);
 // uses timers configured to use LSE crystal with 0.5s period
 void runMotor(TIM_HandleTypeDef *htim);
 void stopMotor(TIM_HandleTypeDef *htim);
-void runDisplayBacklight(TIM_HandleTypeDef *htim);
-void changeDisplayBacklight(uint8_t intensity, TIM_HandleTypeDef *htim);
+void setDisplayBacklight(uint8_t intensity, TIM_HandleTypeDef *htim);
 void stopDisplayBacklight(TIM_HandleTypeDef *htim);
 
 // should run on startup with tft_display and stop when motor and backlight are unused

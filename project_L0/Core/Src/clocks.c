@@ -80,10 +80,18 @@ void setClockAlarm(RTC_HandleTypeDef *hrtc) {
 	// start setting alarm
 	struct alarmTimes a = {0};
 	uint8_t s,m,h,w;
-	s = currentTime.sec + 1;
-	m = currentTime.min + s/60;
-	h = currentTime.hr + m/60;
-	w = currentDate.weekday + h/24;
+	if (bState == batteryLow || bState == batteryReallyLow) {
+		s = currentTime.sec;
+		m = currentTime.min + s/60 + 1;
+		h = currentTime.hr + m/60;
+		w = currentDate.weekday + h/24;
+	}
+	else {
+		s = currentTime.sec + 1;
+		m = currentTime.min + s/60;
+		h = currentTime.hr + m/60;
+		w = currentDate.weekday + h/24;
+	}
 	a.sec = s % 60;
 	a.min = m % 60;
 	a.hr = h % 24;

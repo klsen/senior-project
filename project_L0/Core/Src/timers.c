@@ -166,28 +166,16 @@ void runADCSampler(TIM_HandleTypeDef *htim) {
 	canSampleBattery = 1;			// set flag to let ADC run at the start
 }
 
-// uses LSE timer TIM2 CH1
-void runDisplayBacklight(TIM_HandleTypeDef *htim) {
-	// start PWM for near 100%
-	TIM_OC_InitTypeDef sConfig = {0};
-	sConfig.OCMode = TIM_OCMODE_PWM1;
-	sConfig.Pulse = htim->Instance->ARR-1;
-	sConfig.OCPolarity = TIM_OCPOLARITY_HIGH;
-	sConfig.OCFastMode = TIM_OCFAST_DISABLE;
-
-	HAL_TIM_PWM_ConfigChannel(htim, &sConfig, TIM_CHANNEL_1);
-	HAL_TIM_PWM_Start_IT(htim, TIM_CHANNEL_1);
-}
-
 // should change display brightness by changing PWM pulse width. input should be from 0-100
-void changeDisplayBacklight(uint8_t intensity, TIM_HandleTypeDef *htim) {
+// uses LSE timer TIM2 CH1
+void setDisplayBacklight(uint8_t intensity, TIM_HandleTypeDef *htim) {
 	if (intensity > 100) return;		// bounds checking
 
 	TIM_OC_InitTypeDef sConfig = {0};
 	sConfig.OCMode = TIM_OCMODE_PWM1;
 	sConfig.OCPolarity = TIM_OCPOLARITY_HIGH;
 	sConfig.OCFastMode = TIM_OCFAST_DISABLE;
-	sConfig.Pulse = htim->Instance->ARR-1 * (float)intensity/100;
+	sConfig.Pulse = (htim->Instance->ARR-1)*((float)intensity/100);
 
 	HAL_TIM_PWM_ConfigChannel(htim, &sConfig, TIM_CHANNEL_1);
 	HAL_TIM_PWM_Start_IT(htim, TIM_CHANNEL_1);

@@ -22,6 +22,7 @@
 
 volatile uint8_t canSampleBattery;		// used in timer
 uint8_t battPercentage;
+uint8_t bState;
 
 enum batteryState {
 	batteryNormal,
@@ -31,7 +32,11 @@ enum batteryState {
 };
 
 // main function that runs samples and estimates battery percentage
-void batteryManager(ADC_HandleTypeDef *hadc, SPI_HandleTypeDef *hspi);
+void batteryManager(ADC_HandleTypeDef *hadc, SPI_HandleTypeDef *hspi, TIM_HandleTypeDef *timerStopwatchTim, TIM_HandleTypeDef *backlightTim);
+
+// functions for entering and exiting low power mode
+void startLowPowerMode(TIM_HandleTypeDef *timerStopwatchTim, TIM_HandleTypeDef *backlightTim);
+void stopLowPowerMode(TIM_HandleTypeDef *timerStopwatchTim, TIM_HandleTypeDef *backlightTim);
 
 // runs ADC and compares voltage read to an array to estimate capacity
 uint8_t getBatteryPercentage(ADC_HandleTypeDef *hadc);
@@ -43,6 +48,6 @@ uint8_t getBatteryPercentage(ADC_HandleTypeDef *hadc);
 uint8_t search(float val);
 
 // small tester
-void testBatteryCalculator(ADC_HandleTypeDef *hadc, SPI_HandleTypeDef *hspi);
+void testBatteryCalculator(ADC_HandleTypeDef *hadc, SPI_HandleTypeDef *hspi, TIM_HandleTypeDef *timerStopwatchTim, TIM_HandleTypeDef *backlightTim);
 
 #endif

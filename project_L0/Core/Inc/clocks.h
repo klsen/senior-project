@@ -10,6 +10,7 @@
 
 #include "stm32l0xx_hal.h"
 #include "user_interface.h"
+#include "battery.h"
 
 // ---- structs ----
 // used to hold related variables for time, date, and alarm

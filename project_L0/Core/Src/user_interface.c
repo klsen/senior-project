@@ -61,7 +61,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 //
 void updateState(RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *timerStopwatchTim, TIM_HandleTypeDef *motorBacklightTim, TIM_HandleTypeDef *buttonTim, SPI_HandleTypeDef *hspi) {
 	if (buttons.is1Pressed || buttons.is2Pressed || buttons.is3Pressed || buttons.is4Pressed) {
-
 		// button 1 changes the face on screen.
 		if (buttons.is1Pressed) {
 			isFaceBeingChanged = 1;
@@ -207,13 +206,6 @@ void updateClockState(RTC_HandleTypeDef *hrtc) {
  *   button 3 changes value down
  *   button 4 changes field being set. changes between sec, min, hr. returns to default mode after
  *     cycling through fields once.
- *
- * notes:
- *   using rtc alarm now, but not subseconds, so timer is off a little (eg. when setting timer to 1s and rtc is halfway to the next
- *     second, timer only runs for half second.)
- *     also not sure how to implement pause using rtc (alarm value has to change depending on how long timer is paused for)
- *   might need to change to using only hardware timer for this instead of rtc because of problems listed above
- *   insert a few more functions into this (those that need to use the hardware)
  */
 void updateTimerState(TIM_HandleTypeDef *timerStopwatchTim, TIM_HandleTypeDef *motorTim) {
 	if (timerVars.isBeingSet) {
@@ -281,14 +273,7 @@ void updateTimerState(TIM_HandleTypeDef *timerStopwatchTim, TIM_HandleTypeDef *m
 			isTimerRunning = 0;
 			isTimerPaused = 0;
 		}
-//		if (isTimerDone) {
-//			isTimerRunning = 0;
-//			isTimerPaused = 0;
-//			timerCounter = timeToSeconds(timerVars.timeToSet);
-//			runMotor(motorTim);
-//		}
 	}
-	// not done? might be done (other buttons start/stop timer)
 	if (buttons.is4Pressed) {
 		buttons.is4Pressed = 0;
 		updateFace.timer = 1;
@@ -321,7 +306,6 @@ void updateTimerState(TIM_HandleTypeDef *timerStopwatchTim, TIM_HandleTypeDef *m
 
 /*
  * does various things when alarm is the face on screen.
- * WE GONNA BE CHANGING THINGS
  *
  * in default mode:
  *   button 2 does nothing
@@ -338,12 +322,6 @@ void updateTimerState(TIM_HandleTypeDef *timerStopwatchTim, TIM_HandleTypeDef *m
  *   button 3 changes value down
  *   button 4 changes field being set. changes between sec, min, hr. returns to default mode after
  *     cycling through fields once.
- *
- * notes:
- *   should change to make it possible to have multiple alarms
- *   also pick alarms that repeat and alarms that don't
- *   need to make changes to ui to make this happen
- *   currently just does old behavior (only 1 alarm)
  */
 void updateAlarmState(RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *motorTim) {
 	if (buttons.is2Pressed && alarmVars.isBeingSet) {
@@ -415,9 +393,6 @@ void updateAlarmState(RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *motorTim) {
 			HAL_RTC_DeactivateAlarm(hrtc, RTC_ALARM_A);
 		}
 	}
-//	if (isAlarmDone) {
-//		runMotor(motorTim);
-//	}
 }
 
 /*
@@ -437,14 +412,10 @@ void updateAlarmState(RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *motorTim) {
  *   button 2 starts stopwatch and moves to running mode
  *   button 3 captures stopwatch for lap
  *   button 4 clears stopwatch and returns to default mode
- *
- * notes:
- *   using lptim now, but might need to change to use other timer as lptim might be used by adc
- *     to take regular measurements of the battery
- *   would just have to modify functions in timers.c
  */
 void updateStopwatchState(TIM_HandleTypeDef *timerStopwatchTim) {
-	if (buttons.is2Pressed) {	// start/stop
+	// start/stop
+	if (buttons.is2Pressed) {
 		buttons.is2Pressed = 0;
 		updateFace.stopwatch = 1;
 
@@ -480,9 +451,7 @@ void updateStopwatchState(TIM_HandleTypeDef *timerStopwatchTim) {
 	}
 }
 
-// update screen based on global variables
-// going in main, so it's executing in a while loop
-//   software interrupt on flag so that this doesn't run all the time?
+// primary function for making changes to display
 void updateDisplay(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 	// change faces
 	if (isFaceBeingChanged == 1) {
@@ -548,6 +517,7 @@ void updateDisplay(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 //	drawBattery(battPercentage, hspi);
 }
 
+// helper function for drawing all elements for clock display
 void updateClockDisplay(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 	struct dates currentDate = {0};
 	struct times currentTime = {0};
@@ -582,6 +552,7 @@ void updateClockDisplay(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 	}
 }
 
+// helper function for drawing all elements for timer display
 void updateTimerDisplay(SPI_HandleTypeDef *hspi) {
 	struct times currentTimer = {0};
 
@@ -644,6 +615,7 @@ void updateTimerDisplay(SPI_HandleTypeDef *hspi) {
 	}
 }
 
+// helper function for drawing all elements for alarm display
 void updateAlarmDisplay(SPI_HandleTypeDef *hspi) {
 	setTextColor(ST77XX_BLACK);
 	if (alarmVars.isBeingSet == 0) {
@@ -652,7 +624,7 @@ void updateAlarmDisplay(SPI_HandleTypeDef *hspi) {
 			clearTextLine(68, hspi);	// clear alarm time text
 
 			setTextSize(1);
-			clearTextLine(52, hspi);
+			clearTextLine(52, hspi);	// clear "setting..." text
 			drawCenteredTextWithPadding(WIDTH/2, 100, 11, "alarm unset", hspi);
 
 			// draw button text
@@ -685,10 +657,12 @@ void updateAlarmDisplay(SPI_HandleTypeDef *hspi) {
 		// draw button text
 		drawButtonText("up", "down", "change", hspi);
 
+		// draw alarm
 		drawAlarm(alarmVars.alarmToSet, hspi);
 	}
 }
 
+// helper function for drawing all elements for stopwatch display
 void updateStopwatchDisplay(SPI_HandleTypeDef *hspi) {
 	setTextColor(ST77XX_BLACK);
 	drawStopwatch(stopwatchCounter, hspi);
