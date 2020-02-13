@@ -21,7 +21,7 @@
 #define NUM_SAMPLES 	10
 
 volatile uint8_t canSampleBattery;		// used in timer
-uint8_t battPercentage;
+uint16_t battPercentage;
 uint8_t bState;
 
 enum batteryState {
@@ -39,7 +39,7 @@ void startLowPowerMode(TIM_HandleTypeDef *timerStopwatchTim, TIM_HandleTypeDef *
 void stopLowPowerMode(TIM_HandleTypeDef *timerStopwatchTim, TIM_HandleTypeDef *backlightTim);
 
 // runs ADC and compares voltage read to an array to estimate capacity
-uint8_t getBatteryPercentage(ADC_HandleTypeDef *hadc);
+uint16_t getBatteryPercentage(ADC_HandleTypeDef *hadc);
 
 // looks into array and returns an index
 // array represents battery voltage vs capacity curve, but only

@@ -141,7 +141,7 @@ void drawButtonText(const char *str1, const char *str2, const char *str3, SPI_Ha
 void drawTitle(char *str, SPI_HandleTypeDef *hspi);
 
 // draws a graphic for the current battery level
-void drawBattery(uint8_t batteryLevel, SPI_HandleTypeDef *hspi);
+void drawBattery(uint16_t batteryLevel, SPI_HandleTypeDef *hspi);
 
 // draws the primary clock display. hr:min:sec, mm/dd/yyyy, weekday
 void drawClock(struct dates *d, struct times *t, SPI_HandleTypeDef *hspi);

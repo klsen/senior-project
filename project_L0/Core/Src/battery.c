@@ -10,7 +10,7 @@ void batteryManager(ADC_HandleTypeDef *hadc, SPI_HandleTypeDef *hspi, TIM_Handle
 	if (canSampleBattery) {
 		canSampleBattery = 0;
 
-//		battPercentage = getBatteryPercentage(hadc);
+		battPercentage = getBatteryPercentage(hadc);
 
 		// start really shutting down & set flag
 		// disable power supply (setting enable pin to 0)
@@ -55,19 +55,22 @@ void stopLowPowerMode(TIM_HandleTypeDef *timerStopwatchTim, TIM_HandleTypeDef *b
 }
 
 // should return a number from 0-100
-uint8_t getBatteryPercentage(ADC_HandleTypeDef *hadc) {
+uint16_t getBatteryPercentage(ADC_HandleTypeDef *hadc) {
 	float v, temp;
 	uint8_t index;
 
 	// enable adc voltage divider for measurements, disable after
 	HAL_GPIO_WritePin(ADC_DIVIDER_PORT, ADC_DIVIDER_PIN, GPIO_PIN_SET);
-	HAL_ADC_Start_IT(hadc);
+	HAL_ADC_Start(hadc);
 
 	HAL_ADC_PollForConversion(hadc, HAL_MAX_DELAY);
 	v = 3.3*HAL_ADC_GetValue(hadc)/(0xFFF);
 
 	HAL_ADC_Stop(hadc);
 	HAL_GPIO_WritePin(ADC_DIVIDER_PORT, ADC_DIVIDER_PIN, GPIO_PIN_RESET);
+
+	return HAL_ADC_GetValue(hadc);
+	return v*10;
 
 	// trying to look only for 3.9-3.4. anything above 3.7 is 100%, anything below 3.4 is 0%
 	// scaled voltages at 3.0642-2.6714
