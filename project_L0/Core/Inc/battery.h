@@ -12,10 +12,10 @@
 #include <stdio.h>		// for sprintf
 
 // defines for gpios used for enable lines
-#define POWER_SUPPLY_ENABLE_PORT 	GPIOC
-#define POWER_SUPPLY_ENABLE_PIN 	GPIO_PIN_4
-#define ADC_DIVIDER_PORT 			GPIOC
-#define ADC_DIVIDER_PIN 			GPIO_PIN_5
+#define POWER_SUPPLY_ENABLE_PORT 	GPIOA
+#define POWER_SUPPLY_ENABLE_PIN 	GPIO_PIN_2
+#define ADC_DIVIDER_PORT 			GPIOA
+#define ADC_DIVIDER_PIN 			GPIO_PIN_1
 // note: ADC input on PA0
 
 #define NUM_SAMPLES 	10

@@ -25,18 +25,18 @@
 // buttons connected to gpio external interrupts
 // callback ignores ports, so only pin number is needed.
 // uses HAL gpio pin number defines
-#define BUTTON1 	GPIO_PIN_2
-#define BUTTON2 	GPIO_PIN_13
-#define BUTTON3 	GPIO_PIN_14
-#define BUTTON4 	GPIO_PIN_15
+#define BUTTON1 	GPIO_PIN_1
+#define BUTTON2 	GPIO_PIN_2
+#define BUTTON3 	GPIO_PIN_10
+#define BUTTON4 	GPIO_PIN_11
 
 // defines for gpios used for controlling LEDs. helps with debugging
-#define LED1_PORT 	GPIOB
-#define LED1_PIN	GPIO_PIN_4
+#define LED1_PORT 	GPIOA
+#define LED1_PIN	GPIO_PIN_5
 #define LED2_PORT 	GPIOA
-#define LED2_PIN	GPIO_PIN_10
-#define LED3_PORT 	GPIOB
-#define LED3_PIN	GPIO_PIN_3
+#define LED2_PIN	GPIO_PIN_6
+#define LED3_PORT 	GPIOA
+#define LED3_PIN	GPIO_PIN_7
 
 // defines to help with flags
 #define NUM_FACES 			4	// clock, timer, alarm, stopwatch

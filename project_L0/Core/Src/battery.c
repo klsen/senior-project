@@ -10,35 +10,35 @@ void batteryManager(ADC_HandleTypeDef *hadc, SPI_HandleTypeDef *hspi, TIM_Handle
 	if (canSampleBattery) {
 		canSampleBattery = 0;
 
-		battPercentage = getBatteryPercentage(hadc);
+//		battPercentage = getBatteryPercentage(hadc);
 
 		// start really shutting down & set flag
 		// disable power supply (setting enable pin to 0)
-		if (battPercentage == 0) {
-			// power off supply
-			turnDisplayOff(hspi);
-			HAL_GPIO_WritePin(POWER_SUPPLY_ENABLE_PORT, POWER_SUPPLY_ENABLE_PIN, GPIO_PIN_RESET);
-		}
-		else if (battPercentage <= 5) {
-			// start turning off hardware
-			turnDisplayOff(hspi);
-			startLowPowerMode(timerStopwatchTim, backlightTim);
-			bState = batteryReallyLow;
-		}
-		// start low-power mode and set flag
-		else if (battPercentage <= 15) {
-			// start turning off hardware
-			bState = batteryLow;
-		}
-		// set hardware to use power normally
-		else {
-			if (bState == batteryLow || bState == batteryReallyLow) {
-				turnDisplayOn(hspi);
-				stopLowPowerMode(timerStopwatchTim, backlightTim);
-			}
-			HAL_GPIO_WritePin(POWER_SUPPLY_ENABLE_PORT, POWER_SUPPLY_ENABLE_PIN, GPIO_PIN_SET);
-			bState = batteryNormal;
-		}
+//		if (battPercentage == 0) {
+//			// power off supply
+//			turnDisplayOff(hspi);
+//			HAL_GPIO_WritePin(POWER_SUPPLY_ENABLE_PORT, POWER_SUPPLY_ENABLE_PIN, GPIO_PIN_RESET);
+//		}
+//		else if (battPercentage <= 5) {
+//			// start turning off hardware
+//			turnDisplayOff(hspi);
+//			startLowPowerMode(timerStopwatchTim, backlightTim);
+//			bState = batteryReallyLow;
+//		}
+//		// start low-power mode and set flag
+//		else if (battPercentage <= 15) {
+//			// start turning off hardware
+//			bState = batteryLow;
+//		}
+//		// set hardware to use power normally
+//		else {
+//			if (bState == batteryLow || bState == batteryReallyLow) {
+//				turnDisplayOn(hspi);
+//				stopLowPowerMode(timerStopwatchTim, backlightTim);
+//			}
+//			HAL_GPIO_WritePin(POWER_SUPPLY_ENABLE_PORT, POWER_SUPPLY_ENABLE_PIN, GPIO_PIN_SET);
+//			bState = batteryNormal;
+//		}
 
 		drawBattery(battPercentage, hspi);
 	}
