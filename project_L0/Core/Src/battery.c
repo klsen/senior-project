@@ -69,18 +69,18 @@ uint16_t getBatteryPercentage(ADC_HandleTypeDef *hadc) {
 	HAL_ADC_Stop(hadc);
 	HAL_GPIO_WritePin(ADC_DIVIDER_PORT, ADC_DIVIDER_PIN, GPIO_PIN_RESET);
 
-	return HAL_ADC_GetValue(hadc);
-	return v*10;
+//	return HAL_ADC_GetValue(hadc);
+//	return v*10;
 
-	// trying to look only for 3.9-3.4. anything above 3.7 is 100%, anything below 3.4 is 0%
-	// scaled voltages at 3.0642-2.6714
-	// indices at 6-151. have to scale and flip to go from 100-0 since 6->100%
+	// trying to look only for 3.9-3.4. anything above 3.9 is 100%, anything below 3.4 is 0%
+	// scaled voltages (3.3/4.2) at 3.0642-2.6714
+	// indices at 7-153. have to scale and flip to go from 100-0 since 6->100%
 	index = search(v);
-	if (index <= 6) return 100;
-	else if (index >= 135) return 0;		// adjusting numbers because tests want to call 2.65V non-zero
+	if (index < 7) return 100;
+	else if (index >= 153) return 0;
 	else {
 		index -= 6;
-		temp = index*100.0/129;
+		temp = index*(100.0/(153-7));
 		temp = 100-temp;
 		return temp;
 	}

@@ -724,15 +724,15 @@ void drawBattery(uint16_t batteryLevel, SPI_HandleTypeDef *hspi) {
 
 	// start filling in green/red box depending on battery level
 	uint16_t color = ST77XX_GREEN;
-//	if (batteryLevel < 20) color = ST77XX_RED;
-//	fillRect(50, 28+(100-batteryLevel)/10, 4, (batteryLevel+9)/10, color, hspi);	// +9 to avoid having to use float and round()
-//	fillRect(50, 28, 4, (100-batteryLevel)/10, ST77XX_WHITE, hspi);
+	if (batteryLevel < 20) color = ST77XX_RED;
+	fillRect(50, 28+(100-batteryLevel)/10, 4, (batteryLevel+9)/10, color, hspi);	// +9 to avoid having to use float and round()
+	fillRect(50, 28, 4, (100-batteryLevel)/10, ST77XX_WHITE, hspi);
 
 	// draw numerical text
 	setTextSize(1);
 	if (batteryLevel >= 20) color = ST77XX_BLACK;		// reusing variable for more obfuscated code.
 	setTextColor(color);
-	sprintf(str, "%3X%%", batteryLevel);
+	sprintf(str, "%3d%%", batteryLevel);
 	drawTextAt(55, 31, str, hspi);
 }
 

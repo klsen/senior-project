@@ -118,7 +118,7 @@ int main(void)
   MX_USB_PCD_Init();
   /* USER CODE BEGIN 2 */
 	// rtc software calibration
-	setRTCCalibration(-5, &hrtc);
+	setRTCCalibration(-8, &hrtc);
 
   	// initialization for display
 	TFT_startup(&hspi2);
