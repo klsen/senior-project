@@ -130,7 +130,7 @@ int main(void)
 	runTimerStopwatchBase(&htim21);		// running time bases
 	runMotorBase(&htim2);
 	runADCSampler(&htim22);
-	setDisplayBacklight(100, &htim3);
+	setDisplayBacklight(50, &htim3);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -324,7 +324,7 @@ static void MX_RTC_Init(void)
   {
     Error_Handler();
   }
-  /** Enable the Alarm A 
+  /** Enable the Alarm B 
   */
   sAlarm.AlarmTime.Hours = 0;
   sAlarm.AlarmTime.Minutes = 0;
@@ -336,22 +336,8 @@ static void MX_RTC_Init(void)
   sAlarm.AlarmSubSecondMask = RTC_ALARMSUBSECONDMASK_ALL;
   sAlarm.AlarmDateWeekDaySel = RTC_ALARMDATEWEEKDAYSEL_DATE;
   sAlarm.AlarmDateWeekDay = 1;
-  sAlarm.Alarm = RTC_ALARM_A;
-  if (HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BIN) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /** Enable the Alarm B 
-  */
-  sAlarm.AlarmDateWeekDay = 1;
   sAlarm.Alarm = RTC_ALARM_B;
   if (HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BIN) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /** Enable Calibrartion 
-  */
-  if (HAL_RTCEx_SetCalibrationOutPut(&hrtc, RTC_CALIBOUTPUT_1HZ) != HAL_OK)
   {
     Error_Handler();
   }

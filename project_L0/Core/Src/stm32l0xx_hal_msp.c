@@ -153,7 +153,6 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef* hadc)
 */
 void HAL_RTC_MspInit(RTC_HandleTypeDef* hrtc)
 {
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
   if(hrtc->Instance==RTC)
   {
   /* USER CODE BEGIN RTC_MspInit 0 */
@@ -161,13 +160,6 @@ void HAL_RTC_MspInit(RTC_HandleTypeDef* hrtc)
   /* USER CODE END RTC_MspInit 0 */
     /* Peripheral clock enable */
     __HAL_RCC_RTC_ENABLE();
-  
-    __HAL_RCC_GPIOC_CLK_ENABLE();
-    /**RTC GPIO Configuration    
-    PC13     ------> RTC_OUT_CALIB 
-    */
-    HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
     /* RTC interrupt Init */
     HAL_NVIC_SetPriority(RTC_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(RTC_IRQn);
@@ -193,11 +185,6 @@ void HAL_RTC_MspDeInit(RTC_HandleTypeDef* hrtc)
   /* USER CODE END RTC_MspDeInit 0 */
     /* Peripheral clock disable */
     __HAL_RCC_RTC_DISABLE();
-  
-    /**RTC GPIO Configuration    
-    PC13     ------> RTC_OUT_CALIB 
-    */
-    HAL_GPIO_DeInit(GPIOC, GPIO_PIN_13);
 
     /* RTC interrupt DeInit */
     HAL_NVIC_DisableIRQ(RTC_IRQn);
