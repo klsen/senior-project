@@ -127,10 +127,9 @@ int main(void)
 	// initialization for ui and hardware
 	initFace();
 	setClockAlarm(&hrtc);
-	runTimerStopwatchBase(&htim21);		// running time bases
-	runMotorBase(&htim2);
 	runADCSampler(&htim22);
 	setDisplayBacklight(50, &htim3);
+	HAL_SuspendTick();					// disable systick. unused anyway (bad practice?)
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -152,7 +151,10 @@ int main(void)
 
 		// wait for interrupt instruction. CPU goes to sleep mode (listed as "sleep mode" by ST as one of their low-power modes)
 		// put in bottom, since screen updates should run once at the start
+		HAL_GPIO_TogglePin(LED1_PORT, LED1_PIN);
 		__WFI();
+//		HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);		// has the same behavior as with __WFI()
+//		HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFE);		// has the same behavior as with __WFI()
 	}
   /* USER CODE END 3 */
 }
@@ -642,7 +644,7 @@ static void MX_TIM22_Init(void)
   htim22.Instance = TIM22;
   htim22.Init.Prescaler = 0x400;
   htim22.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim22.Init.Period = 31;
+  htim22.Init.Period = 1919;
   htim22.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim22.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim22) != HAL_OK)

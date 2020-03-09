@@ -203,11 +203,11 @@ void setDisplayBacklight(uint8_t intensity, TIM_HandleTypeDef *htim) {
 	sConfig.Pulse = (htim->Instance->ARR-1)*((float)intensity/100);
 
 	HAL_TIM_PWM_ConfigChannel(htim, &sConfig, TIM_CHANNEL_1);
-	HAL_TIM_PWM_Start_IT(htim, TIM_CHANNEL_1);
+	HAL_TIM_PWM_Start(htim, TIM_CHANNEL_1);
 }
 
 void stopDisplayBacklight(TIM_HandleTypeDef *htim) {
 	// stop pwm
-	HAL_TIM_PWM_Stop_IT(htim, TIM_CHANNEL_1);
+	HAL_TIM_PWM_Stop(htim, TIM_CHANNEL_1);
 }
 // ---- end of motor (and other) functions ----
