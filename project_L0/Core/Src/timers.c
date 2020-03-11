@@ -85,10 +85,10 @@ void runTimer(TIM_HandleTypeDef *htim) {
 
 	// calculating pulse/OC trigger
 	if (isTimerPaused == 0) {		// 1st run, hasn't been paused yet
-		sConfig.Pulse = htim->Instance->CNT;
+		sConfig.Pulse = htim->Instance->CNT-1;
 	}
 	else {		// unpausing
-		uint32_t temp = htim->Instance->CNT;
+		uint32_t temp = htim->Instance->CNT-1;
 
 		// count needed to get from pause marker to start marker - basically how many steps it would've taken to get to next cycle
 		// shifted to account for negative behavior
@@ -104,7 +104,7 @@ void runTimer(TIM_HandleTypeDef *htim) {
 void pauseTimer(TIM_HandleTypeDef *htim) {
 	// stop timer, but hold marker so you can track milliseconds to next second
 	HAL_TIM_OC_Stop_IT(htim, TIM_CHANNEL_1);
-	timerPauseMarker = htim->Instance->CNT;
+	timerPauseMarker = htim->Instance->CNT-1;
 }
 
 void stopTimer(TIM_HandleTypeDef *htim) {
@@ -123,11 +123,12 @@ void runStopwatch(TIM_HandleTypeDef *htim) {
 	// calculating pulse/OC trigger
 	if (isStopwatchPaused == 0) {		// 1st run, hasn't been paused yet
 		stopwatchCounter = 0;
-		sConfig.Pulse = htim->Instance->CNT;
+		sConfig.Pulse = htim->Instance->CNT-1;		// 32-bit unsigned going into 16-bit unsigned. no need to cast since
+													// lower level code will do it for me (cut off upper half)
 		stopwatchStartMarker = sConfig.Pulse;		// set new start marker
 	}
 	else {		// unpausing
-		uint32_t temp = htim->Instance->CNT;
+		uint32_t temp = htim->Instance->CNT-1;
 
 		// count needed to get from pause marker to start marker - basically how many steps it would've taken to get to next cycle
 		// shifted to account for negative behavior

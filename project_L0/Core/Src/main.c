@@ -151,10 +151,11 @@ int main(void)
 
 		// wait for interrupt instruction. CPU goes to sleep mode (listed as "sleep mode" by ST as one of their low-power modes)
 		// put in bottom, since screen updates should run once at the start
-		HAL_GPIO_TogglePin(LED1_PORT, LED1_PIN);
+		HAL_GPIO_WritePin(LED1_PORT, LED1_PIN, GPIO_PIN_RESET);
 		__WFI();
 //		HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);		// has the same behavior as with __WFI()
 //		HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFE);		// has the same behavior as with __WFI()
+		HAL_GPIO_WritePin(LED1_PORT, LED1_PIN, GPIO_PIN_SET);					// basically measuring wake time (assuming only clock)
 	}
   /* USER CODE END 3 */
 }

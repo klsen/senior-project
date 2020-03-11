@@ -141,7 +141,7 @@ void updateClockState(RTC_HandleTypeDef *hrtc) {
 				if (clockVars.timeToSet->hr == 0) clockVars.timeToSet->hr = 23;
 				else clockVars.timeToSet->hr--;
 				break;
-			case 3: if (clockVars.dateToSet->yr != 0) clockVars.dateToSet->yr--; break;		// limit to positive numbers
+			case 3: if (clockVars.dateToSet->yr != 0) clockVars.dateToSet->yr--; break;		// limit to positive numbers. no wrap-around
 			case 4: //clockVars.dateToSet->month = clockVars.dateToSet->month == 1 ? 12 : clockVars.dateToSet->month-1; break;
 				if (clockVars.dateToSet->month == 1) clockVars.dateToSet->month = 12;
 				else clockVars.dateToSet->month--;
