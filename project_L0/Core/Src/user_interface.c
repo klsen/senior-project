@@ -9,6 +9,7 @@ static struct alarmVariables alarmVars = {0};
 static struct stopwatchVariables stopwatchVars = {0};
 static uint8_t isFaceBeingChanged = 1;
 static uint8_t faceOnDisplay = faceClock;
+extern TIM_HandleTypeDef htim3;
 
 const char* weekdayNames[8] = {
 	"",			// padding so i can avoid dealing with out-of-bounds access
@@ -43,10 +44,10 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	HAL_GPIO_TogglePin(LED3_PORT, LED3_PIN);
 
 	// disables interrupts for software debouncing
-	HAL_NVIC_DisableIRQ(EXTI2_3_IRQn);
-	HAL_NVIC_DisableIRQ(EXTI4_15_IRQn);
-	HAL_NVIC_ClearPendingIRQ(EXTI2_3_IRQn);
-	HAL_NVIC_ClearPendingIRQ(EXTI4_15_IRQn);
+//	HAL_NVIC_DisableIRQ(EXTI2_3_IRQn);
+//	HAL_NVIC_DisableIRQ(EXTI4_15_IRQn);
+//	HAL_NVIC_ClearPendingIRQ(EXTI2_3_IRQn);
+//	HAL_NVIC_ClearPendingIRQ(EXTI4_15_IRQn);
 
 	// updates flags
 	if (GPIO_Pin == BUTTON1) buttons.is1Pressed = 1;
@@ -55,7 +56,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	if (GPIO_Pin == BUTTON4) buttons.is4Pressed = 1;
 
 	// runs timer for software debouncing delay
-	HAL_TIM_Base_Start_IT(&htim6);
+//	HAL_TIM_Base_Start_IT(&htim6);
 }
 
 //
@@ -118,39 +119,52 @@ void updateState(RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *timerStopwatchTim, 
  */
 void updateClockState(RTC_HandleTypeDef *hrtc) {
 	// check button pressed -> perform action
-	if (buttons.is2Pressed && clockVars.isBeingSet) {
+	static int8_t brightness = 50;
+	if (buttons.is2Pressed) {
 		updateFace.clock = 1;
-		switch (clockVars.fieldBeingSet) {
-			case 1: clockVars.timeToSet->min = (clockVars.timeToSet->min+1) % 60; break;
-			case 2: clockVars.timeToSet->hr = (clockVars.timeToSet->hr+1) % 24; break;
-			case 3: clockVars.dateToSet->yr = (clockVars.dateToSet->yr + 1) % 10000; break;		// fit in 4 characters
-			case 4: clockVars.dateToSet->month = (clockVars.dateToSet->month) % 12 + 1; break;
-			case 5: clockVars.dateToSet->date = ((clockVars.dateToSet->date) % maxDaysInMonth(clockVars.dateToSet->month, clockVars.dateToSet->yr)) + 1; break;
-			default: break;
+		if (clockVars.isBeingSet) {
+			switch (clockVars.fieldBeingSet) {
+				case 1: clockVars.timeToSet->min = (clockVars.timeToSet->min+1) % 60; break;
+				case 2: clockVars.timeToSet->hr = (clockVars.timeToSet->hr+1) % 24; break;
+				case 3: clockVars.dateToSet->yr = (clockVars.dateToSet->yr + 1) % 10000; break;		// fit in 4 characters
+				case 4: clockVars.dateToSet->month = (clockVars.dateToSet->month) % 12 + 1; break;
+				case 5: clockVars.dateToSet->date = ((clockVars.dateToSet->date) % maxDaysInMonth(clockVars.dateToSet->month, clockVars.dateToSet->yr)) + 1; break;
+				default: break;
+			}
+		}
+		else {
+			if (brightness < 100) brightness += 10;
+			setDisplayBacklight(brightness, &htim3);
 		}
 	}
 	// change fields down, do nothing if not setting clock
-	if (buttons.is3Pressed && clockVars.isBeingSet) {
+	if (buttons.is3Pressed) {
 		updateFace.clock = 1;
-		switch (clockVars.fieldBeingSet) {
-			case 1:
-				if (clockVars.timeToSet->min == 0) clockVars.timeToSet->min = 59;
-				else clockVars.timeToSet->min--;
-				break;
-			case 2:
-				if (clockVars.timeToSet->hr == 0) clockVars.timeToSet->hr = 23;
-				else clockVars.timeToSet->hr--;
-				break;
-			case 3: if (clockVars.dateToSet->yr != 0) clockVars.dateToSet->yr--; break;		// limit to positive numbers. no wrap-around
-			case 4: //clockVars.dateToSet->month = clockVars.dateToSet->month == 1 ? 12 : clockVars.dateToSet->month-1; break;
-				if (clockVars.dateToSet->month == 1) clockVars.dateToSet->month = 12;
-				else clockVars.dateToSet->month--;
-				break;
-			case 5:
-				if (clockVars.dateToSet->date == 1) clockVars.dateToSet->date = maxDaysInMonth(clockVars.dateToSet->month, clockVars.dateToSet->yr);
-				else clockVars.dateToSet->date--;
-				break;
-			default: break;
+		if (clockVars.isBeingSet) {
+			switch (clockVars.fieldBeingSet) {
+				case 1:
+					if (clockVars.timeToSet->min == 0) clockVars.timeToSet->min = 59;
+					else clockVars.timeToSet->min--;
+					break;
+				case 2:
+					if (clockVars.timeToSet->hr == 0) clockVars.timeToSet->hr = 23;
+					else clockVars.timeToSet->hr--;
+					break;
+				case 3: if (clockVars.dateToSet->yr != 0) clockVars.dateToSet->yr--; break;		// limit to positive numbers. no wrap-around
+				case 4: //clockVars.dateToSet->month = clockVars.dateToSet->month == 1 ? 12 : clockVars.dateToSet->month-1; break;
+					if (clockVars.dateToSet->month == 1) clockVars.dateToSet->month = 12;
+					else clockVars.dateToSet->month--;
+					break;
+				case 5:
+					if (clockVars.dateToSet->date == 1) clockVars.dateToSet->date = maxDaysInMonth(clockVars.dateToSet->month, clockVars.dateToSet->yr);
+					else clockVars.dateToSet->date--;
+					break;
+				default: break;
+			}
+		}
+		else {
+			if (brightness > 0) brightness -= 10;
+			setDisplayBacklight(brightness, &htim3);
 		}
 	}
 	// switches between setting mode and default mode. changes between different clock fields

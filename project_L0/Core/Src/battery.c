@@ -72,7 +72,7 @@ uint16_t getBatteryPercentage(ADC_HandleTypeDef *hadc) {
 //	return HAL_ADC_GetValue(hadc);
 //	return v*10;
 
-	// trying to look only for 3.9-3.4. anything above 4.0 is 100%, anything below 3.4 is 0%
+	// trying to look only for 4.0-3.4. anything above 4.0 is 100%, anything below 3.4 is 0%
 	// scaled voltages (3.3/4.2) at 3.1429-2.6714
 	// indices at 2-153. have to scale and flip to go from 100-0 since 2->100%
 	index = search(v);
