@@ -83,6 +83,7 @@ void setClockAlarm(RTC_HandleTypeDef *hrtc) {
 	struct alarmTimes a = {0};
 	uint8_t s,m,h,w;
 	// set for only 1/min on low battery mode
+//	bState = batteryLow;
 	if (bState == batteryLow || bState == batteryReallyLow) {
 		s = currentTime.sec;
 		m = currentTime.min + s/60 + 1;

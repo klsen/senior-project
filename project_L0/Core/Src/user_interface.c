@@ -41,7 +41,8 @@ const char* monthNames[13] = {
 // callback for button interrupts.
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	// toggles LED whenever a button is pressed
-	HAL_GPIO_TogglePin(LED3_PORT, LED3_PIN);
+//	HAL_GPIO_TogglePin(LED3_PORT, LED3_PIN);
+	HAL_GPIO_WritePin(LED3_PORT, LED3_PIN, GPIO_PIN_RESET);
 
 	// disables interrupts for software debouncing
 //	HAL_NVIC_DisableIRQ(EXTI2_3_IRQn);
