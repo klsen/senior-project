@@ -44,6 +44,7 @@ void setDateTime(struct dates *d, struct times *t, RTC_HandleTypeDef *hrtc);
 // ---- alarm setters ----
 void setAlarm(struct alarmTimes *a, RTC_HandleTypeDef *hrtc);
 void setClockAlarm(RTC_HandleTypeDef *hrtc);		// set alarm to current time+1 to trigger display update every 1s
+void clearClockAlarm(RTC_HandleTypeDef *hrtc);		// clears alarm from setclockalarm
 // ---- end of alarm setters ----
 
 // ---- RTC getters ----

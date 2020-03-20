@@ -140,6 +140,10 @@ void setClockAlarm(RTC_HandleTypeDef *hrtc) {
 	// do nothing until done
 	HAL_RTC_SetAlarm_IT(hrtc, &salarm, RTC_FORMAT_BIN);
 }
+
+void clearClockAlarm(RTC_HandleTypeDef *hrtc) {
+	HAL_RTC_DeactivateAlarm(hrtc, RTC_ALARM_B);
+}
 // ---- end of RTC setters ----
 
 // ---- callbacks for interrupts ----

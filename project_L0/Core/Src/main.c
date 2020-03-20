@@ -77,10 +77,32 @@ static void MX_USB_PCD_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-void resumefromstopmode() {
+void sleepMode() {
+//	HAL_GPIO_WritePin(LED1_PORT, LED1_PIN, GPIO_PIN_RESET);
+//	stopDisplayBacklight(&htim3);
+	setDisplayBacklight(20, &htim3);
+	clearClockAlarm(&hrtc);
+//	HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);		// has the same behavior as with __WFI()
+	HAL_PWR_EnterSLEEPMode(PWR_LOWPOWERREGULATOR_ON, PWR_SLEEPENTRY_WFI);		// has the same behavior as with __WFI()
+	setClockAlarm(&hrtc);
+	setDisplayBacklight(50, &htim3);
+//	HAL_GPIO_WritePin(LED1_PORT, LED1_PIN, GPIO_PIN_SET);					// basically measuring wake time (assuming only clock)
+}
+
+void stopMode() {
+//	HAL_GPIO_WritePin(LED2_PORT, LED2_PIN, GPIO_PIN_RESET);
+	stopDisplayBacklight(&htim3);
+	clearClockAlarm(&hrtc);
+	__HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
+//	HAL_PWR_EnterSTOPMode(PWR_MAINREGULATOR_ON, PWR_STOPENTRY_WFI);
+	HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI);
+//	HAL_GPIO_WritePin(LED2_PORT, LED2_PIN, GPIO_PIN_SET);					// basically measuring wake time (assuming only clock)
+	exitStopMode();
+}
+
+void exitStopMode() {
 	HAL_Init();
 	SystemClock_Config();
-	HAL_SuspendTick();
 	MX_GPIO_Init();
 	MX_ADC_Init();
 //	MX_RTC_Init();
@@ -91,11 +113,12 @@ void resumefromstopmode() {
 	MX_TIM3_Init();
 	MX_SPI2_Init();
 	MX_USB_PCD_Init();
+	HAL_SuspendTick();
 //	setRTCCalibration(-8, &hrtc);
 //	TFT_startup(&hspi2);
 	turnDisplayOn(&hspi2);
-	clearScreen(ST77XX_BLACK, &hspi2);
-	initFace();
+//	clearScreen(ST77XX_BLACK, &hspi2);
+//	initFace();
 	setClockAlarm(&hrtc);
 	runADCSampler(&htim22);
 	setDisplayBacklight(50, &htim3);
@@ -111,7 +134,6 @@ int main(void)
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
-  
 
   /* MCU Configuration--------------------------------------------------------*/
 
@@ -119,7 +141,6 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -142,6 +163,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
 	// rtc software calibration
 	setRTCCalibration(-8, &hrtc);
+//	HAL_SuspendTick();					// disable systick. unused anyway (bad practice?)
 
   	// initialization for display
 	TFT_startup(&hspi2);
@@ -152,7 +174,7 @@ int main(void)
 	setClockAlarm(&hrtc);
 	runADCSampler(&htim22);
 	setDisplayBacklight(50, &htim3);
-	HAL_SuspendTick();					// disable systick. unused anyway (bad practice?)
+	HAL_SuspendTick();
 //	HAL_GPIO_WritePin(LED2_PORT, LED2_PIN, GPIO_PIN_SET);
   /* USER CODE END 2 */
 
@@ -173,22 +195,25 @@ int main(void)
 			isTimerDone = isAlarmDone = 0;
 		}
 
+//		HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);		// has the same behavior as with __WFI()
+
 		// wait for interrupt instruction. CPU goes to sleep mode (listed as "sleep mode" by ST as one of their low-power modes)
 		// put in bottom, since screen updates should run once at the start
 //		HAL_GPIO_WritePin(LED1_PORT, LED1_PIN, GPIO_PIN_RESET);
 //		stopDisplayBacklight(&htim3);
+//		clearClockAlarm(&hrtc);
 //		HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);		// has the same behavior as with __WFI()
-////		__WFI();
-////		HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFE);		// has the same behavior as with __WFI()
+//		setClockAlarm(&hrtc);
+//		setDisplayBacklight(50, &htim3);
 //		HAL_GPIO_WritePin(LED1_PORT, LED1_PIN, GPIO_PIN_SET);					// basically measuring wake time (assuming only clock)
 
-		HAL_GPIO_WritePin(LED2_PORT, LED2_PIN, GPIO_PIN_RESET);
-		__HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
-		stopDisplayBacklight(&htim3);
-		turnDisplayOff(&hspi2);
-		HAL_PWR_EnterSTOPMode(PWR_MAINREGULATOR_ON, PWR_STOPENTRY_WFI);
-		HAL_GPIO_WritePin(LED2_PORT, LED2_PIN, GPIO_PIN_SET);					// basically measuring wake time (assuming only clock)
-		resumefromstopmode();
+//		HAL_GPIO_WritePin(LED2_PORT, LED2_PIN, GPIO_PIN_RESET);
+//		stopDisplayBacklight(&htim3);
+//		clearClockAlarm(&hrtc);
+//		__HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
+//		HAL_PWR_EnterSTOPMode(PWR_MAINREGULATOR_ON, PWR_STOPENTRY_WFI);
+//		HAL_GPIO_WritePin(LED2_PORT, LED2_PIN, GPIO_PIN_SET);					// basically measuring wake time (assuming only clock)
+//		exitStopMode();
 	}
   /* USER CODE END 3 */
 }

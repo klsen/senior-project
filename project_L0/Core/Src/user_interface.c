@@ -9,6 +9,8 @@ static struct alarmVariables alarmVars = {0};
 static struct stopwatchVariables stopwatchVars = {0};
 static uint8_t isFaceBeingChanged = 1;
 static uint8_t faceOnDisplay = faceClock;
+
+// externs
 extern TIM_HandleTypeDef htim3;
 
 const char* weekdayNames[8] = {
@@ -42,7 +44,7 @@ const char* monthNames[13] = {
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	// toggles LED whenever a button is pressed
 //	HAL_GPIO_TogglePin(LED3_PORT, LED3_PIN);
-	HAL_GPIO_WritePin(LED3_PORT, LED3_PIN, GPIO_PIN_RESET);
+//	HAL_GPIO_WritePin(LED3_PORT, LED3_PIN, GPIO_PIN_RESET);
 
 	// disables interrupts for software debouncing
 //	HAL_NVIC_DisableIRQ(EXTI2_3_IRQn);
@@ -134,8 +136,9 @@ void updateClockState(RTC_HandleTypeDef *hrtc) {
 			}
 		}
 		else {
-			if (brightness < 100) brightness += 10;
-			setDisplayBacklight(brightness, &htim3);
+//			if (brightness < 100) brightness += 10;
+//			setDisplayBacklight(brightness, &htim3);
+			sleepMode();
 		}
 	}
 	// change fields down, do nothing if not setting clock
@@ -164,8 +167,9 @@ void updateClockState(RTC_HandleTypeDef *hrtc) {
 			}
 		}
 		else {
-			if (brightness > 0) brightness -= 10;
-			setDisplayBacklight(brightness, &htim3);
+//			if (brightness > 0) brightness -= 10;
+//			setDisplayBacklight(brightness, &htim3);
+			stopMode();
 		}
 	}
 	// switches between setting mode and default mode. changes between different clock fields
