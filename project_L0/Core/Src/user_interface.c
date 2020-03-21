@@ -137,8 +137,10 @@ void updateClockState(RTC_HandleTypeDef *hrtc) {
 		}
 		else {
 //			if (brightness < 100) brightness += 10;
-//			setDisplayBacklight(brightness, &htim3);
-			sleepMode();
+			if (brightness == 50) brightness = 10;
+			else brightness = 50;
+			setDisplayBacklight(brightness, &htim3);
+//			sleepMode();
 		}
 	}
 	// change fields down, do nothing if not setting clock

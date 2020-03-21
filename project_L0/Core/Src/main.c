@@ -195,7 +195,7 @@ int main(void)
 			isTimerDone = isAlarmDone = 0;
 		}
 
-//		HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);		// has the same behavior as with __WFI()
+		HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);		// has the same behavior as with __WFI()
 
 		// wait for interrupt instruction. CPU goes to sleep mode (listed as "sleep mode" by ST as one of their low-power modes)
 		// put in bottom, since screen updates should run once at the start
