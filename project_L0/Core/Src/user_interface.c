@@ -138,6 +138,7 @@ void updateClockState(RTC_HandleTypeDef *hrtc) {
 		else {
 //			if (brightness < 100) brightness += 10;
 			if (brightness == 50) brightness = 10;
+			else if (brightness == 10) brightness = 0;
 			else brightness = 50;
 			setDisplayBacklight(brightness, &htim3);
 //			sleepMode();
@@ -172,6 +173,7 @@ void updateClockState(RTC_HandleTypeDef *hrtc) {
 //			if (brightness > 0) brightness -= 10;
 //			setDisplayBacklight(brightness, &htim3);
 			stopMode();
+			setDisplayBacklight(brightness, &htim3);
 		}
 	}
 	// switches between setting mode and default mode. changes between different clock fields
