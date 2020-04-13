@@ -174,7 +174,7 @@ int main(void)
 	setClockAlarm(&hrtc);
 	runADCSampler(&htim22);
 	setDisplayBacklight(50, &htim3);
-	HAL_SuspendTick();
+//	HAL_SuspendTick();
 //	HAL_GPIO_WritePin(LED2_PORT, LED2_PIN, GPIO_PIN_SET);
   /* USER CODE END 2 */
 
@@ -185,17 +185,19 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-		updateState(&hrtc, &htim21, &htim2, &htim6, &hspi2);
-		updateDisplay(&hrtc, &hspi2);
-		batteryManager(&hadc, &hspi2, &htim21, &htim3);
-
-		if (isTimerDone || isAlarmDone) {
-			runMotor(&htim2);
-			updateDisplay(&hrtc, &hspi2);
-			isTimerDone = isAlarmDone = 0;
-		}
-
-		HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);		// has the same behavior as with __WFI()
+		lineTest(&hspi2);
+		charTest(&hspi2);
+//		updateState(&hrtc, &htim21, &htim2, &htim6, &hspi2);
+//		updateDisplay(&hrtc, &hspi2);
+//		batteryManager(&hadc, &hspi2, &htim21, &htim3);
+//
+//		if (isTimerDone || isAlarmDone) {
+//			runMotor(&htim2);
+//			updateDisplay(&hrtc, &hspi2);
+//			isTimerDone = isAlarmDone = 0;
+//		}
+//
+//		HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);		// has the same behavior as with __WFI()
 
 		// wait for interrupt instruction. CPU goes to sleep mode (listed as "sleep mode" by ST as one of their low-power modes)
 		// put in bottom, since screen updates should run once at the start
@@ -703,7 +705,7 @@ static void MX_TIM22_Init(void)
   htim22.Instance = TIM22;
   htim22.Init.Prescaler = 0x400;
   htim22.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim22.Init.Period = 1919;
+  htim22.Init.Period = 31;
   htim22.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim22.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim22) != HAL_OK)

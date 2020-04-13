@@ -11,42 +11,42 @@ void lineTest(SPI_HandleTypeDef *hspi) {
 
 	drawLine(x, y, x+WIDTH/2, y+HEIGHT/4, ST77XX_RED, hspi);
 	HAL_Delay(500);
-	drawRect(x, y, WIDTH/2, HEIGHT/4, ST77XX_RED, hspi);
+	fillRect(x, y, WIDTH/2, HEIGHT/4, ST77XX_RED, hspi);
 	HAL_Delay(1000);
 
 	drawLine(x, y, x+WIDTH/4, y+HEIGHT/2, ST77XX_BLUE, hspi);
 	HAL_Delay(500);
-	drawRect(x, y, WIDTH/4, HEIGHT/2, ST77XX_BLUE, hspi);
+	fillRect(x, y, WIDTH/4, HEIGHT/2, ST77XX_BLUE, hspi);
 	HAL_Delay(1000);
 
 	drawLine(x, y, x-WIDTH/4, y+HEIGHT/2, ST77XX_YELLOW, hspi);
 	HAL_Delay(500);
-	drawRect(x-WIDTH/4, y, WIDTH/4, HEIGHT/2, ST77XX_YELLOW, hspi);
+	fillRect(x-WIDTH/4, y, WIDTH/4, HEIGHT/2, ST77XX_YELLOW, hspi);
 	HAL_Delay(1000);
 
 	drawLine(x, y, x-WIDTH/2, y+HEIGHT/4, ST77XX_GREEN, hspi);
 	HAL_Delay(500);
-	drawRect(x-WIDTH/2, y, WIDTH/2, HEIGHT/4, ST77XX_GREEN, hspi);
+	fillRect(x-WIDTH/2, y, WIDTH/2, HEIGHT/4, ST77XX_GREEN, hspi);
 	HAL_Delay(1000);
 
 	drawLine(x, y, x-WIDTH/2, y-HEIGHT/4, ST77XX_ORANGE, hspi);
 	HAL_Delay(500);
-	drawRect(x-WIDTH/2, y-HEIGHT/4, WIDTH/2, HEIGHT/4, ST77XX_ORANGE, hspi);
+	fillRect(x-WIDTH/2, y-HEIGHT/4, WIDTH/2, HEIGHT/4, ST77XX_ORANGE, hspi);
 	HAL_Delay(1000);
 
 	drawLine(x, y, x-WIDTH/4, y-HEIGHT/2, ST77XX_MAGENTA, hspi);
 	HAL_Delay(500);
-	drawRect(x-WIDTH/4, y-HEIGHT/2, WIDTH/4, HEIGHT/2, ST77XX_MAGENTA, hspi);
+	fillRect(x-WIDTH/4, y-HEIGHT/2, WIDTH/4, HEIGHT/2, ST77XX_MAGENTA, hspi);
 	HAL_Delay(1000);
 
 	drawLine(x, y, x+WIDTH/4, y-HEIGHT/2, ST77XX_CYAN, hspi);
 	HAL_Delay(500);
-	drawRect(x, y-HEIGHT/2, WIDTH/4, HEIGHT/2, ST77XX_CYAN, hspi);
+	fillRect(x, y-HEIGHT/2, WIDTH/4, HEIGHT/2, ST77XX_CYAN, hspi);
 	HAL_Delay(1000);
 
 	drawLine(x, y, x+WIDTH/2, y-HEIGHT/4, ST77XX_WHITE, hspi);
 	HAL_Delay(500);
-	drawRect(x, y-HEIGHT/4, WIDTH/2, HEIGHT/4, ST77XX_WHITE, hspi);
+	fillRect(x, y-HEIGHT/4, WIDTH/2, HEIGHT/4, ST77XX_WHITE, hspi);
 	HAL_Delay(1000);
 
 	clearScreen(ST77XX_BLACK, hspi);
