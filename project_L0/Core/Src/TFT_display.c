@@ -12,6 +12,8 @@
 
 #include "TFT_display.h"
 
+static void SPI_TxISR_8BIT_circular(struct __SPI_HandleTypeDef *hspi);
+
 // static variables
 static uint8_t cursorX;			// cursor position for text drawing
 static uint8_t cursorY;
@@ -35,6 +37,52 @@ void sendCommand(uint8_t cmd, uint8_t *args, uint16_t numArgs, SPI_HandleTypeDef
 	SPI_DC_HIGH();	// data mode
 	if (numArgs) {
 		HAL_SPI_Transmit_IT(hspi, args, numArgs);
+	}
+}
+
+void sendColor(uint8_t cmd, uint16_t color, uint16_t numPixels, SPI_HandleTypeDef *hspi) {
+	SPI_DC_LOW();
+	HAL_SPI_Transmit_IT(hspi, &cmd, 1);
+	SPI_DC_HIGH();
+	uint16_t tempColor = color;		// scoping problem maybe
+	SPI_Transmit_IT_1color(hspi, &tempColor, numPixels);
+}
+
+void SPI_Transmit_IT_1color(SPI_HandleTypeDef *hspi, uint16_t *pData, uint16_t size) {
+	__HAL_LOCK(hspi);
+	hspi->State = HAL_SPI_STATE_BUSY_TX;
+	hspi->pTxBuffPtr = (uint8_t *)pData;
+	hspi->TxXferSize = size;
+	hspi->TxXferCount = size;
+
+	hspi->pRxBuffPtr  = (uint8_t *)NULL;
+	hspi->RxXferSize  = 0U;
+	hspi->RxXferCount = 0U;
+	hspi->RxISR       = NULL;
+
+	hspi->TxISR = SPI_TxISR_8BIT_circular;
+	__HAL_SPI_ENABLE_IT(hspi, (SPI_IT_TXE | SPI_IT_ERR));
+	if ((hspi->Instance->CR1 & SPI_CR1_SPE) != SPI_CR1_SPE) {
+		__HAL_SPI_ENABLE(hspi);
+	}
+	__HAL_UNLOCK(hspi);
+}
+
+static void SPI_TxISR_8BIT_circular(struct __SPI_HandleTypeDef *hspi) {
+	*(__IO uint8_t *)&hspi->Instance->DR = (*hspi->pTxBuffPtr);
+	hspi->TxXferCount % 2 == 0 ? hspi->pTxBuffPtr++ : hspi->pTxBuffPtr--;
+	hspi->TxXferCount--;
+
+	if (hspi->TxXferCount == 0) {
+//		SPI_CloseTx_ISR(hspi);
+		while ((hspi->Instance->SR & SPI_FLAG_TXE) == RESET);
+		__HAL_SPI_DISABLE_IT(hspi, (SPI_IT_TXE | SPI_IT_ERR));
+		hspi->State = HAL_SPI_STATE_READY;
+#if (USE_HAL_SPI_REGISTER_CALLBACKS == 1U)
+		hspi->TxCpltCallback(hspi);
+#else
+		HAL_SPI_TxCpltCallback(hspi);
+#endif /* USE_HAL_SPI_REGISTER_CALLBACKS */
 	}
 }
 
@@ -299,17 +347,20 @@ void fillRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t color, SPI_Ha
 
 // a big rectangle, but for the whole screen
 void fillScreen(uint16_t color, SPI_HandleTypeDef *hspi) {
-	uint16_t bufferSize = WIDTH*HEIGHT/4;
-	uint16_t buffer[bufferSize];
-	int i;
-	for (i = 0; i < bufferSize; i++) {
-		buffer[i] = colorFixer(color);
-	}
-
-	// divided into 4 parts, since system ram is not big enough
-	for (i = 0; i < 4; i++) {
-		drawBuffer(0, HEIGHT/4*i, WIDTH, HEIGHT/4, buffer, bufferSize, hspi);
-	}
+	setAddrWindow(0, 0, WIDTH, HEIGHT, hspi);
+	color = colorFixer(color);
+	sendColor(ST77XX_RAMWR, color, WIDTH*HEIGHT*2, hspi);
+//	uint16_t bufferSize = WIDTH*HEIGHT/4;
+//	uint16_t buffer[bufferSize];
+//	int i;
+//	for (i = 0; i < bufferSize; i++) {
+//		buffer[i] = colorFixer(color);
+//	}
+//
+//	// divided into 4 parts, since system ram is not big enough
+//	for (i = 0; i < 4; i++) {
+//		drawBuffer(0, HEIGHT/4*i, WIDTH, HEIGHT/4, buffer, bufferSize, hspi);
+//	}
 }
 
 void clearScreen(uint16_t backgroundColor, SPI_HandleTypeDef *hspi) {

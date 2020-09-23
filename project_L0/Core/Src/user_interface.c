@@ -91,7 +91,7 @@ void updateState(RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *timerStopwatchTim, 
 			case 6: if (buttons.is2Pressed) s++; else if (buttons.is1Pressed || buttons.is3Pressed || buttons.is4Pressed) s = 0; break;
 			case 7: if (buttons.is3Pressed) s++; else if (buttons.is1Pressed || buttons.is2Pressed || buttons.is4Pressed) s = 0; break;
 			case 8: if (buttons.is2Pressed) s++; else if (buttons.is1Pressed || buttons.is3Pressed || buttons.is4Pressed) s = 0; break;
-			case 9: if (buttons.is3Pressed) {TFT_startup(hspi); s = 0;} break;
+			case 9: if (buttons.is3Pressed) {s = 0; TFT_startup(hspi);} break;
 			default: break;
 		}
 

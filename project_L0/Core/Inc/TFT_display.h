@@ -127,6 +127,10 @@ void SPI_DC_HIGH();
 // sends ST77XX instruction and its necessary arguments
 void sendCommand(uint8_t cmd, uint8_t* args, uint16_t numArgs, SPI_HandleTypeDef *hspi);
 
+void sendColor(uint8_t cmd, uint16_t color, uint16_t numPixels, SPI_HandleTypeDef *hspi);
+void SPI_Transmit_IT_1color(SPI_HandleTypeDef *hspi, uint16_t *pData, uint16_t size);
+static void SPI_TxISR_8BIT_circular(struct __SPI_HandleTypeDef *hspi);
+
 // runs initialization for display. contains an array with a list of arguments for initialization
 void TFT_startup(SPI_HandleTypeDef *hspi);
 
