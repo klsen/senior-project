@@ -60,23 +60,22 @@ void SPI_Transmit_IT_1color(SPI_HandleTypeDef *hspi, uint16_t *pData, uint16_t s
 	hspi->RxXferCount = 0U;
 	hspi->RxISR       = NULL;
 
-//	hspi->TxISR = SPI_TxISR_8BIT_circular;
-	hspi->TxISR = NULL;
+	hspi->TxISR = SPI_TxISR_8BIT_circular;
 	__HAL_SPI_ENABLE_IT(hspi, (SPI_IT_TXE | SPI_IT_ERR));
 	if ((hspi->Instance->CR1 & SPI_CR1_SPE) != SPI_CR1_SPE) {
 		__HAL_SPI_ENABLE(hspi);
 	}
 	__HAL_UNLOCK(hspi);
 
-	for(hspi->TxXferCount; hspi->TxXferCount > 0; hspi->TxXferCount--) {
-		while (!LL_SPI_IsActiveFlag_TXE(hspi));
-		LL_SPI_TransmitData8(hspi, hspi->pTxBuffPtr);
-		hspi->TxXferCount % 2 == 0 ? hspi->pTxBuffPtr++ : hspi->pTxBuffPtr--;
-	}
-
-	while ((hspi->Instance->SR & SPI_FLAG_TXE) == RESET);
-	__HAL_SPI_DISABLE_IT(hspi, (SPI_IT_TXE | SPI_IT_ERR));
-	hspi->State = HAL_SPI_STATE_READY;
+//	for(hspi->TxXferCount; hspi->TxXferCount > 0; hspi->TxXferCount--) {
+//		while (!LL_SPI_IsActiveFlag_TXE(hspi));
+//		LL_SPI_TransmitData8(hspi, hspi->pTxBuffPtr);
+//		hspi->TxXferCount % 2 == 0 ? hspi->pTxBuffPtr++ : hspi->pTxBuffPtr--;
+//	}
+//
+//	while ((hspi->Instance->SR & SPI_FLAG_TXE) == RESET);
+//	__HAL_SPI_DISABLE_IT(hspi, (SPI_IT_TXE | SPI_IT_ERR));
+//	hspi->State = HAL_SPI_STATE_READY;
 }
 
 static void SPI_TxISR_8BIT_circular(struct __SPI_HandleTypeDef *hspi) {
@@ -85,7 +84,6 @@ static void SPI_TxISR_8BIT_circular(struct __SPI_HandleTypeDef *hspi) {
 	hspi->TxXferCount--;
 
 	if (hspi->TxXferCount == 0) {
-//		SPI_CloseTx_ISR(hspi);
 		while ((hspi->Instance->SR & SPI_FLAG_TXE) == RESET);
 		__HAL_SPI_DISABLE_IT(hspi, (SPI_IT_TXE | SPI_IT_ERR));
 		hspi->State = HAL_SPI_STATE_READY;
