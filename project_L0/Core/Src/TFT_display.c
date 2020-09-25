@@ -67,32 +67,32 @@ void SPI_Transmit_IT_1color(SPI_HandleTypeDef *hspi, uint16_t *pData, uint16_t s
 	}
 	__HAL_UNLOCK(hspi);
 
-//	for(hspi->TxXferCount; hspi->TxXferCount > 0; hspi->TxXferCount--) {
+	for(hspi->TxXferCount; hspi->TxXferCount > 0; hspi->TxXferCount--) {
 //		while (!LL_SPI_IsActiveFlag_TXE(hspi));
-//		LL_SPI_TransmitData8(hspi, hspi->pTxBuffPtr);
-//		hspi->TxXferCount % 2 == 0 ? hspi->pTxBuffPtr++ : hspi->pTxBuffPtr--;
-//	}
-//
-//	while ((hspi->Instance->SR & SPI_FLAG_TXE) == RESET);
-//	__HAL_SPI_DISABLE_IT(hspi, (SPI_IT_TXE | SPI_IT_ERR));
-//	hspi->State = HAL_SPI_STATE_READY;
+		LL_SPI_TransmitData8(hspi, hspi->pTxBuffPtr);
+		hspi->TxXferCount % 2 == 0 ? hspi->pTxBuffPtr++ : hspi->pTxBuffPtr--;
+	}
+
+	while ((hspi->Instance->SR & SPI_FLAG_TXE) == RESET);
+	__HAL_SPI_DISABLE_IT(hspi, (SPI_IT_TXE | SPI_IT_ERR));
+	hspi->State = HAL_SPI_STATE_READY;
 }
 
 static void SPI_TxISR_8BIT_circular(struct __SPI_HandleTypeDef *hspi) {
-	*(__IO uint8_t *)&hspi->Instance->DR = (*hspi->pTxBuffPtr);
-	hspi->TxXferCount % 2 == 0 ? hspi->pTxBuffPtr++ : hspi->pTxBuffPtr--;
-	hspi->TxXferCount--;
-
-	if (hspi->TxXferCount == 0) {
-		while ((hspi->Instance->SR & SPI_FLAG_TXE) == RESET);
-		__HAL_SPI_DISABLE_IT(hspi, (SPI_IT_TXE | SPI_IT_ERR));
-		hspi->State = HAL_SPI_STATE_READY;
-#if (USE_HAL_SPI_REGISTER_CALLBACKS == 1U)
-		hspi->TxCpltCallback(hspi);
-#else
-		HAL_SPI_TxCpltCallback(hspi);
-#endif /* USE_HAL_SPI_REGISTER_CALLBACKS */
-	}
+//	*(__IO uint8_t *)&hspi->Instance->DR = (*hspi->pTxBuffPtr);
+//	hspi->TxXferCount % 2 == 0 ? hspi->pTxBuffPtr++ : hspi->pTxBuffPtr--;
+//	hspi->TxXferCount--;
+//
+//	if (hspi->TxXferCount == 0) {
+//		while ((hspi->Instance->SR & SPI_FLAG_TXE) == RESET);
+//		__HAL_SPI_DISABLE_IT(hspi, (SPI_IT_TXE | SPI_IT_ERR));
+//		hspi->State = HAL_SPI_STATE_READY;
+//#if (USE_HAL_SPI_REGISTER_CALLBACKS == 1U)
+//		hspi->TxCpltCallback(hspi);
+//#else
+//		HAL_SPI_TxCpltCallback(hspi);
+//#endif /* USE_HAL_SPI_REGISTER_CALLBACKS */
+//	}
 }
 
 // using only for sending data, but not commands
