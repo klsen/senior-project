@@ -45,6 +45,7 @@ ADC_HandleTypeDef hadc;
 RTC_HandleTypeDef hrtc;
 
 SPI_HandleTypeDef hspi2;
+DMA_HandleTypeDef hdma_spi2_tx;
 
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
@@ -61,6 +62,7 @@ PCD_HandleTypeDef hpcd_USB_FS;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_DMA_Init(void);
 static void MX_ADC_Init(void);
 static void MX_RTC_Init(void);
 static void MX_TIM21_Init(void);
@@ -150,6 +152,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_ADC_Init();
   MX_RTC_Init();
   MX_TIM21_Init();
@@ -166,7 +169,8 @@ int main(void)
 
   	// initialization for display
 	TFT_startup(&hspi2);
-	clearScreen(ST77XX_BLACK, &hspi2);
+	fillRect(0, 0, WIDTH, HEIGHT, ST77XX_ORANGE, &hspi2);
+//	clearScreen(ST77XX_BLACK, &hspi2);
 
 	// initialization for ui and hardware
 	initFace();
@@ -188,6 +192,7 @@ int main(void)
 //		charTest(&hspi2);
 		updateState(&hrtc, &htim21, &htim2, &htim6, &hspi2);
 		updateDisplay(&hrtc, &hspi2);
+
 		batteryManager(&hadc, &hspi2, &htim21, &htim3);
 
 		if (isTimerDone || isAlarmDone) {
@@ -777,6 +782,22 @@ static void MX_USB_PCD_Init(void)
   /* USER CODE BEGIN USB_Init 2 */
 
   /* USER CODE END USB_Init 2 */
+
+}
+
+/**
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void)
+{
+
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA1_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA1_Channel4_5_6_7_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel4_5_6_7_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel4_5_6_7_IRQn);
 
 }
 

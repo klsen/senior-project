@@ -40,42 +40,58 @@ void sendCommand(uint8_t cmd, uint8_t *args, uint16_t numArgs, SPI_HandleTypeDef
 	}
 }
 
+uint16_t t;
 void sendColor(uint8_t cmd, uint16_t color, uint16_t numPixels, SPI_HandleTypeDef *hspi) {
 	SPI_DC_LOW();
 	HAL_SPI_Transmit_IT(hspi, &cmd, 1);
 	SPI_DC_HIGH();
-	uint16_t tempColor = color;		// scoping problem maybe
-	SPI_Transmit_IT_1color(hspi, &tempColor, numPixels);
+//	uint16_t tempColor = color;		// scoping problem maybe
+	t = color;
+	__HAL_SPI_DISABLE(hspi);
+	SET_BIT(hspi->Instance->CR1, SPI_CR1_DFF);
+	__HAL_SPI_ENABLE(hspi);
+//	SPI_Transmit_IT_1color(hspi, &tempColor, numPixels);
+	SPI_Transmit_IT_1color(hspi, &t, numPixels);
 }
 
+
+
 void SPI_Transmit_IT_1color(SPI_HandleTypeDef *hspi, uint16_t *pData, uint16_t size) {
-	__HAL_LOCK(hspi);
-	hspi->State = HAL_SPI_STATE_BUSY_TX;
-	hspi->pTxBuffPtr = (uint8_t *)pData;
-	hspi->TxXferSize = size;
-	hspi->TxXferCount = size;
-
-	hspi->pRxBuffPtr  = (uint8_t *)NULL;
-	hspi->RxXferSize  = 0U;
-	hspi->RxXferCount = 0U;
-	hspi->RxISR       = NULL;
-
-	hspi->TxISR = SPI_TxISR_8BIT_circular;
-	__HAL_SPI_ENABLE_IT(hspi, (SPI_IT_TXE | SPI_IT_ERR));
-	if ((hspi->Instance->CR1 & SPI_CR1_SPE) != SPI_CR1_SPE) {
-		__HAL_SPI_ENABLE(hspi);
-	}
-	__HAL_UNLOCK(hspi);
-
-	for(hspi->TxXferCount; hspi->TxXferCount > 0; hspi->TxXferCount--) {
-//		while (!LL_SPI_IsActiveFlag_TXE(hspi));
-		LL_SPI_TransmitData8(hspi, hspi->pTxBuffPtr);
-		hspi->TxXferCount % 2 == 0 ? hspi->pTxBuffPtr++ : hspi->pTxBuffPtr--;
-	}
-
-	while ((hspi->Instance->SR & SPI_FLAG_TXE) == RESET);
-	__HAL_SPI_DISABLE_IT(hspi, (SPI_IT_TXE | SPI_IT_ERR));
-	hspi->State = HAL_SPI_STATE_READY;
+//	uint16_t s = size;
+//	while (s > 0) {
+		HAL_SPI_Transmit_DMA(hspi, pData, size);
+//	HAL_DMA_Start_IT(hspi->hdmatx, pData, (uint32_t)&hspi->Instance->DR, size);
+//	__HAL_SPI_ENABLE_IT(hspi, (SPI_IT_ERR));
+//	SET_BIT(hspi->Instance->CR2, SPI_CR2_TXDMAEN);
+//		s--;
+//	}
+//	__HAL_LOCK(hspi);
+//	hspi->State = HAL_SPI_STATE_BUSY_TX;
+//	hspi->pTxBuffPtr = (uint8_t *)pData;
+//	hspi->TxXferSize = size;
+//	hspi->TxXferCount = size;
+//
+//	hspi->pRxBuffPtr  = (uint8_t *)NULL;
+//	hspi->RxXferSize  = 0U;
+//	hspi->RxXferCount = 0U;
+//	hspi->RxISR       = NULL;
+//
+//	hspi->TxISR = SPI_TxISR_8BIT_circular;
+//	__HAL_SPI_ENABLE_IT(hspi, (SPI_IT_TXE | SPI_IT_ERR));
+//	if ((hspi->Instance->CR1 & SPI_CR1_SPE) != SPI_CR1_SPE) {
+//		__HAL_SPI_ENABLE(hspi);
+//	}
+//	__HAL_UNLOCK(hspi);
+//
+//	for(hspi->TxXferCount; hspi->TxXferCount > 0; hspi->TxXferCount--) {
+////		while (!LL_SPI_IsActiveFlag_TXE(hspi));
+//		LL_SPI_TransmitData8(hspi, hspi->pTxBuffPtr);
+//		hspi->TxXferCount % 2 == 0 ? hspi->pTxBuffPtr++ : hspi->pTxBuffPtr--;
+//	}
+//
+//	while ((hspi->Instance->SR & SPI_FLAG_TXE) == RESET);
+//	__HAL_SPI_DISABLE_IT(hspi, (SPI_IT_TXE | SPI_IT_ERR));
+//	hspi->State = HAL_SPI_STATE_READY;
 }
 
 static void SPI_TxISR_8BIT_circular(struct __SPI_HandleTypeDef *hspi) {
@@ -99,6 +115,9 @@ static void SPI_TxISR_8BIT_circular(struct __SPI_HandleTypeDef *hspi) {
 // dont send request when transfer is ongoing
 void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
 //	if (HAL_GPIO_ReadPin(CS_PORT, CS_PIN) == GPIO_PIN_RESET) SPI_CS_HIGH();	// chip select disable
+	__HAL_SPI_DISABLE(hspi);
+	CLEAR_BIT(hspi->Instance->CR1, SPI_CR1_DFF);
+	__HAL_SPI_ENABLE(hspi);
 }
 
 // array parser heavily based on Adafruit library code
@@ -357,6 +376,7 @@ void fillRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t color, SPI_Ha
 // a big rectangle, but for the whole screen
 void fillScreen(uint16_t color, SPI_HandleTypeDef *hspi) {
 	setAddrWindow(0, 0, WIDTH, HEIGHT, hspi);
+	color = colorFixer(color);
 	color = colorFixer(color);
 	sendColor(ST77XX_RAMWR, color, WIDTH*HEIGHT*2, hspi);
 //	uint16_t bufferSize = WIDTH*HEIGHT/4;

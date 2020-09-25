@@ -15,7 +15,7 @@
 #define TFT_DISPLAY_H
 
 #include "stm32l0xx_hal.h"
-#include "stm32l0xx_ll_spi.h"
+//#include "stm32l0xx_ll_spi.h"
 #include "font.h"			// include for byte array used with character drawing
 #include <string.h>			// for strlen()
 #include <stdlib.h>			// for abs()
