@@ -299,9 +299,11 @@ void drawRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t color, SPI_Ha
 
 // draw a filled rectangle
 void fillRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t color, SPI_HandleTypeDef *hspi) {
-	for (int i = 0; i < h; i++) {
-		drawHLine(x, y+i, w, color, hspi);
-	}
+	setAddrWindow(x, y, w, h, hspi);
+	sendColor(color, w*h, hspi);
+//	for (int i = 0; i < h; i++) {
+//		drawHLine(x, y+i, w, color, hspi);
+//	}
 }
 
 // a big rectangle, but for the whole screen
@@ -312,17 +314,18 @@ void fillScreen(uint16_t color, SPI_HandleTypeDef *hspi) {
 	int i, k;
 	static int j;
 	uint16_t colors[4] = {ST77XX_BLUE, ST77XX_RED, ST77XX_BLACK, ST77XX_WHITE};
+	fillRect(0, 0, WIDTH, HEIGHT, colors[j], hspi);
 //	for (i = 0; i < HEIGHT; i++) {
 //		drawHLine(0, i, WIDTH, colors[j], hspi);
 //	}
 //	for (i = 0; i < WIDTH; i++) {
 //		drawVLine(i, 0, HEIGHT, colors[j], hspi);
 //	}
-	for (i = 0; i < HEIGHT; i++) {
-		for (k = 0; k < WIDTH; k++) {
-			drawPixel(k, i, colors[j], hspi);
-		}
-	}
+//	for (i = 0; i < HEIGHT; i++) {
+//		for (k = 0; k < WIDTH; k++) {
+//			drawPixel(k, i, colors[j], hspi);
+//		}
+//	}
 	j = (j+1)%4;
 }
 
