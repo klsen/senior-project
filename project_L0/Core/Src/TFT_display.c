@@ -12,14 +12,13 @@
 
 #include "TFT_display.h"
 
-static void SPI_TxISR_8BIT_circular(struct __SPI_HandleTypeDef *hspi);
-
 // static variables
 static uint8_t cursorX;			// cursor position for text drawing
 static uint8_t cursorY;
 static uint8_t textSize;		// size of characters
 static uint16_t textColor;		// color of characters
 static uint16_t bg;				// background color
+static uint16_t pixelColor;
 
 // ---- lower level functions ----
 void SPI_CS_LOW() {HAL_GPIO_WritePin(CS_PORT, CS_PIN, GPIO_PIN_RESET);}
@@ -40,75 +39,16 @@ void sendCommand(uint8_t cmd, uint8_t *args, uint16_t numArgs, SPI_HandleTypeDef
 	}
 }
 
-uint16_t t;
 void sendColor(uint8_t cmd, uint16_t color, uint16_t numPixels, SPI_HandleTypeDef *hspi) {
 	SPI_DC_LOW();
 	HAL_SPI_Transmit_IT(hspi, &cmd, 1);
 	SPI_DC_HIGH();
-//	uint16_t tempColor = color;		// scoping problem maybe
-	t = color;
+
+	pixelColor = color;
 	__HAL_SPI_DISABLE(hspi);
 	SET_BIT(hspi->Instance->CR1, SPI_CR1_DFF);
 	__HAL_SPI_ENABLE(hspi);
-//	SPI_Transmit_IT_1color(hspi, &tempColor, numPixels);
-	SPI_Transmit_IT_1color(hspi, &t, numPixels);
-}
-
-
-
-void SPI_Transmit_IT_1color(SPI_HandleTypeDef *hspi, uint16_t *pData, uint16_t size) {
-//	uint16_t s = size;
-//	while (s > 0) {
-		HAL_SPI_Transmit_DMA(hspi, pData, size);
-//	HAL_DMA_Start_IT(hspi->hdmatx, pData, (uint32_t)&hspi->Instance->DR, size);
-//	__HAL_SPI_ENABLE_IT(hspi, (SPI_IT_ERR));
-//	SET_BIT(hspi->Instance->CR2, SPI_CR2_TXDMAEN);
-//		s--;
-//	}
-//	__HAL_LOCK(hspi);
-//	hspi->State = HAL_SPI_STATE_BUSY_TX;
-//	hspi->pTxBuffPtr = (uint8_t *)pData;
-//	hspi->TxXferSize = size;
-//	hspi->TxXferCount = size;
-//
-//	hspi->pRxBuffPtr  = (uint8_t *)NULL;
-//	hspi->RxXferSize  = 0U;
-//	hspi->RxXferCount = 0U;
-//	hspi->RxISR       = NULL;
-//
-//	hspi->TxISR = SPI_TxISR_8BIT_circular;
-//	__HAL_SPI_ENABLE_IT(hspi, (SPI_IT_TXE | SPI_IT_ERR));
-//	if ((hspi->Instance->CR1 & SPI_CR1_SPE) != SPI_CR1_SPE) {
-//		__HAL_SPI_ENABLE(hspi);
-//	}
-//	__HAL_UNLOCK(hspi);
-//
-//	for(hspi->TxXferCount; hspi->TxXferCount > 0; hspi->TxXferCount--) {
-////		while (!LL_SPI_IsActiveFlag_TXE(hspi));
-//		LL_SPI_TransmitData8(hspi, hspi->pTxBuffPtr);
-//		hspi->TxXferCount % 2 == 0 ? hspi->pTxBuffPtr++ : hspi->pTxBuffPtr--;
-//	}
-//
-//	while ((hspi->Instance->SR & SPI_FLAG_TXE) == RESET);
-//	__HAL_SPI_DISABLE_IT(hspi, (SPI_IT_TXE | SPI_IT_ERR));
-//	hspi->State = HAL_SPI_STATE_READY;
-}
-
-static void SPI_TxISR_8BIT_circular(struct __SPI_HandleTypeDef *hspi) {
-//	*(__IO uint8_t *)&hspi->Instance->DR = (*hspi->pTxBuffPtr);
-//	hspi->TxXferCount % 2 == 0 ? hspi->pTxBuffPtr++ : hspi->pTxBuffPtr--;
-//	hspi->TxXferCount--;
-//
-//	if (hspi->TxXferCount == 0) {
-//		while ((hspi->Instance->SR & SPI_FLAG_TXE) == RESET);
-//		__HAL_SPI_DISABLE_IT(hspi, (SPI_IT_TXE | SPI_IT_ERR));
-//		hspi->State = HAL_SPI_STATE_READY;
-//#if (USE_HAL_SPI_REGISTER_CALLBACKS == 1U)
-//		hspi->TxCpltCallback(hspi);
-//#else
-//		HAL_SPI_TxCpltCallback(hspi);
-//#endif /* USE_HAL_SPI_REGISTER_CALLBACKS */
-//	}
+	HAL_SPI_Transmit_DMA(hspi, &pixelColor, numPixels);
 }
 
 // using only for sending data, but not commands
