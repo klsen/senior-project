@@ -154,7 +154,7 @@ uint16_t colorFixer(uint16_t);		// helper function involved with 16-bit pixel da
 void drawPixel(uint8_t x, uint8_t y, uint16_t color, SPI_HandleTypeDef* hspi);
 void drawHLine(uint8_t x, uint8_t y, uint8_t size, uint16_t color, SPI_HandleTypeDef* hspi);
 void drawVLine(uint8_t x, uint8_t y, uint8_t size, uint16_t color, SPI_HandleTypeDef* hspi);
-void drawBuffer(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t *buffer, uint16_t bufferSize, SPI_HandleTypeDef *hspi);
+void drawBuffer(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t *buffer, uint16_t bufferSize, SPI_HandleTypeDef *hspi);
 // ---- end of base functions ----
 
 // ---- basic shapes and lines ----

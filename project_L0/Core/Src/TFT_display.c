@@ -59,6 +59,7 @@ void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
 //	if (HAL_GPIO_ReadPin(CS_PORT, CS_PIN) == GPIO_PIN_RESET) SPI_CS_HIGH();	// chip select disable
 	__HAL_SPI_DISABLE(hspi);
 	CLEAR_BIT(hspi->Instance->CR1, SPI_CR1_DFF);
+	CLEAR_BIT(hspi->hdmatx->Instance->CCR, DMA_CCR_MINC);
 	__HAL_SPI_ENABLE(hspi);
 }
 
@@ -235,14 +236,34 @@ void drawVLine(uint8_t x, uint8_t y, uint8_t size, uint16_t color, SPI_HandleTyp
 }
 
 // draws on a specific region with input 16-bit buffer
-void drawBuffer(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t *buffer, uint16_t bufferSize, SPI_HandleTypeDef *hspi) {
+uint16_t b[500];
+void drawBuffer(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t *buffer, uint16_t bufferSize, SPI_HandleTypeDef *hspi) {
 	if (x+w > WIDTH || y+h > HEIGHT) return;
 
 	// also don't call this with buffer size too big bc there's not enough ram for all pixels of display
-	if (bufferSize > 10240) return;			// about 1/2 of total system ram
+//	if (bufferSize > 10240) return;			// about 1/2 of total system ram
 
 	setAddrWindow(x, y, w, h, hspi);
-	sendCommand(ST77XX_RAMWR, buffer, bufferSize*2, hspi);
+//	sendCommand(ST77XX_RAMWR, buffer, bufferSize*2, hspi);
+
+	SPI_DC_LOW();
+	uint8_t cmd = ST77XX_RAMWR;
+	HAL_SPI_Transmit(hspi, &cmd, 1, 1000);
+	SPI_DC_HIGH();
+
+	int i;
+	for(i = 0; i < bufferSize; i++) {
+		buffer[i] = colorFixer(buffer[i]);
+//		b[i] = colorFixer(buffer[i]);
+	}
+
+	__HAL_SPI_DISABLE(hspi);
+	SET_BIT(hspi->Instance->CR1, SPI_CR1_DFF);
+	while(HAL_DMA_GetState(hspi->hdmatx) == HAL_DMA_STATE_BUSY);
+	SET_BIT(hspi->hdmatx->Instance->CCR, DMA_CCR_MINC);
+	__HAL_SPI_ENABLE(hspi);
+	HAL_SPI_Transmit_DMA(hspi, buffer, bufferSize);
+//	HAL_SPI_Transmit_DMA(hspi, b, bufferSize);
 }
 // ---- end of base graphics functions
 
@@ -308,13 +329,13 @@ void fillRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t color, SPI_Ha
 
 // a big rectangle, but for the whole screen
 void fillScreen(uint16_t color, SPI_HandleTypeDef *hspi) {
-//	setAddrWindow(0, 0, WIDTH, HEIGHT, hspi);
-//	sendColor(color, WIDTH*HEIGHT, hspi);
+	setAddrWindow(0, 0, WIDTH, HEIGHT, hspi);
+	sendColor(color, WIDTH*HEIGHT, hspi);
 
 	int i, k;
 	static int j;
-	uint16_t colors[4] = {ST77XX_BLUE, ST77XX_RED, ST77XX_BLACK, ST77XX_WHITE};
-	fillRect(0, 0, WIDTH, HEIGHT, colors[j], hspi);
+//	uint16_t colors[4] = {ST77XX_BLUE, ST77XX_RED, ST77XX_BLACK, ST77XX_WHITE};
+//	fillRect(0, 0, WIDTH, HEIGHT, colors[j], hspi);
 //	for (i = 0; i < HEIGHT; i++) {
 //		drawHLine(0, i, WIDTH, colors[j], hspi);
 //	}

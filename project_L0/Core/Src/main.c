@@ -201,6 +201,11 @@ int main(void)
 			isTimerDone = isAlarmDone = 0;
 		}
 
+		HAL_GPIO_WritePin(LED1_PORT, LED1_PIN, GPIO_PIN_SET);
+//		SET_BIT(hspi2.hdmatx->Instance->CCR, DMA_CCR_MINC);
+		if(((hspi2.hdmatx->Instance->CCR) & DMA_CCR_MINC) == DMA_CCR_MINC) HAL_GPIO_WritePin(LED1_PORT, LED1_PIN, GPIO_PIN_SET);
+		else HAL_GPIO_WritePin(LED1_PORT, LED1_PIN, GPIO_PIN_RESET);
+
 //		HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);		// has the same behavior as with __WFI()
 
 		// wait for interrupt instruction. CPU goes to sleep mode (listed as "sleep mode" by ST as one of their low-power modes)
