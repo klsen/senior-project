@@ -39,8 +39,10 @@ void sendCommand(uint8_t cmd, uint8_t *args, uint16_t numArgs, SPI_HandleTypeDef
 	}
 }
 
-void sendColor(uint8_t cmd, uint16_t color, uint16_t numPixels, SPI_HandleTypeDef *hspi) {
+// no need to double pixel count since we're going into 16-bit mode
+void sendColor(uint16_t color, uint16_t numPixels, SPI_HandleTypeDef *hspi) {
 	SPI_DC_LOW();
+	uint8_t cmd = ST77XX_RAMWR;
 	HAL_SPI_Transmit_IT(hspi, &cmd, 1);
 	SPI_DC_HIGH();
 
@@ -217,12 +219,7 @@ void drawHLine(uint8_t x, uint8_t y, uint8_t size, uint16_t color, SPI_HandleTyp
 	if ((y > HEIGHT) || (y < 0)) return;	// don't draw if y is out of bounds
 
 	setAddrWindow(x, y, size, 1, hspi);
-	uint16_t colors[size];
-	for (int i = 0; i < size; i++) {
-		colors[i] = colorFixer(color);
-	}
-
-	sendCommand(ST77XX_RAMWR, colors, size*2, hspi);
+	sendColor(color, size, hspi);
 }
 
 // draws a vertical line. coordinates are for top point
@@ -235,12 +232,7 @@ void drawVLine(uint8_t x, uint8_t y, uint8_t size, uint16_t color, SPI_HandleTyp
 	if ((x > WIDTH) || (x < 0)) return;		// don't draw if x is out of bounds
 
 	setAddrWindow(x, y, 1, size, hspi);
-	uint16_t colors[size];
-	for (int i = 0; i < size; i++) {
-		colors[i] = colorFixer(color);
-	}
-
-	sendCommand(ST77XX_RAMWR, colors, size*2, hspi);
+	sendColor(color, size, hspi);
 }
 
 // draws on a specific region with input 16-bit buffer
@@ -315,21 +307,19 @@ void fillRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t color, SPI_Ha
 
 // a big rectangle, but for the whole screen
 void fillScreen(uint16_t color, SPI_HandleTypeDef *hspi) {
-	setAddrWindow(0, 0, WIDTH, HEIGHT, hspi);
-	color = colorFixer(color);
-	color = colorFixer(color);
-	sendColor(ST77XX_RAMWR, color, WIDTH*HEIGHT*2, hspi);
-//	uint16_t bufferSize = WIDTH*HEIGHT/4;
-//	uint16_t buffer[bufferSize];
-//	int i;
-//	for (i = 0; i < bufferSize; i++) {
-//		buffer[i] = colorFixer(color);
+//	setAddrWindow(0, 0, WIDTH, HEIGHT, hspi);
+//	sendColor(color, WIDTH*HEIGHT, hspi);
+
+	int i;
+	static int j;
+	uint16_t colors[4] = {ST77XX_BLUE, ST77XX_RED, ST77XX_BLACK, ST77XX_WHITE};
+//	for (i = 0; i < HEIGHT; i++) {
+//		drawHLine(0, i, WIDTH, colors[j], hspi);
 //	}
-//
-//	// divided into 4 parts, since system ram is not big enough
-//	for (i = 0; i < 4; i++) {
-//		drawBuffer(0, HEIGHT/4*i, WIDTH, HEIGHT/4, buffer, bufferSize, hspi);
-//	}
+	for (i = 0; i < WIDTH; i++) {
+		drawVLine(i, 0, HEIGHT, colors[j], hspi);
+	}
+	j = (j+1)%4;
 }
 
 void clearScreen(uint16_t backgroundColor, SPI_HandleTypeDef *hspi) {
