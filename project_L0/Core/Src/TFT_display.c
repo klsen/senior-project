@@ -18,7 +18,7 @@ static uint8_t cursorY;
 static uint8_t textSize;		// size of characters
 static uint16_t textColor;		// color of characters
 static uint16_t bg;				// background color
-static uint16_t pixelColor;
+static uint16_t pixelColor;		// for use in DMA functions
 
 // ---- lower level functions ----
 void SPI_CS_LOW() {HAL_GPIO_WritePin(CS_PORT, CS_PIN, GPIO_PIN_RESET);}
@@ -205,8 +205,7 @@ void drawPixel(uint8_t x, uint8_t y, uint16_t color, SPI_HandleTypeDef *hspi) {
 	if ((x > WIDTH) || (x < 0) || (y > HEIGHT) || (y < 0)) return;
 
 	setAddrWindow(x, y, 1, 1, hspi);
-	uint16_t tempColor = colorFixer(color);		// else we're using address of something passed by value
-	sendCommand(ST77XX_RAMWR, &tempColor, 2, hspi);
+	sendColor(color, 1, hspi);
 }
 
 // draw a horizontal line. coordinates are for left point
@@ -310,14 +309,19 @@ void fillScreen(uint16_t color, SPI_HandleTypeDef *hspi) {
 //	setAddrWindow(0, 0, WIDTH, HEIGHT, hspi);
 //	sendColor(color, WIDTH*HEIGHT, hspi);
 
-	int i;
+	int i, k;
 	static int j;
 	uint16_t colors[4] = {ST77XX_BLUE, ST77XX_RED, ST77XX_BLACK, ST77XX_WHITE};
 //	for (i = 0; i < HEIGHT; i++) {
 //		drawHLine(0, i, WIDTH, colors[j], hspi);
 //	}
-	for (i = 0; i < WIDTH; i++) {
-		drawVLine(i, 0, HEIGHT, colors[j], hspi);
+//	for (i = 0; i < WIDTH; i++) {
+//		drawVLine(i, 0, HEIGHT, colors[j], hspi);
+//	}
+	for (i = 0; i < HEIGHT; i++) {
+		for (k = 0; k < WIDTH; k++) {
+			drawPixel(k, i, colors[j], hspi);
+		}
 	}
 	j = (j+1)%4;
 }
