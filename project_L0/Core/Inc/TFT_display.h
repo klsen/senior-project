@@ -127,7 +127,7 @@ void SPI_DC_HIGH();
 // sendCommand, TFT_startup, displayInit, and setAddrWindow are heavily based code from Adafruit's Arduino library
 // sends ST77XX instruction and its necessary arguments
 void sendCommand(uint8_t cmd, uint8_t* args, uint16_t numArgs, SPI_HandleTypeDef *hspi);
-void sendColor(uint16_t color, uint16_t numPixels, SPI_HandleTypeDef *hspi);
+void sendColor(uint16_t *colorPtr, uint16_t numPixels, uint8_t isMultiColor, SPI_HandleTypeDef *hspi);
 
 // runs initialization for display. contains an array with a list of arguments for initialization
 void TFT_startup(SPI_HandleTypeDef *hspi);

@@ -19,6 +19,7 @@ static uint8_t textSize;		// size of characters
 static uint16_t textColor;		// color of characters
 static uint16_t bg;				// background color
 static uint16_t pixelColor;		// for use in DMA functions
+uint16_t b[500];
 
 // ---- lower level functions ----
 void SPI_CS_LOW() {HAL_GPIO_WritePin(CS_PORT, CS_PIN, GPIO_PIN_RESET);}
@@ -40,30 +41,51 @@ void sendCommand(uint8_t cmd, uint8_t *args, uint16_t numArgs, SPI_HandleTypeDef
 }
 
 // no need to double pixel count since we're going into 16-bit mode
-void sendColor(uint16_t color, uint16_t numPixels, SPI_HandleTypeDef *hspi) {
+void sendColor(uint16_t *colorPtr, uint16_t numPixels, uint8_t isMultiColor, SPI_HandleTypeDef *hspi) {
+	if (numPixels == 0) return; // !!!!!!!!!!!
 	SPI_DC_LOW();
 	uint8_t cmd = ST77XX_RAMWR;
 	HAL_SPI_Transmit(hspi, &cmd, 1, 1000);
 	SPI_DC_HIGH();
 
-	pixelColor = color;
-//	while(HAL_SPI_GetState(hspi) != HAL_SPI_STATE_READY) {}
-//	while(hspi->hdmatx->State != HAL_DMA_STATE_READY) {}
 //	while((hspi->Instance->SR & SPI_SR_TXE) == 0);
 //	while((hspi->Instance->SR & SPI_SR_BSY) == SPI_SR_BSY);
-
 	__HAL_SPI_DISABLE(hspi);
 	SET_BIT(hspi->Instance->CR1, SPI_CR1_DFF);
-	CLEAR_BIT(hspi->hdmatx->Instance->CCR, DMA_CCR_MINC);
-//	SET_BIT(hspi->hdmatx->Instance->CCR, DMA_CCR_MINC);
 	__HAL_SPI_ENABLE(hspi);
-	HAL_SPI_Transmit_DMA(hspi, &pixelColor, numPixels);
-//	SET_BIT(hspi->hdmatx->Instance->CCR, DMA_CCR_MINC);
-//	while(HAL_SPI_GetState(hspi) != HAL_SPI_STATE_READY) {}
-//	while(hspi->hdmatx->State != HAL_DMA_STATE_READY) {}
-//	while((hspi->Instance->SR & SPI_SR_TXE) == 0);
-//	while((hspi->Instance->SR & SPI_SR_BSY) == SPI_SR_BSY);
-//	SET_BIT(hspi->hdmatx->Instance->CCR, DMA_CCR_MINC);
+
+	if (!isMultiColor) {
+		pixelColor = *colorPtr;
+		CLEAR_BIT(hspi->hdmatx->Instance->CCR, DMA_CCR_MINC);
+		HAL_SPI_Transmit_DMA(hspi, &pixelColor, numPixels);
+	} else {
+//		for(int i = 0; i < numPixels; i++) {
+//			b[i] = colorFixer(colorPtr[i]);
+//		}
+//		SET_BIT(hspi->hdmatx->Instance->CCR, DMA_CCR_MINC);
+//		hspi->hdmatx->Init.MemInc = DMA_MINC_ENABLE;
+//		HAL_SPI_Transmit_DMA(hspi, &b, numPixels);
+	}
+
+//	pixelColor = *colorPtr;
+////	pixelColor = color;
+////	while(HAL_SPI_GetState(hspi) != HAL_SPI_STATE_READY) {}
+////	while(hspi->hdmatx->State != HAL_DMA_STATE_READY) {}
+////	while((hspi->Instance->SR & SPI_SR_TXE) == 0);
+////	while((hspi->Instance->SR & SPI_SR_BSY) == SPI_SR_BSY);
+//
+//	__HAL_SPI_DISABLE(hspi);
+//	SET_BIT(hspi->Instance->CR1, SPI_CR1_DFF);
+//	CLEAR_BIT(hspi->hdmatx->Instance->CCR, DMA_CCR_MINC);
+////	SET_BIT(hspi->hdmatx->Instance->CCR, DMA_CCR_MINC);
+//	__HAL_SPI_ENABLE(hspi);
+//	HAL_SPI_Transmit_DMA(hspi, &pixelColor, numPixels);
+////	SET_BIT(hspi->hdmatx->Instance->CCR, DMA_CCR_MINC);
+////	while(HAL_SPI_GetState(hspi) != HAL_SPI_STATE_READY) {}
+////	while(hspi->hdmatx->State != HAL_DMA_STATE_READY) {}
+////	while((hspi->Instance->SR & SPI_SR_TXE) == 0);
+////	while((hspi->Instance->SR & SPI_SR_BSY) == SPI_SR_BSY);
+////	SET_BIT(hspi->hdmatx->Instance->CCR, DMA_CCR_MINC);
 }
 
 // using only for sending data, but not commands
@@ -72,6 +94,7 @@ void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
 //	if (HAL_GPIO_ReadPin(CS_PORT, CS_PIN) == GPIO_PIN_RESET) SPI_CS_HIGH();	// chip select disable
 	__HAL_SPI_DISABLE(hspi);
 	CLEAR_BIT(hspi->Instance->CR1, SPI_CR1_DFF);
+	hspi->Init.DataSize = SPI_DATASIZE_8BIT;
 //	SET_BIT(hspi->hdmatx->Instance->CCR, DMA_CCR_MINC);
 //	CLEAR_BIT(hspi->hdmatx->Instance->CCR, DMA_CCR_MINC);
 	__HAL_SPI_ENABLE(hspi);
@@ -220,7 +243,10 @@ void drawPixel(uint8_t x, uint8_t y, uint16_t color, SPI_HandleTypeDef *hspi) {
 	if ((x > WIDTH) || (x < 0) || (y > HEIGHT) || (y < 0)) return;
 
 	setAddrWindow(x, y, 1, 1, hspi);
-	sendColor(color, 1, hspi);
+//	uint16_t tempColor = colorFixer(color);
+//	sendCommand(ST77XX_RAMWR, &tempColor, 1, hspi);
+	uint16_t c = color;
+	sendColor(&c, 1, 0, hspi);
 }
 
 // draw a horizontal line. coordinates are for left point
@@ -233,7 +259,8 @@ void drawHLine(uint8_t x, uint8_t y, uint8_t size, uint16_t color, SPI_HandleTyp
 	if ((y > HEIGHT) || (y < 0)) return;	// don't draw if y is out of bounds
 
 	setAddrWindow(x, y, size, 1, hspi);
-	sendColor(color, size, hspi);
+	uint16_t c = color;
+	sendColor(&c, size, 0, hspi);
 }
 
 // draws a vertical line. coordinates are for top point
@@ -246,64 +273,80 @@ void drawVLine(uint8_t x, uint8_t y, uint8_t size, uint16_t color, SPI_HandleTyp
 	if ((x > WIDTH) || (x < 0)) return;		// don't draw if x is out of bounds
 
 	setAddrWindow(x, y, 1, size, hspi);
-	sendColor(color, size, hspi);
+	uint16_t c = color;
+	sendColor(&c, size, 0, hspi);
+//	sendColor(color, size, 0, hspi);
 }
 
 // draws on a specific region with input 16-bit buffer
-uint16_t b[500];
 void drawBuffer(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t *buffer, uint16_t bufferSize, SPI_HandleTypeDef *hspi) {
 	if (x+w > WIDTH || y+h > HEIGHT) return;
 
 	// also don't call this with buffer size too big bc there's not enough ram for all pixels of display
 //	if (bufferSize > 10240) return;			// about 1/2 of total system ram
-
 	setAddrWindow(x, y, w, h, hspi);
 //	sendCommand(ST77XX_RAMWR, buffer, bufferSize*2, hspi);
+//	sendColor(buffer, bufferSize, 1, hspi);
 
 	SPI_DC_LOW();
 	uint8_t cmd = ST77XX_RAMWR;
 	HAL_SPI_Transmit(hspi, &cmd, 1, 1000);
 	SPI_DC_HIGH();
 
-	int i;
-	for(i = 0; i < bufferSize; i++) {
-//		buffer[i] = colorFixer(buffer[i]);
-		b[i] = colorFixer(buffer[i]);
-	}
-//
-//	while((hspi->Instance->SR & SPI_SR_TXE) == 0);
-//	while((hspi->Instance->SR & SPI_SR_BSY) == SPI_SR_BSY);
-//	while(HAL_SPI_GetState(hspi) != HAL_SPI_STATE_READY) {}
-//	while(hspi->hdmatx->State != HAL_DMA_STATE_READY) {}
-//	while((hspi->Instance->SR & SPI_SR_TXE) == 0);
-//	while((hspi->Instance->SR & SPI_SR_BSY) == SPI_SR_BSY);
 	__HAL_SPI_DISABLE(hspi);
 	SET_BIT(hspi->Instance->CR1, SPI_CR1_DFF);
-//	__HAL_DMA_DISABLE(hspi->hdmatx);
-//	while(HAL_DMA_GetState(hspi->hdmatx) == HAL_DMA_STATE_BUSY);
-//	while (HAL_SPI_GetState(hspi) == HAL_SPI_STATE_BUSY_TX);
-//	HAL_SPI_DMAPause(hspi);
-//	HAL_SPI_DMAResume(hspi);
-//	CLEAR_BIT(hspi->hdmatx->Instance->CCR, DMA_CCR_MINC);
-	SET_BIT(hspi->hdmatx->Instance->CCR, DMA_CCR_MINC);
-//	else HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);
-//	__HAL_DMA_ENABLE(hspi->hdmatx);
+	hspi->Init.DataSize = SPI_DATASIZE_16BIT;
 	__HAL_SPI_ENABLE(hspi);
-//	HAL_SPI_Transmit_DMA(hspi, buffer, bufferSize);
-	SET_BIT(hspi->hdmatx->Instance->CCR, DMA_CCR_MINC);
-	if((hspi->hdmatx->Instance->CCR & DMA_CCR_MINC) == DMA_CCR_MINC) HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);
-	HAL_SPI_Transmit_DMA(hspi, b, bufferSize);
-//	while (HAL_SPI_GetState(hspi) == HAL_SPI_STATE_BUSY_TX);
-//	CLEAR_BIT(hspi->hdmatx->Instance->CCR, DMA_CCR_MINC);
-//	sendCommand(ST77XX_RAMWR, buffer, bufferSize*2, hspi);
-//	sendCommand(ST77XX_RAMWR, b, bufferSize*2, hspi);
+
+	for(int i = 0; i < bufferSize; i++) {
+		buffer[i] = colorFixer(buffer[i]);
+	}
+	HAL_SPI_Transmit_IT(hspi, buffer, bufferSize);
+
+//	SPI_DC_LOW();
+//	uint8_t cmd = ST77XX_RAMWR;
+//	HAL_SPI_Transmit(hspi, &cmd, 1, 1000);
+//	SPI_DC_HIGH();
+//
+//	int i;
+//	for(i = 0; i < bufferSize; i++) {
+////		buffer[i] = colorFixer(buffer[i]);
+//		b[i] = colorFixer(buffer[i]);
+//	}
+////
+////	while((hspi->Instance->SR & SPI_SR_TXE) == 0);
+////	while((hspi->Instance->SR & SPI_SR_BSY) == SPI_SR_BSY);
+////	while(HAL_SPI_GetState(hspi) != HAL_SPI_STATE_READY) {}
+////	while(hspi->hdmatx->State != HAL_DMA_STATE_READY) {}
+////	while((hspi->Instance->SR & SPI_SR_TXE) == 0);
+////	while((hspi->Instance->SR & SPI_SR_BSY) == SPI_SR_BSY);
+//	__HAL_SPI_DISABLE(hspi);
+//	SET_BIT(hspi->Instance->CR1, SPI_CR1_DFF);
+////	__HAL_DMA_DISABLE(hspi->hdmatx);
+////	while(HAL_DMA_GetState(hspi->hdmatx) == HAL_DMA_STATE_BUSY);
+////	while (HAL_SPI_GetState(hspi) == HAL_SPI_STATE_BUSY_TX);
+////	HAL_SPI_DMAPause(hspi);
+////	HAL_SPI_DMAResume(hspi);
+////	CLEAR_BIT(hspi->hdmatx->Instance->CCR, DMA_CCR_MINC);
 //	SET_BIT(hspi->hdmatx->Instance->CCR, DMA_CCR_MINC);
-//	while(HAL_SPI_GetState(hspi) != HAL_SPI_STATE_READY) {}
-//	while(hspi->hdmatx->State != HAL_DMA_STATE_READY) {}
-//	while((hspi->Instance->SR & SPI_SR_TXE) == 0);
-//	while((hspi->Instance->SR & SPI_SR_BSY) == SPI_SR_BSY);
+////	else HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);
+////	__HAL_DMA_ENABLE(hspi->hdmatx);
+//	__HAL_SPI_ENABLE(hspi);
+////	HAL_SPI_Transmit_DMA(hspi, buffer, bufferSize);
 //	SET_BIT(hspi->hdmatx->Instance->CCR, DMA_CCR_MINC);
-//	CLEAR_BIT(hspi->hdmatx->Instance->CCR, DMA_CCR_MINC);
+//	if((hspi->hdmatx->Instance->CCR & DMA_CCR_MINC) == DMA_CCR_MINC) HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);
+//	HAL_SPI_Transmit_DMA(hspi, b, bufferSize);
+////	while (HAL_SPI_GetState(hspi) == HAL_SPI_STATE_BUSY_TX);
+////	CLEAR_BIT(hspi->hdmatx->Instance->CCR, DMA_CCR_MINC);
+////	sendCommand(ST77XX_RAMWR, buffer, bufferSize*2, hspi);
+////	sendCommand(ST77XX_RAMWR, b, bufferSize*2, hspi);
+////	SET_BIT(hspi->hdmatx->Instance->CCR, DMA_CCR_MINC);
+////	while(HAL_SPI_GetState(hspi) != HAL_SPI_STATE_READY) {}
+////	while(hspi->hdmatx->State != HAL_DMA_STATE_READY) {}
+////	while((hspi->Instance->SR & SPI_SR_TXE) == 0);
+////	while((hspi->Instance->SR & SPI_SR_BSY) == SPI_SR_BSY);
+////	SET_BIT(hspi->hdmatx->Instance->CCR, DMA_CCR_MINC);
+////	CLEAR_BIT(hspi->hdmatx->Instance->CCR, DMA_CCR_MINC);
 }
 // ---- end of base graphics functions
 
@@ -361,7 +404,8 @@ void drawRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t color, SPI_Ha
 // draw a filled rectangle
 void fillRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t color, SPI_HandleTypeDef *hspi) {
 	setAddrWindow(x, y, w, h, hspi);
-	sendColor(color, w*h, hspi);
+	uint16_t c = color;
+	sendColor(&c, w*h, 0, hspi);
 //	for (int i = 0; i < h; i++) {
 //		drawHLine(x, y+i, w, color, hspi);
 //	}
@@ -376,7 +420,8 @@ void fillRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t color, SPI_Ha
 // a big rectangle, but for the whole screen
 void fillScreen(uint16_t color, SPI_HandleTypeDef *hspi) {
 	setAddrWindow(0, 0, WIDTH, HEIGHT, hspi);
-	sendColor(color, WIDTH*HEIGHT, hspi);
+	uint16_t c = color;
+	sendColor(&c, WIDTH*HEIGHT, 0, hspi);
 
 //	int i, k;
 //	static int j;
