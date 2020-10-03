@@ -785,7 +785,7 @@ void drawClock(struct dates *d, struct times *t, SPI_HandleTypeDef *hspi) {
 	// drawing date
 	setTextSize(1);
 	sprintf(str, "%s %d %04d", monthNames[d->month], d->date, d->yr);
-	drawCenteredTextWithPadding(WIDTH/2, 84, 11, str, hspi);
+	drawCenteredTextWithPadding(WIDTH/2, 84, 12, str, hspi);
 
 	// drawing weekday
 	drawCenteredTextWithPadding(WIDTH/2, 92, 9, weekdayNames[d->weekday], hspi);

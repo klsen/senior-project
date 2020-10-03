@@ -15512,12 +15512,12 @@ void drawClock(struct dates *d, struct times *t, SPI_HandleTypeDef *hspi) {
  8006840:	9300      	str	r3, [sp, #0]
  8006842:	0023      	movs	r3, r4
  8006844:	f005 f928 	bl	800ba98 <siprintf>
-	drawCenteredTextWithPadding(WIDTH/2, 84, 11, str, hspi);
+	drawCenteredTextWithPadding(WIDTH/2, 84, 12, str, hspi);
  8006848:	197a      	adds	r2, r7, r5
  800684a:	687b      	ldr	r3, [r7, #4]
  800684c:	9300      	str	r3, [sp, #0]
  800684e:	0013      	movs	r3, r2
- 8006850:	220b      	movs	r2, #11
+ 8006850:	220c      	movs	r2, #12
  8006852:	2154      	movs	r1, #84	; 0x54
  8006854:	2040      	movs	r0, #64	; 0x40
  8006856:	f7fc f9d5 	bl	8002c04 <drawCenteredTextWithPadding>
