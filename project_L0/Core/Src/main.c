@@ -178,7 +178,7 @@ int main(void)
 	runADCSampler(&htim22);
 	setDisplayBacklight(50, &htim3);
 //	HAL_SuspendTick();
-//	HAL_GPIO_WritePin(LED2_PORT, LED2_PIN, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(LED1_PORT, LED1_PIN, GPIO_PIN_SET);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -200,11 +200,6 @@ int main(void)
 			updateDisplay(&hrtc, &hspi2);
 			isTimerDone = isAlarmDone = 0;
 		}
-
-//		HAL_GPIO_WritePin(LED1_PORT, LED1_PIN, GPIO_PIN_SET);
-//		SET_BIT(hspi2.hdmatx->Instance->CCR, DMA_CCR_MINC);
-		if(((hspi2.hdmatx->Instance->CCR) & DMA_CCR_MINC) == DMA_CCR_MINC) HAL_GPIO_WritePin(LED1_PORT, LED1_PIN, GPIO_PIN_RESET);
-		else HAL_GPIO_WritePin(LED1_PORT, LED1_PIN, GPIO_PIN_SET);
 
 //		HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);		// has the same behavior as with __WFI()
 

@@ -67,22 +67,22 @@ void exitStopMode();
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define ADC_DIV_EN_Pin GPIO_PIN_1
-#define ADC_DIV_EN_GPIO_Port GPIOA
-#define PS_EN_Pin GPIO_PIN_2
-#define PS_EN_GPIO_Port GPIOA
-#define MOTOR_EN_Pin GPIO_PIN_4
-#define MOTOR_EN_GPIO_Port GPIOA
-#define LED1_Pin GPIO_PIN_5
-#define LED1_GPIO_Port GPIOA
-#define LED2_Pin GPIO_PIN_6
-#define LED2_GPIO_Port GPIOA
-#define LED3_Pin GPIO_PIN_7
-#define LED3_GPIO_Port GPIOA
-#define LCD_DC_Pin GPIO_PIN_14
-#define LCD_DC_GPIO_Port GPIOB
-#define LCD_RESET_Pin GPIO_PIN_7
-#define LCD_RESET_GPIO_Port GPIOC
+#define ADC_DIV_EN_Pin 			GPIO_PIN_1
+#define ADC_DIV_EN_GPIO_Port 	GPIOA
+#define PS_EN_Pin 				GPIO_PIN_2
+#define PS_EN_GPIO_Port 		GPIOA
+#define MOTOR_EN_Pin 			GPIO_PIN_4
+#define MOTOR_EN_GPIO_Port 		GPIOA
+#define LED1_Pin 				GPIO_PIN_5
+#define LED1_GPIO_Port 			GPIOA
+#define LED2_Pin 				GPIO_PIN_6
+#define LED2_GPIO_Port 			GPIOA
+#define LED3_Pin 				GPIO_PIN_7
+#define LED3_GPIO_Port 			GPIOA
+#define LCD_DC_Pin 				GPIO_PIN_14
+#define LCD_DC_GPIO_Port 		GPIOB
+#define LCD_RESET_Pin 			GPIO_PIN_7
+#define LCD_RESET_GPIO_Port 	GPIOC
 /* USER CODE BEGIN Private defines */
 TIM_HandleTypeDef htim6;		// used to run software debouncing timer. global since it's called in callback
 /* USER CODE END Private defines */
