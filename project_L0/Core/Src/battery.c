@@ -39,8 +39,8 @@ void batteryManager(ADC_HandleTypeDef *hadc, SPI_HandleTypeDef *hspi, TIM_Handle
 //			HAL_GPIO_WritePin(POWER_SUPPLY_ENABLE_PORT, POWER_SUPPLY_ENABLE_PIN, GPIO_PIN_SET);
 //			bState = batteryNormal;
 //		}
-
-		drawBattery(battPercentage, hspi);
+//
+//		drawBattery(battPercentage, hspi);
 	}
 }
 

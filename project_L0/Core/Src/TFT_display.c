@@ -449,6 +449,13 @@ void drawTextAt(uint8_t x, uint8_t y, const char *str, SPI_HandleTypeDef *hspi) 
 	}
 }
 
+void drawTextWithPadding(uint16_t x, uint16_t y, uint8_t maxLength, const char *str, SPI_HandleTypeDef *hspi) {
+	uint16_t boxW = getTextSize()*6*maxLength;		// TODO: use fontsize variable
+	uint16_t boxH = getTextSize()*8*maxLength;
+	fillRect(x, y, boxW, boxH, bg, hspi);
+	drawTextAt(x, y, str, hspi);
+}
+
 // draws text centered on an x coordinate. y is upper bound of box
 void drawCenteredText(uint8_t x_center, uint8_t y, const char *str, SPI_HandleTypeDef *hspi) {
 	uint8_t strSize = strlen(str);
@@ -500,5 +507,41 @@ void setTextSize(uint8_t size) {textSize = size;}
 void setTextColor(uint16_t color) {textColor = color;}
 uint16_t getBackgroundColor() {return bg;}
 uint16_t getTextColor() {return textColor;}
+uint8_t getTextSize() {return textSize;}
 // ---- end of getters and setters ----
+
+// ---- helpers ----
+// no one uses them widepeeposad
+uint16_t leftToCenteredText(uint16_t x, const char *str) {
+	int strLength = strlen(str);
+	int xCentered = x + strLength/2*6;			// TODO: use fontsize variable
+
+	// TODO: use displayWidth variable
+	if (xCentered > 0 && xCentered < WIDTH) return xCentered;
+	else return 0;
+}
+
+uint16_t centeredToLeftText(uint16_t x, const char *str) {
+	int strLength = strlen(str);
+	int xLeft = x - strLength/2*6;				// TODO: use fontsize variable
+
+	// TODO: use displayWidth variable
+	if (xLeft > 0 && xLeft < WIDTH) return xLeft;
+	else return 0;
+}
+
+uint16_t leftToCentered(uint16_t x, uint16_t boxW) {
+	int xCentered = x+(boxW/2);
+
+	if (xCentered > 0 && xCentered < WIDTH) return xCentered;
+	else return 0;
+}
+
+uint16_t centeredToLeft(uint16_t x, uint16_t boxW) {
+	int xLeft = x-(boxW/2);
+
+	if (xLeft > 0 && xLeft < WIDTH) return xLeft;
+	else return 0;
+}
+// ---- end of helpers ----
 // ---- end of text functions ----

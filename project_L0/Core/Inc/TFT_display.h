@@ -117,6 +117,20 @@
 //#define abs(x) ((x) > 0 ? (x) : -(x))
 // ---- End of function macros ----
 
+// custom structs
+struct textField {
+	uint16_t xPos;
+	uint16_t yPos;
+	uint16_t textSize;
+	uint8_t maxLength;
+	char str[24];
+};
+
+struct coords {
+	uint16_t x;
+	uint16_t y;
+};
+
 // ---- Lower level functions ----
 // toggles gpio pins for SPI chip select and data/command pin on ST77XX driver
 void SPI_CS_LOW();
@@ -184,6 +198,7 @@ void drawText(const char *str, SPI_HandleTypeDef *hspi);
 
 // drawText, but coordinates specified
 void drawTextAt(uint8_t x, uint8_t y, const char *str, SPI_HandleTypeDef *hspi);
+void drawTextWithPadding(uint16_t x, uint16_t y, uint8_t maxLength, const char *str, SPI_HandleTypeDef *hspi);
 
 // text but centered on screen
 void drawCenteredText(uint8_t x_center, uint8_t y, const char *str, SPI_HandleTypeDef *hspi);
@@ -212,6 +227,15 @@ void setTextColor(uint16_t color);
 // returns static variables that hold background color and text color
 uint16_t getBackgroundColor();
 uint16_t getTextColor();
+
+uint8_t getTextSize();
 // ---- end of setters and getters ----
+
+// ---- helpers ----
+uint16_t leftToCenteredText(uint16_t x, const char *str);
+uint16_t centeredToLeftText(uint16_t x, const char *str);
+uint16_t leftToCentered(uint16_t x, uint16_t boxW);
+uint16_t centeredToLeft(uint16_t x, uint16_t boxW);
+// ---- end of helpers ----
 // ---- End of graphics functions ----
 #endif

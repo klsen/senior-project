@@ -1,5 +1,5 @@
 /*
- * Ripped from Adafruit's graphics library.
+ * Ripped from Adafruit's graphics library. 6x8 mono-spaced font.
  * Follows ASCII table. First 32 characters are replaced with
  * other symbols since they're non-printing commands in ASCII.
  * Refer to font.txt for printout of symbols.
@@ -7,6 +7,8 @@
 
 #include "font.h"
 
+int fontW = 6;
+int fontH = 8;
 const unsigned char font[] = {
 	0x00, 0x00, 0x00, 0x00, 0x00,
 	0x3E, 0x5B, 0x4F, 0x5B, 0x3E,
