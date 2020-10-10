@@ -19,6 +19,9 @@ static uint8_t textSize = 1;					// size of characters
 static uint16_t textColor = ST77XX_BLACK;		// color of characters
 static uint16_t bg = ST77XX_WHITE;				// background color
 static uint16_t pixelColor = ST77XX_BLACK;		// for use in DMA functions
+static uint8_t orientation = 2;					// to track display rotation
+uint8_t WIDTH = 128;							// display width in pixels TODO: replace with lowercase versions, make static, and refactor
+uint8_t HEIGHT = 160;							// display height in pixels
 
 // ---- lower level functions ----
 void SPI_CS_LOW() {HAL_GPIO_WritePin(CS_PORT, CS_PIN, GPIO_PIN_RESET);}
@@ -103,8 +106,7 @@ void displayInit(uint8_t *args, SPI_HandleTypeDef *hspi) {
 		}
 	}
 
-	data = 0xC0;
-	sendCommand(ST77XX_MADCTL, &data, 1, hspi);
+	setDisplayOrientation(3, hspi);
 }
 
 void TFT_startup(SPI_HandleTypeDef *hspi) {
@@ -508,6 +510,46 @@ void setTextColor(uint16_t color) {textColor = color;}
 uint16_t getBackgroundColor() {return bg;}
 uint16_t getTextColor() {return textColor;}
 uint8_t getTextSize() {return textSize;}
+
+// sets display MADCTL (0x00, 0x60, 0xC0, 0xA0)
+// 0: default portrait
+// 1: landscape (90 deg clockwise)
+// 2: portrait flipped
+// 3: landscape flipped
+void setDisplayOrientation(uint8_t o, SPI_HandleTypeDef *hspi) {
+	uint8_t data = 0;
+
+	o %= 4;
+	orientation = o;
+	switch (o) {
+		case 0:
+			HEIGHT = 160;		// TODO: use header constants
+			WIDTH = 128;
+			data = 0x00;
+			break;
+		case 1:
+			HEIGHT = 128;
+			WIDTH = 160;
+			data = 0x60;
+			break;
+		case 2:
+			HEIGHT = 160;
+			WIDTH = 128;
+			data = 0xC0;
+			break;
+		case 3:
+			HEIGHT = 128;
+			WIDTH = 160;
+			data = 0xA0;
+			break;
+		default: break;
+	}
+	sendCommand(ST77XX_MADCTL, &data, 1, hspi);
+}
+
+uint8_t getDisplayOrientation() {return orientation;}
+uint16_t getDisplayHeight() {return HEIGHT;}
+uint16_t getDisplayWidth() {return WIDTH;}
 // ---- end of getters and setters ----
 
 // ---- helpers ----

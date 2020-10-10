@@ -10,6 +10,11 @@ static struct stopwatchVariables stopwatchVars = {0};
 static uint8_t isFaceBeingChanged = 1;
 static uint8_t faceOnDisplay = faceClock;
 
+// default values for orientation 0 (portrait)
+static uint16_t buttonHSpacing;
+static uint16_t buttonVSpacing;
+static struct coords button1Coords;		// centered x because i am confused
+
 // externs
 extern TIM_HandleTypeDef htim3;
 
@@ -95,6 +100,13 @@ void updateState(RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *timerStopwatchTim, 
 			default: break;
 		}
 
+		static uint8_t o = 0;
+		if (buttons.is3Pressed) {
+			o = getDisplayOrientation() + 1;
+			setDisplayOrientation(o, hspi);
+			isFaceBeingChanged = 1;
+		}
+
 		// run helper functions when their face is on screen
 		if (faceOnDisplay == faceClock) updateClockState(hrtc);
 		else if (faceOnDisplay == faceTimer) updateTimerState(timerStopwatchTim, motorBacklightTim);
@@ -172,8 +184,8 @@ void updateClockState(RTC_HandleTypeDef *hrtc) {
 		else {
 //			if (brightness > 0) brightness -= 10;
 //			setDisplayBacklight(brightness, &htim3);
-			stopMode();
-			setDisplayBacklight(brightness, &htim3);
+//			stopMode();
+//			setDisplayBacklight(brightness, &htim3);
 		}
 	}
 	// switches between setting mode and default mode. changes between different clock fields
@@ -457,6 +469,19 @@ void updateStopwatchState(TIM_HandleTypeDef *timerStopwatchTim) {
 void updateDisplay(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 	// TODO: redraw efficiency improvements
 	if (updateFace.clock || updateFace.timer || updateFace.alarm || updateFace.stopwatch || isFaceBeingChanged) {
+		if (getDisplayOrientation() % 2 == 0) {		// portrait
+			buttonHSpacing = WIDTH/2;
+			buttonVSpacing = 24;
+			button1Coords.x = WIDTH/4;
+			button1Coords.y = HEIGHT-(15+buttonVSpacing);
+		}
+		else {
+			buttonHSpacing = WIDTH/4;
+			buttonVSpacing = 0;
+			button1Coords.x = WIDTH/8;
+			button1Coords.y = HEIGHT - 15;
+		}
+
 		switch (faceOnDisplay) {
 			case faceClock: drawClockApp(hrtc, hspi); break;
 			case faceTimer: drawTimerApp(hrtc, hspi); break;
@@ -464,6 +489,7 @@ void updateDisplay(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 			case faceStopwatch: drawStopwatchApp(hrtc, hspi); break;
 			default: break;
 		}
+
 		updateFace.clock = updateFace.timer = updateFace.alarm = updateFace.stopwatch = 0;
 	}
 	// change faces
@@ -540,6 +566,8 @@ void drawClockApp(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 	struct times currentTime = {0};
 	// TODO: checks for orientation
 	struct coords modeTextCoords = {WIDTH/2, 44};
+	if (getDisplayOrientation() % 2 == 0) modeTextCoords.y = 44;
+	else modeTextCoords.y = 32;
 	struct coords timeTextCoords = {centeredToLeft(WIDTH/2, 114), modeTextCoords.y+fontH*2};
 
 	// code for full display refresh. should be all portions that aren't rewritten
@@ -552,7 +580,8 @@ void drawClockApp(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 	}
 
 	// different code for different modes
-	drawBattery(WIDTH/2-(4*fontW+6)/2, 5, hspi);		// battery in the middle
+//	drawBattery(WIDTH/2-(4*fontW+6)/2, 5, hspi);		// battery in the middle
+	drawTopBar(hrtc, hspi);
 	if (clockVars.isBeingSet == 0) {
 		drawCenteredModeText(modeTextCoords.x, modeTextCoords.y, "", hspi);
 		getDateTime(&currentDate, &currentTime, hrtc);
@@ -606,7 +635,10 @@ void drawClockApp(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 void drawTimerApp(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 	struct times currentTimer = {0};
 	struct coords modeTextCoords = {WIDTH/2, 52};
+	if (getDisplayOrientation() % 2 == 0) modeTextCoords.y = 52;
+	else modeTextCoords.y = 48;
 	struct coords timeTextCoords = {centeredToLeft(WIDTH/2, 96), modeTextCoords.y+fontH*2};
+
 
 	if (isFaceBeingChanged) {
 		clearScreen(ST77XX_GREEN, hspi);
@@ -676,14 +708,18 @@ void drawTimerApp(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 // helper function for drawing all elements for alarm display
 void drawAlarmApp(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 	struct coords modeTextCoords = {WIDTH/2, 48};
+	if (getDisplayOrientation() % 2 == 0) modeTextCoords.y = 48;
+	else modeTextCoords.y = 36;
 	struct coords timeTextCoords = {centeredToLeft(WIDTH/2, 114), modeTextCoords.y+fontH*2};
 	struct times alarmTime = {0};
+
 
 	if (isFaceBeingChanged) {
 		clearScreen(ST77XX_MAGENTA, hspi);
 		drawTitle("alarm", hspi);
 		drawButtons(hspi);
-		drawButtonText(1, "stopwatch", hspi);
+		if (getDisplayOrientation() % 2 == 0) drawButtonText(1, "stopwatch", hspi);
+		else drawButtonText(1, "stopw.", hspi);
 		isFaceBeingChanged = 0;
 	}
 
@@ -769,6 +805,8 @@ void drawAlarmApp(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 // helper function for drawing all elements for stopwatch display
 void drawStopwatchApp(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 	struct coords timeTextCoords = {centeredToLeft(WIDTH/2, 96), 68};
+	if (getDisplayOrientation() % 2 == 0) timeTextCoords.y = 68;
+	else timeTextCoords.y = 52;
 	struct coords lapTextCoords = {WIDTH/2, timeTextCoords.y+fontH*2};
 	struct times t = {0};
 	char str[24];
@@ -783,7 +821,8 @@ void drawStopwatchApp(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 		isFaceBeingChanged = 0;
 	}
 
-	drawTopBar(hrtc, hspi);
+	if (getDisplayOrientation() % 2 == 0) drawTopBar(hrtc, hspi);
+	else drawBattery(centeredToLeft(WIDTH/2, 6+4*fontW), 23, hspi);
 	secondsToTime(&t, stopwatchCounter);
 	drawBasicTime(timeTextCoords.x, timeTextCoords.y, &t, hspi);
 
@@ -819,12 +858,37 @@ void drawButton(uint8_t x_center, uint8_t y_center, SPI_HandleTypeDef *hspi) {
 
 // draws 4 buttons to represent important ui buttons and tell the user their action
 void drawButtons(SPI_HandleTypeDef *hspi) {
-	uint16_t buttonHSpacing = WIDTH/2;
-	uint16_t buttonYSpacing = 24;
-	struct coords b1 = {WIDTH/4-5, HEIGHT-(15+buttonYSpacing)};
-	struct coords b2 = {b1.x+buttonHSpacing, b1.y};
-	struct coords b3 = {b1.x, b1.y+buttonYSpacing};
-	struct coords b4 = {b2.x, b3.y};
+//	uint16_t buttonHSpacing = WIDTH/2;
+//	uint16_t buttonYSpacing = 24;
+//	struct coords b1 = {centeredToLeft(button1Coords.x, 10), button1Coords.y};
+//	struct coords b2 = {b1.x+buttonHSpacing, b1.y};
+//	struct coords b3 = {b1.x, b1.y+buttonVSpacing};
+//	struct coords b4 = {b2.x, b3.y};
+	struct coords b1 = {0, 0};
+	struct coords b2 = {0, 0};
+	struct coords b3 = {0, 0};
+	struct coords b4 = {0, 0};
+
+	if (getDisplayOrientation() % 2 == 0) {
+		b1.x = centeredToLeft(button1Coords.x, 10);
+		b1.y = button1Coords.y;
+		b2.x = b1.x+buttonHSpacing;
+		b2.y = b1.y;
+		b3.x = b1.x;
+		b3.y = b1.y+buttonVSpacing;
+		b4.x = b2.x;
+		b4.y = b3.y;
+	}
+	else {
+		b1.x = centeredToLeft(button1Coords.x, 10);
+		b1.y = button1Coords.y;
+		b2.x = b1.x+buttonHSpacing;
+		b2.y = b1.y;
+		b3.x = b2.x+buttonHSpacing;
+		b3.y = b1.y;
+		b4.x = b3.x+buttonHSpacing;
+		b4.y = b3.y;
+	}
 
 	drawButton(b1.x, b1.y, hspi);
 	drawButton(b2.x, b2.y, hspi);
@@ -836,14 +900,40 @@ void drawButtons(SPI_HandleTypeDef *hspi) {
 void drawButtonText(uint8_t buttonNo, const char *str, SPI_HandleTypeDef *hspi) {
 	// using centered x, not upper left x
 	// TODO: make variables file wide. modified in their own function or something
-	uint16_t buttonHSpacing = WIDTH/2;
-	uint16_t buttonYSpacing = 24;							// use more variables? (button height, spacing, fontsize)
-	uint8_t maxTextLength = buttonHSpacing/6;				// TODO: can you combine variables with nearby funcs?
+//	uint16_t buttonHSpacing = WIDTH/2;
+//	uint16_t buttonYSpacing = 24;							// use more variables? (button height, spacing, fontsize)
+	uint8_t maxTextLength = buttonHSpacing/fontW;			// TODO: can you combine variables with nearby funcs?
 
-	struct coords b1 = {WIDTH/4, HEIGHT-(15+buttonYSpacing)-8};
-	struct coords b2 = {b1.x+buttonHSpacing, b1.y};
-	struct coords b3 = {b1.x, b1.y+buttonYSpacing};
-	struct coords b4 = {b2.x, b3.y};
+//	struct coords b1 = {button1Coords.x, button1Coords.y-fontH};
+//	struct coords b2 = {b1.x+buttonHSpacing, b1.y};
+//	struct coords b3 = {b1.x, b1.y+buttonVSpacing};
+//	struct coords b4 = {b2.x, b3.y};
+
+	struct coords b1 = {0, 0};
+	struct coords b2 = {0, 0};
+	struct coords b3 = {0, 0};
+	struct coords b4 = {0, 0};
+
+	if (getDisplayOrientation() % 2 == 0) {
+		b1.x = button1Coords.x;
+		b1.y = button1Coords.y-fontH;
+		b2.x = b1.x+buttonHSpacing;
+		b2.y = b1.y;
+		b3.x = b1.x;
+		b3.y = b1.y+buttonVSpacing;
+		b4.x = b2.x;
+		b4.y = b3.y;
+	}
+	else {
+		b1.x = button1Coords.x;
+		b1.y = button1Coords.y-fontH;
+		b2.x = b1.x+buttonHSpacing;
+		b2.y = b1.y;
+		b3.x = b2.x+buttonHSpacing;
+		b3.y = b1.y;
+		b4.x = b3.x+buttonHSpacing;
+		b4.y = b3.y;
+	}
 
 	setTextSize(1);
 	setTextColor(ST77XX_BLACK);
@@ -859,14 +949,40 @@ void drawButtonText(uint8_t buttonNo, const char *str, SPI_HandleTypeDef *hspi) 
 
 void drawButtonTexts(const char *str1, const char *str2, const char *str3, const char *str4, SPI_HandleTypeDef *hspi) {
 	// using centered x, not upper left x
-	uint16_t buttonHSpacing = WIDTH/2;
-	uint16_t buttonYSpacing = 24;
-	uint8_t maxTextLength = buttonHSpacing/6;
+//	uint16_t buttonHSpacing = WIDTH/2;
+//	uint16_t buttonYSpacing = 24;
+	uint8_t maxTextLength = buttonHSpacing/fontW;
 
-	struct coords b1 = {WIDTH/4, HEIGHT-(15+buttonYSpacing)-8};
-	struct coords b2 = {b1.x+buttonHSpacing, b1.y};
-	struct coords b3 = {b1.x, b1.y+buttonYSpacing};
-	struct coords b4 = {b2.x, b3.y};
+//	struct coords b1 = {button1Coords.x, button1Coords.y-fontH};
+//	struct coords b2 = {b1.x+buttonHSpacing, b1.y};
+//	struct coords b3 = {b1.x, b1.y+buttonVSpacing};
+//	struct coords b4 = {b2.x, b3.y};
+
+	struct coords b1 = {0, 0};
+	struct coords b2 = {0, 0};
+	struct coords b3 = {0, 0};
+	struct coords b4 = {0, 0};
+
+	if (getDisplayOrientation() % 2 == 0) {
+		b1.x = button1Coords.x;
+		b1.y = button1Coords.y-fontH;
+		b2.x = b1.x+buttonHSpacing;
+		b2.y = b1.y;
+		b3.x = b1.x;
+		b3.y = b1.y+buttonVSpacing;
+		b4.x = b2.x;
+		b4.y = b3.y;
+	}
+	else {
+		b1.x = button1Coords.x;
+		b1.y = button1Coords.y-fontH;
+		b2.x = b1.x+buttonHSpacing;
+		b2.y = b1.y;
+		b3.x = b2.x+buttonHSpacing;
+		b3.y = b1.y;
+		b4.x = b3.x+buttonHSpacing;
+		b4.y = b3.y;
+	}
 
 	setTextSize(1);
 	setTextColor(ST77XX_BLACK);
@@ -880,6 +996,9 @@ void drawButtonTexts(const char *str1, const char *str2, const char *str3, const
 void drawTitle(char *str, SPI_HandleTypeDef *hspi) {
 	uint8_t strSize = strlen(str);
 	uint16_t titleY = 20;
+
+	if (getDisplayOrientation() % 2 == 0) titleY = 20;
+	else titleY = 5;
 
 	// drawing title
 	// bounds checking

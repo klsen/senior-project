@@ -108,8 +108,8 @@
 #define _xstart		0
 #define _ystart 	0
 
-#define HEIGHT 		160
-#define WIDTH 		128
+//#define HEIGHT 		160
+//#define WIDTH 		128
 // ---- End of pin definitions and constants ----
 
 // ---- Function Macros ----
@@ -130,6 +130,9 @@ struct coords {
 	uint16_t x;
 	uint16_t y;
 };
+
+uint8_t HEIGHT;
+uint8_t WIDTH;
 
 // ---- Lower level functions ----
 // toggles gpio pins for SPI chip select and data/command pin on ST77XX driver
@@ -229,6 +232,11 @@ uint16_t getBackgroundColor();
 uint16_t getTextColor();
 
 uint8_t getTextSize();
+
+void setDisplayOrientation(uint8_t o, SPI_HandleTypeDef *hspi);
+uint8_t getDisplayOrientation();
+uint16_t getDisplayHeight();
+uint16_t getDisplayWidth();
 // ---- end of setters and getters ----
 
 // ---- helpers ----
