@@ -20,8 +20,8 @@ static uint16_t textColor = ST77XX_BLACK;		// color of characters
 static uint16_t bg = ST77XX_WHITE;				// background color
 static uint16_t pixelColor = ST77XX_BLACK;		// for use in DMA functions
 static uint8_t orientation = 2;					// to track display rotation
-uint8_t WIDTH = 128;							// display width in pixels TODO: replace with lowercase versions, make static, and refactor
-uint8_t HEIGHT = 160;							// display height in pixels
+static uint8_t displayWidth = 128;				// display width in pixels
+static uint8_t displayHeight = 160;				// display height in pixels
 
 // ---- lower level functions ----
 void SPI_CS_LOW() {HAL_GPIO_WritePin(CS_PORT, CS_PIN, GPIO_PIN_RESET);}
@@ -88,7 +88,6 @@ void displayInit(uint8_t *args, SPI_HandleTypeDef *hspi) {
 	uint8_t  numCommands, cmd, numArgs;
 	uint16_t ms;
 	uint8_t index = 0;
-	uint8_t data;
 
 	numCommands = args[index++];			// Number of commands to follow
 	while(numCommands--) {					// For each command...
@@ -170,7 +169,7 @@ void TFT_startup(SPI_HandleTypeDef *hspi) {
 	};
 
 	displayInit(initCommands, hspi);
-	setAddrWindow(0, 0, WIDTH, HEIGHT, hspi);
+	setAddrWindow(0, 0, displayWidth, displayHeight, hspi);
 
 	// set the global variables
 	cursorX = 0;
@@ -222,7 +221,7 @@ uint16_t colorFixer(uint16_t color) {
 void drawPixel(uint8_t x, uint8_t y, uint16_t color, SPI_HandleTypeDef *hspi) {
 	// bounds checking
 	// just don't draw if pixel is out of bounds
-	if ((x > WIDTH) || (x < 0) || (y > HEIGHT) || (y < 0)) return;
+	if ((x > displayWidth) || (x < 0) || (y > displayHeight) || (y < 0)) return;
 
 	setAddrWindow(x, y, 1, 1, hspi);
 	sendColor(color, 1, hspi);
@@ -232,10 +231,10 @@ void drawPixel(uint8_t x, uint8_t y, uint16_t color, SPI_HandleTypeDef *hspi) {
 void drawHLine(uint8_t x, uint8_t y, uint8_t size, uint16_t color, SPI_HandleTypeDef *hspi) {
 	// bounds checking
 	if (x < 0) x = 0;						// don't set x out of bounds
-	if (x > WIDTH) x = WIDTH;
-	if (x+size > WIDTH) size = WIDTH-x;		// don't set size so line draws out of bounds
+	if (x > displayWidth) x = displayWidth;
+	if (x+size > displayWidth) size = displayWidth-x;		// don't set size so line draws out of bounds
 	if (x+size < 0) size = 0-x;
-	if ((y > HEIGHT) || (y < 0)) return;	// don't draw if y is out of bounds
+	if ((y > displayHeight) || (y < 0)) return;	// don't draw if y is out of bounds
 
 	setAddrWindow(x, y, size, 1, hspi);
 	sendColor(color, size, hspi);
@@ -245,10 +244,10 @@ void drawHLine(uint8_t x, uint8_t y, uint8_t size, uint16_t color, SPI_HandleTyp
 void drawVLine(uint8_t x, uint8_t y, uint8_t size, uint16_t color, SPI_HandleTypeDef *hspi) {
 	// bounds checking
 	if (y < 0) y = 0;						// don't set y out of bounds
-	if (y > HEIGHT) y = HEIGHT;
-	if (y+size > HEIGHT) size = HEIGHT-y;	// don't set size so line draws out of bounds
+	if (y > displayHeight) y = displayHeight;
+	if (y+size > displayHeight) size = displayHeight-y;	// don't set size so line draws out of bounds
 	if (y+size < 0) size = 0-y;
-	if ((x > WIDTH) || (x < 0)) return;		// don't draw if x is out of bounds
+	if ((x > displayWidth) || (x < 0)) return;		// don't draw if x is out of bounds
 
 	setAddrWindow(x, y, 1, size, hspi);
 	sendColor(color, size, hspi);
@@ -257,7 +256,7 @@ void drawVLine(uint8_t x, uint8_t y, uint8_t size, uint16_t color, SPI_HandleTyp
 // draws on a specific region with input 16-bit buffer
 void drawBuffer(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t *buffer, uint16_t bufferSize, SPI_HandleTypeDef *hspi) {
 	// also don't call this with buffer size too big bc there's not enough ram for all pixels of display
-	if (x+w > WIDTH || y+h > HEIGHT) return;
+	if (x+w > displayWidth || y+h > displayHeight) return;
 	if (bufferSize == 0) return;
 
 	setAddrWindow(x, y, w, h, hspi);
@@ -333,25 +332,8 @@ void fillRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t color, SPI_Ha
 
 // a big rectangle, but for the whole screen
 void fillScreen(uint16_t color, SPI_HandleTypeDef *hspi) {
-	setAddrWindow(0, 0, WIDTH, HEIGHT, hspi);
-	sendColor(color, WIDTH*HEIGHT, hspi);
-
-//	int i, k;
-//	static int j;
-//	uint16_t colors[4] = {ST77XX_BLUE, ST77XX_RED, ST77XX_BLACK, ST77XX_WHITE};
-////	fillRect(0, 0, WIDTH, HEIGHT, colors[j], hspi);
-////	for (i = 0; i < HEIGHT; i++) {
-////		drawHLine(0, i, WIDTH, colors[j], hspi);
-////	}
-////	for (i = 0; i < WIDTH; i++) {
-////		drawVLine(i, 0, HEIGHT, colors[j], hspi);
-////	}
-//	for (i = 0; i < HEIGHT; i++) {
-//		for (k = 0; k < WIDTH; k++) {
-//			drawPixel(k, i, colors[j], hspi);
-//		}
-//	}
-//	j = (j+1)%4;
+	setAddrWindow(0, 0, displayWidth, displayHeight, hspi);
+	sendColor(color, displayWidth*displayHeight, hspi);
 }
 
 void clearScreen(uint16_t backgroundColor, SPI_HandleTypeDef *hspi) {
@@ -463,11 +445,11 @@ void drawCenteredText(uint8_t x_center, uint8_t y, const char *str, SPI_HandleTy
 	uint8_t strSize = strlen(str);
 	// bounds checking. text box needed to print text should not end up out of bounds
 	// also calculating what bounds of text box should be
-	if (y+textSize*8 > HEIGHT) return;
+	if (y+textSize*8 > displayHeight) return;
 	int leftBound = x_center-(strSize*textSize*6)/2;
 	int rightBound = x_center+(strSize*textSize*6)/2;
 	if (leftBound < 0) return;
-	if (rightBound > WIDTH) return;
+	if (rightBound > displayWidth) return;
 
 	setCursor(leftBound, y);
 	drawText(str, hspi);
@@ -477,11 +459,11 @@ void drawCenteredText(uint8_t x_center, uint8_t y, const char *str, SPI_HandleTy
 // used for cases where you're printing strings to the same place, but they have different sizes
 void drawCenteredTextWithPadding(uint8_t x_center, uint8_t y, uint8_t maxLength, const char *str, SPI_HandleTypeDef *hspi) {
 	// bounds checking. text box needed to print text should not end up out of bounds
-	if (y+textSize*8 > HEIGHT) return;
+	if (y+textSize*8 > displayHeight) return;
 	int leftBound = x_center-(maxLength*textSize*6)/2;
 	int rightBound = x_center+(maxLength*textSize*6)/2;
 	if (leftBound < 0) return;
-	if (rightBound > WIDTH) return;
+	if (rightBound > displayWidth) return;
 
 	uint8_t strSize = strlen(str);
 	if (maxLength < strSize) return;		// size should not be greater than max
@@ -498,7 +480,7 @@ void drawCenteredTextWithPadding(uint8_t x_center, uint8_t y, uint8_t maxLength,
 
 // clear a line of text. y gives upper bound of text box
 void clearTextLine(uint8_t y, SPI_HandleTypeDef *hspi) {
-	fillRect(0, y, WIDTH, textSize*8, bg, hspi);
+	fillRect(0, y, displayWidth, textSize*8, bg, hspi);
 }
 
 // ---- getters and setters ----
@@ -523,23 +505,23 @@ void setDisplayOrientation(uint8_t o, SPI_HandleTypeDef *hspi) {
 	orientation = o;
 	switch (o) {
 		case 0:
-			HEIGHT = 160;		// TODO: use header constants
-			WIDTH = 128;
+			displayHeight = 160;		// TODO: use header constants
+			displayWidth = 128;
 			data = 0x00;
 			break;
 		case 1:
-			HEIGHT = 128;
-			WIDTH = 160;
+			displayHeight = 128;
+			displayWidth = 160;
 			data = 0x60;
 			break;
 		case 2:
-			HEIGHT = 160;
-			WIDTH = 128;
+			displayHeight = 160;
+			displayWidth = 128;
 			data = 0xC0;
 			break;
 		case 3:
-			HEIGHT = 128;
-			WIDTH = 160;
+			displayHeight = 128;
+			displayWidth = 160;
 			data = 0xA0;
 			break;
 		default: break;
@@ -548,8 +530,8 @@ void setDisplayOrientation(uint8_t o, SPI_HandleTypeDef *hspi) {
 }
 
 uint8_t getDisplayOrientation() {return orientation;}
-uint16_t getDisplayHeight() {return HEIGHT;}
-uint16_t getDisplayWidth() {return WIDTH;}
+uint16_t getDisplayHeight() {return displayHeight;}
+uint16_t getDisplayWidth() {return displayWidth;}
 // ---- end of getters and setters ----
 
 // ---- helpers ----
@@ -559,7 +541,7 @@ uint16_t leftToCenteredText(uint16_t x, const char *str) {
 	int xCentered = x + strLength/2*6;			// TODO: use fontsize variable
 
 	// TODO: use displayWidth variable
-	if (xCentered > 0 && xCentered < WIDTH) return xCentered;
+	if (xCentered > 0 && xCentered < displayWidth) return xCentered;
 	else return 0;
 }
 
@@ -568,21 +550,21 @@ uint16_t centeredToLeftText(uint16_t x, const char *str) {
 	int xLeft = x - strLength/2*6;				// TODO: use fontsize variable
 
 	// TODO: use displayWidth variable
-	if (xLeft > 0 && xLeft < WIDTH) return xLeft;
+	if (xLeft > 0 && xLeft < displayWidth) return xLeft;
 	else return 0;
 }
 
 uint16_t leftToCentered(uint16_t x, uint16_t boxW) {
 	int xCentered = x+(boxW/2);
 
-	if (xCentered > 0 && xCentered < WIDTH) return xCentered;
+	if (xCentered > 0 && xCentered < displayWidth) return xCentered;
 	else return 0;
 }
 
 uint16_t centeredToLeft(uint16_t x, uint16_t boxW) {
 	int xLeft = x-(boxW/2);
 
-	if (xLeft > 0 && xLeft < WIDTH) return xLeft;
+	if (xLeft > 0 && xLeft < displayWidth) return xLeft;
 	else return 0;
 }
 // ---- end of helpers ----

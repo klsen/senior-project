@@ -169,7 +169,6 @@ int main(void)
 
   	// initialization for display
 	TFT_startup(&hspi2);
-	fillRect(0, 0, WIDTH, HEIGHT, ST77XX_ORANGE, &hspi2);
 //	clearScreen(ST77XX_BLACK, &hspi2);
 
 	// initialization for ui and hardware

@@ -6,47 +6,47 @@
 #include "TFT_display_test.h"
 
 void lineTest(SPI_HandleTypeDef *hspi) {
-	int x = WIDTH/2;
-	int y = HEIGHT/2;
+	int x = getDisplayWidth()/2;
+	int y = getDisplayHeight()/2;
 
-	drawLine(x, y, x+WIDTH/2, y+HEIGHT/4, ST77XX_RED, hspi);
+	drawLine(x, y, x+getDisplayWidth()/2, y+getDisplayHeight()/4, ST77XX_RED, hspi);
 	HAL_Delay(500);
-	fillRect(x, y, WIDTH/2, HEIGHT/4, ST77XX_RED, hspi);
+	fillRect(x, y, getDisplayWidth()/2, getDisplayHeight()/4, ST77XX_RED, hspi);
 	HAL_Delay(1000);
 
-	drawLine(x, y, x+WIDTH/4, y+HEIGHT/2, ST77XX_BLUE, hspi);
+	drawLine(x, y, x+getDisplayWidth()/4, y+getDisplayHeight()/2, ST77XX_BLUE, hspi);
 	HAL_Delay(500);
-	fillRect(x, y, WIDTH/4, HEIGHT/2, ST77XX_BLUE, hspi);
+	fillRect(x, y, getDisplayWidth()/4, getDisplayHeight()/2, ST77XX_BLUE, hspi);
 	HAL_Delay(1000);
 
-	drawLine(x, y, x-WIDTH/4, y+HEIGHT/2, ST77XX_YELLOW, hspi);
+	drawLine(x, y, x-getDisplayWidth()/4, y+getDisplayHeight()/2, ST77XX_YELLOW, hspi);
 	HAL_Delay(500);
-	fillRect(x-WIDTH/4, y, WIDTH/4, HEIGHT/2, ST77XX_YELLOW, hspi);
+	fillRect(x-getDisplayWidth()/4, y, getDisplayWidth()/4, getDisplayHeight()/2, ST77XX_YELLOW, hspi);
 	HAL_Delay(1000);
 
-	drawLine(x, y, x-WIDTH/2, y+HEIGHT/4, ST77XX_GREEN, hspi);
+	drawLine(x, y, x-getDisplayWidth()/2, y+getDisplayHeight()/4, ST77XX_GREEN, hspi);
 	HAL_Delay(500);
-	fillRect(x-WIDTH/2, y, WIDTH/2, HEIGHT/4, ST77XX_GREEN, hspi);
+	fillRect(x-getDisplayWidth()/2, y, getDisplayWidth()/2, getDisplayHeight()/4, ST77XX_GREEN, hspi);
 	HAL_Delay(1000);
 
-	drawLine(x, y, x-WIDTH/2, y-HEIGHT/4, ST77XX_ORANGE, hspi);
+	drawLine(x, y, x-getDisplayWidth()/2, y-getDisplayHeight()/4, ST77XX_ORANGE, hspi);
 	HAL_Delay(500);
-	fillRect(x-WIDTH/2, y-HEIGHT/4, WIDTH/2, HEIGHT/4, ST77XX_ORANGE, hspi);
+	fillRect(x-getDisplayWidth()/2, y-getDisplayHeight()/4, getDisplayWidth()/2, getDisplayHeight()/4, ST77XX_ORANGE, hspi);
 	HAL_Delay(1000);
 
-	drawLine(x, y, x-WIDTH/4, y-HEIGHT/2, ST77XX_MAGENTA, hspi);
+	drawLine(x, y, x-getDisplayWidth()/4, y-getDisplayHeight()/2, ST77XX_MAGENTA, hspi);
 	HAL_Delay(500);
-	fillRect(x-WIDTH/4, y-HEIGHT/2, WIDTH/4, HEIGHT/2, ST77XX_MAGENTA, hspi);
+	fillRect(x-getDisplayWidth()/4, y-getDisplayHeight()/2, getDisplayWidth()/4, getDisplayHeight()/2, ST77XX_MAGENTA, hspi);
 	HAL_Delay(1000);
 
-	drawLine(x, y, x+WIDTH/4, y-HEIGHT/2, ST77XX_CYAN, hspi);
+	drawLine(x, y, x+getDisplayWidth()/4, y-getDisplayHeight()/2, ST77XX_CYAN, hspi);
 	HAL_Delay(500);
-	fillRect(x, y-HEIGHT/2, WIDTH/4, HEIGHT/2, ST77XX_CYAN, hspi);
+	fillRect(x, y-getDisplayHeight()/2, getDisplayWidth()/4, getDisplayHeight()/2, ST77XX_CYAN, hspi);
 	HAL_Delay(1000);
 
-	drawLine(x, y, x+WIDTH/2, y-HEIGHT/4, ST77XX_WHITE, hspi);
+	drawLine(x, y, x+getDisplayWidth()/2, y-getDisplayHeight()/4, ST77XX_WHITE, hspi);
 	HAL_Delay(500);
-	fillRect(x, y-HEIGHT/4, WIDTH/2, HEIGHT/4, ST77XX_WHITE, hspi);
+	fillRect(x, y-getDisplayHeight()/4, getDisplayWidth()/2, getDisplayHeight()/4, ST77XX_WHITE, hspi);
 	HAL_Delay(1000);
 
 	clearScreen(ST77XX_BLACK, hspi);
@@ -70,9 +70,9 @@ void charTest(SPI_HandleTypeDef *hspi) {
 		setTextSize(ch_size);
 		for (unsigned char ch = 0; ch < 255; ch++) {
 			// move to right enough for next char
-			x = (ch*ch_size*6) % (WIDTH/(ch_size*6)*(ch_size*6));
+			x = (ch*ch_size*6) % (getDisplayWidth()/(ch_size*6)*(ch_size*6));
 			// line break when x gets near WIDTH
-			y = ((8*ch_size) * ((ch*ch_size*6) / (WIDTH/(ch_size*6)*(ch_size*6)))) % (HEIGHT/(ch_size*8)*(ch_size*8));
+			y = ((8*ch_size) * ((ch*ch_size*6) / (getDisplayWidth()/(ch_size*6)*(ch_size*6)))) % (getDisplayHeight()/(ch_size*8)*(ch_size*8));
 
 			setCursor(x, y);
 			setTextColor(rainbowColors[ch%7]);

@@ -117,7 +117,7 @@ void updateState(RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *timerStopwatchTim, 
 void updateDisplay(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
 // ---- end of main functions ----
 
-// ---- helper functions ----
+// ---- secondary functions ----
 // helper state functions. only called when their respective program is on the screen
 void updateClockState(RTC_HandleTypeDef *hrtc);
 void updateTimerState(TIM_HandleTypeDef *timerStopwatchTim, TIM_HandleTypeDef *motorTim);
@@ -125,14 +125,14 @@ void updateAlarmState(RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *motorTim);
 void updateStopwatchState(TIM_HandleTypeDef *timerStopwatchTim);
 
 // helper display functions. only called when their respective program is on the screen.
-void updateClockDisplay(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
 void drawClockApp(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
 void drawTimerApp(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
 void drawAlarmApp(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
 void drawStopwatchApp(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
-// ---- end of helper functions
+// ---- end of secondary functions
 
 // ---- graphics functions ----
+// for drawing parts that are reused by different programs
 // draws graphics that represent buttons and what the buttons are supposed to do
 void drawButton(uint8_t x_center, uint8_t y_center, SPI_HandleTypeDef* hspi);
 void drawButtons(SPI_HandleTypeDef *hspi);
@@ -145,31 +145,20 @@ void drawTitle(char *str, SPI_HandleTypeDef *hspi);
 // draws a graphic for the current battery level
 void drawBattery(uint16_t x, uint16_t y, SPI_HandleTypeDef *hspi);
 
+// combines a small clock and a battery indicator to be displayed at the top of the screen
+void drawTopBar(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
+
+// draws text that shows current mode app is in
 void drawModeText(uint16_t x, uint16_t y, const char *str, SPI_HandleTypeDef *hspi);
 void drawCenteredModeText(uint16_t x, uint16_t y, const char *str, SPI_HandleTypeDef *hspi);
+
+// functions for drawing time fields in different ways
 void drawTinyTime(uint16_t x, uint16_t y, RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
-void drawTopBar(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
 void drawTime(uint16_t x, uint16_t y, struct times *t, SPI_HandleTypeDef *hspi);
 void drawDateTime(uint16_t x, uint16_t y, struct dates *d, struct times *t, SPI_HandleTypeDef *hspi);
 void drawWeekdayTime(uint16_t x, uint16_t y, uint8_t weekday, struct times *t, SPI_HandleTypeDef *hspi);
 void drawBasicTime(uint16_t x, uint16_t y, struct times *t, SPI_HandleTypeDef *hspi);
-
-//// draws the primary clock display. hr:min:sec, mm/dd/yyyy, weekday
-//void drawClock(struct dates *d, struct times *t, SPI_HandleTypeDef *hspi);
-//
-//// draws current time on top of screen
-//void drawTopClock(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
-//
-//// draws the primary timer display. hr:min:sec
-//void drawTimer(struct times *t, SPI_HandleTypeDef *hspi);
-//
-//// draws the main alarm display. hr:min:sec weekday
-//void drawAlarm(struct alarmTimes *a, SPI_HandleTypeDef *hspi);
-//
-//// draws the main stopwatch display. hr:min:sec
-//void drawStopwatch(uint32_t seconds, SPI_HandleTypeDef *hspi);
-//// draws the lap value. hr:min:sec
-//void drawStopwatchLap(uint32_t seconds, SPI_HandleTypeDef *hspi);
+// ---- end of helper drawing functions ----
 // ---- end of graphics functions
 
 // initialization function. initializes variables at the start of execution

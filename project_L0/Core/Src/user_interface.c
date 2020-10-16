@@ -181,12 +181,6 @@ void updateClockState(RTC_HandleTypeDef *hrtc) {
 				default: break;
 			}
 		}
-		else {
-//			if (brightness > 0) brightness -= 10;
-//			setDisplayBacklight(brightness, &htim3);
-//			stopMode();
-//			setDisplayBacklight(brightness, &htim3);
-		}
 	}
 	// switches between setting mode and default mode. changes between different clock fields
 	if (buttons.is4Pressed) {
@@ -470,16 +464,16 @@ void updateDisplay(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 	// TODO: redraw efficiency improvements
 	if (updateFace.clock || updateFace.timer || updateFace.alarm || updateFace.stopwatch || isFaceBeingChanged) {
 		if (getDisplayOrientation() % 2 == 0) {		// portrait
-			buttonHSpacing = WIDTH/2;
+			buttonHSpacing = getDisplayWidth()/2;
 			buttonVSpacing = 24;
-			button1Coords.x = WIDTH/4;
-			button1Coords.y = HEIGHT-(15+buttonVSpacing);
+			button1Coords.x = getDisplayWidth()/4;
+			button1Coords.y = getDisplayHeight()-(15+buttonVSpacing);
 		}
 		else {
-			buttonHSpacing = WIDTH/4;
+			buttonHSpacing = getDisplayWidth()/4;
 			buttonVSpacing = 0;
-			button1Coords.x = WIDTH/8;
-			button1Coords.y = HEIGHT - 15;
+			button1Coords.x = getDisplayWidth()/8;
+			button1Coords.y = getDisplayHeight() - 15;
 		}
 
 		switch (faceOnDisplay) {
@@ -492,72 +486,6 @@ void updateDisplay(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 
 		updateFace.clock = updateFace.timer = updateFace.alarm = updateFace.stopwatch = 0;
 	}
-	// change faces
-//	if (isFaceBeingChanged == 1) {
-//		isFaceBeingChanged = 0;
-//
-//		// drawing titles and boxes that won't be rewritten during normal operation within
-//		// a specific face (titles and buttons)
-//		if (faceOnDisplay == faceClock) {
-//			clearScreen(ST77XX_CYAN, hspi);
-//			drawTitle("clock", hspi);
-//		}
-//		if (faceOnDisplay == faceTimer) {
-//			clearScreen(ST77XX_GREEN, hspi);
-//			drawTinyTime(hrtc, hspi);
-//			drawTitle("timer", hspi);
-//		}
-//		if (faceOnDisplay == faceAlarm) {
-//			clearScreen(ST77XX_MAGENTA, hspi);
-//			drawTinyTime(hrtc, hspi);
-//			drawTitle("alarm", hspi);
-//		}
-//		if (faceOnDisplay == faceStopwatch) {
-//			clearScreen(ST77XX_YELLOW, hspi);
-//			drawTinyTime(hrtc, hspi);
-//			drawTitle("stopwatch", hspi);
-//		}
-//
-//		drawBattery(battPercentage, hspi);
-//		drawButtons(hspi);
-//	}
-//
-//
-//	if (updateFace.clock || updateFace.timer || updateFace.alarm || updateFace.stopwatch) {
-//		// update clock face
-//		if (faceOnDisplay == faceClock) {
-//			if (updateFace.clock == 1) {
-//				setBackgroundColor(ST77XX_CYAN);
-//				updateClockDisplay(hrtc, hspi);
-//			}
-//		}
-//		// update timer face
-//		else if (faceOnDisplay == faceTimer) {
-//			if (updateFace.timer == 1) {
-//				setBackgroundColor(ST77XX_GREEN);
-//				updateTimerDisplay(hspi);
-//			}
-//			if (updateFace.clock == 1) drawTinyTime(hrtc, hspi);
-//		}
-//		// update alarm face
-//		else if (faceOnDisplay == faceAlarm) {
-//			if (updateFace.alarm == 1) {
-//				setBackgroundColor(ST77XX_MAGENTA);
-//				updateAlarmDisplay(hspi);
-//			}
-//			if (updateFace.clock == 1) drawTinyTime(hrtc, hspi);
-//		}
-//		// update stopwatch face
-//		else if (faceOnDisplay == faceStopwatch) {
-//			if (updateFace.stopwatch == 1) {
-//				setBackgroundColor(ST77XX_YELLOW);
-//				updateStopwatchDisplay(hspi);
-//			}
-//			if (updateFace.clock == 1) drawTinyTime(hrtc, hspi);
-//		}
-//
-//		updateFace.clock = updateFace.timer = updateFace.alarm = updateFace.stopwatch = 0;
-//	}
 }
 
 // helper function for drawing all elements for clock display
@@ -565,10 +493,10 @@ void drawClockApp(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 	struct dates currentDate = {0};
 	struct times currentTime = {0};
 	// TODO: checks for orientation
-	struct coords modeTextCoords = {WIDTH/2, 44};
+	struct coords modeTextCoords = {getDisplayWidth()/2, 44};
 	if (getDisplayOrientation() % 2 == 0) modeTextCoords.y = 44;
 	else modeTextCoords.y = 32;
-	struct coords timeTextCoords = {centeredToLeft(WIDTH/2, 114), modeTextCoords.y+fontH*2};
+	struct coords timeTextCoords = {centeredToLeft(getDisplayWidth()/2, 114), modeTextCoords.y+fontH*2};
 
 	// code for full display refresh. should be all portions that aren't rewritten
 	if (isFaceBeingChanged) {
@@ -580,7 +508,6 @@ void drawClockApp(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 	}
 
 	// different code for different modes
-//	drawBattery(WIDTH/2-(4*fontW+6)/2, 5, hspi);		// battery in the middle
 	drawTopBar(hrtc, hspi);
 	if (clockVars.isBeingSet == 0) {
 		drawCenteredModeText(modeTextCoords.x, modeTextCoords.y, "", hspi);
@@ -614,30 +541,16 @@ void drawClockApp(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 			case 5: drawCenteredModeText(modeTextCoords.x, modeTextCoords.y, "setting date...", hspi); break;
 			default: break;
 		}
-//		// draw button text
-//		if (clockVars.fieldBeingSet == 1) drawButtonText("up", "down", "change", hspi);
-//
-//		setTextSize(1);
-//		switch (clockVars.fieldBeingSet) {
-//			case 1:	drawCenteredTextWithPadding(WIDTH/2, 44, 17, "setting minute...", hspi); break;
-//			case 2:	drawCenteredTextWithPadding(WIDTH/2, 44, 17, "setting hour...", hspi);	break;
-//			case 3: drawCenteredTextWithPadding(WIDTH/2, 44, 17, "setting year...", hspi); break;
-//			case 4: drawCenteredTextWithPadding(WIDTH/2, 44, 17, "setting month...", hspi); break;
-//			case 5: drawCenteredTextWithPadding(WIDTH/2, 44, 17, "setting date...", hspi); break;
-//			default: break;
-//		}
-//
-//		drawClock(clockVars.dateToSet, clockVars.timeToSet, hspi);
 	}
 }
 
 // helper function for drawing all elements for timer display
 void drawTimerApp(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 	struct times currentTimer = {0};
-	struct coords modeTextCoords = {WIDTH/2, 52};
+	struct coords modeTextCoords = {getDisplayWidth()/2, 52};
 	if (getDisplayOrientation() % 2 == 0) modeTextCoords.y = 52;
 	else modeTextCoords.y = 48;
-	struct coords timeTextCoords = {centeredToLeft(WIDTH/2, 96), modeTextCoords.y+fontH*2};
+	struct coords timeTextCoords = {centeredToLeft(getDisplayWidth()/2, 96), modeTextCoords.y+fontH*2};
 
 
 	if (isFaceBeingChanged) {
@@ -690,27 +603,15 @@ void drawTimerApp(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 		}
 
 		drawBasicTime(timeTextCoords.x, timeTextCoords.y, timerVars.timeToSet, hspi);
-//		// draw button text
-//		drawButtonText("up", "down", "change", hspi);
-//
-//		// write filler text
-//		switch (timerVars.fieldBeingSet) {
-//			case 1: drawCenteredTextWithPadding(WIDTH/2, 52, 17, "setting second...", hspi); break;
-//			case 2: drawCenteredTextWithPadding(WIDTH/2, 52, 17, "setting minute...", hspi); break;
-//			case 3: drawCenteredTextWithPadding(WIDTH/2, 52, 17, "setting hour...", hspi); break;
-//			default: break;
-//		}
-//
-//		drawTimer(timerVars.timeToSet, hspi);
 	}
 }
 
 // helper function for drawing all elements for alarm display
 void drawAlarmApp(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
-	struct coords modeTextCoords = {WIDTH/2, 48};
+	struct coords modeTextCoords = {getDisplayWidth()/2, 48};
 	if (getDisplayOrientation() % 2 == 0) modeTextCoords.y = 48;
 	else modeTextCoords.y = 36;
-	struct coords timeTextCoords = {centeredToLeft(WIDTH/2, 114), modeTextCoords.y+fontH*2};
+	struct coords timeTextCoords = {centeredToLeft(getDisplayWidth()/2, 114), modeTextCoords.y+fontH*2};
 	struct times alarmTime = {0};
 
 
@@ -726,23 +627,12 @@ void drawAlarmApp(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 	drawTopBar(hrtc, hspi);
 	if (alarmVars.isBeingSet == 0) {
 		drawCenteredModeText(modeTextCoords.x, modeTextCoords.y, "", hspi);
-//		setTextSize(1);
-//		clearTextLine(52, hspi);	// clear "setting..." text
-//		clearTextLine(60, hspi);	// clear am/pm text
 		if (alarmVars.isSet == 0) {
 			drawButtonText(2, "", hspi);
 			drawButtonText(3, "", hspi);
 			drawButtonText(4, "set", hspi);
 			drawCenteredModeText(modeTextCoords.x, modeTextCoords.y, "alarm unset", hspi);
 			fillRect(timeTextCoords.x, timeTextCoords.y, 114, 32, getBackgroundColor(), hspi);
-//			setTextSize(3);
-//			clearTextLine(68, hspi);	// clear alarm time text
-//
-//			setTextSize(1);
-//			drawCenteredTextWithPadding(WIDTH/2, 100, 11, "alarm unset", hspi);
-//
-//			// draw button text
-//			drawButtonText("", "", "set", hspi);
 		}
 		else if (isAlarmDone == 0) {
 			drawButtonText(2, "", hspi);
@@ -754,18 +644,10 @@ void drawAlarmApp(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 			alarmTime.min = alarmVars.alarmToSet->min;
 			alarmTime.sec = alarmVars.alarmToSet->sec;
 			drawWeekdayTime(timeTextCoords.x, timeTextCoords.y, alarmVars.alarmToSet->weekday, &alarmTime, hspi);
-//			setTextSize(1);
-//			drawCenteredTextWithPadding(WIDTH/2, 100, 11, "alarm set", hspi);
-//			drawAlarm(alarmVars.alarmToSet, hspi);
-//
-//			// draw button text
-//			drawButtonText("", "", "clear", hspi);
 		}
 		else {
-			drawCenteredModeText(modeTextCoords.x, modeTextCoords.y, "alarming!", hspi);
 			// should only run after case above. TODO: maybe should let you run alarm again (alarm doesn't get deactivated, so it'll trigger again if you wait a week)
-//			setTextSize(1);
-//			drawCenteredTextWithPadding(WIDTH/2, 100, 11, "alarm done!", hspi);
+			drawCenteredModeText(modeTextCoords.x, modeTextCoords.y, "alarming!", hspi);
 		}
 	}
 	else if (alarmVars.isBeingSet == 1) {
@@ -785,29 +667,15 @@ void drawAlarmApp(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 		alarmTime.min = alarmVars.alarmToSet->min;
 		alarmTime.sec = alarmVars.alarmToSet->sec;
 		drawWeekdayTime(timeTextCoords.x, timeTextCoords.y, alarmVars.alarmToSet->weekday, &alarmTime, hspi);
-//		setTextSize(1);
-//		switch (alarmVars.fieldBeingSet) {
-//			case 1: drawCenteredTextWithPadding(WIDTH/2, 52, 17, "setting second...", hspi); break;
-//			case 2: drawCenteredTextWithPadding(WIDTH/2, 52, 17, "setting minute...", hspi); break;
-//			case 3: drawCenteredTextWithPadding(WIDTH/2, 52, 17, "setting hour...", hspi); break;
-//			case 4: drawCenteredTextWithPadding(WIDTH/2, 52, 17, "setting day...", hspi); break;
-//			default: break;
-//		}
-//
-//		// draw button text
-//		drawButtonText("up", "down", "change", hspi);
-//
-//		// draw alarm
-//		drawAlarm(alarmVars.alarmToSet, hspi);
 	}
 }
 
 // helper function for drawing all elements for stopwatch display
 void drawStopwatchApp(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
-	struct coords timeTextCoords = {centeredToLeft(WIDTH/2, 96), 68};
+	struct coords timeTextCoords = {centeredToLeft(getDisplayWidth()/2, 96), 68};
 	if (getDisplayOrientation() % 2 == 0) timeTextCoords.y = 68;
 	else timeTextCoords.y = 52;
-	struct coords lapTextCoords = {WIDTH/2, timeTextCoords.y+fontH*2};
+	struct coords lapTextCoords = {getDisplayWidth()/2, timeTextCoords.y+fontH*2};
 	struct times t = {0};
 	char str[24];
 
@@ -822,7 +690,7 @@ void drawStopwatchApp(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 	}
 
 	if (getDisplayOrientation() % 2 == 0) drawTopBar(hrtc, hspi);
-	else drawBattery(centeredToLeft(WIDTH/2, 6+4*fontW), 23, hspi);
+	else drawBattery(centeredToLeft(getDisplayWidth()/2, 6+4*fontW), 23, hspi);
 	secondsToTime(&t, stopwatchCounter);
 	drawBasicTime(timeTextCoords.x, timeTextCoords.y, &t, hspi);
 
@@ -834,13 +702,6 @@ void drawStopwatchApp(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 
 	if (isStopwatchRunning == 0) drawButtonText(2, "run", hspi);
 	else drawButtonText(2, "pause", hspi);
-
-//	setTextColor(ST77XX_BLACK);
-//	drawStopwatch(stopwatchCounter, hspi);
-//	drawStopwatchLap(stopwatchVars.lapCurrent-stopwatchVars.lapPrev, hspi);
-//
-//	if (isStopwatchRunning == 0) drawButtonText("run", "lap", "clear", hspi);
-//	else if (isStopwatchRunning == 1) drawButtonText("pause", "lap", "clear", hspi);
 }
 
 // ---- drawing functions related specifically to the user interface ----
@@ -848,7 +709,7 @@ void drawStopwatchApp(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 // uses upper left coords
 void drawButton(uint8_t x_center, uint8_t y_center, SPI_HandleTypeDef *hspi) {
 	// bounds checking. probably already done in draw/fillRect
-	if (x_center-5 < 0 || x_center+5 > WIDTH || y_center-5 < 0 || y_center+5 > HEIGHT) return;		// TODO: fix bounds checking
+	if (x_center-5 < 0 || x_center+5 > getDisplayWidth() || y_center-5 < 0 || y_center+5 > getDisplayHeight()) return;		// TODO: fix bounds checking
 
 	// draw rect size 8 with 1 pixel border
 	// parameters give center position of graphic
@@ -858,12 +719,6 @@ void drawButton(uint8_t x_center, uint8_t y_center, SPI_HandleTypeDef *hspi) {
 
 // draws 4 buttons to represent important ui buttons and tell the user their action
 void drawButtons(SPI_HandleTypeDef *hspi) {
-//	uint16_t buttonHSpacing = WIDTH/2;
-//	uint16_t buttonYSpacing = 24;
-//	struct coords b1 = {centeredToLeft(button1Coords.x, 10), button1Coords.y};
-//	struct coords b2 = {b1.x+buttonHSpacing, b1.y};
-//	struct coords b3 = {b1.x, b1.y+buttonVSpacing};
-//	struct coords b4 = {b2.x, b3.y};
 	struct coords b1 = {0, 0};
 	struct coords b2 = {0, 0};
 	struct coords b3 = {0, 0};
@@ -900,14 +755,8 @@ void drawButtons(SPI_HandleTypeDef *hspi) {
 void drawButtonText(uint8_t buttonNo, const char *str, SPI_HandleTypeDef *hspi) {
 	// using centered x, not upper left x
 	// TODO: make variables file wide. modified in their own function or something
-//	uint16_t buttonHSpacing = WIDTH/2;
-//	uint16_t buttonYSpacing = 24;							// use more variables? (button height, spacing, fontsize)
+	// use more variables? (button height, spacing, fontsize)
 	uint8_t maxTextLength = buttonHSpacing/fontW;			// TODO: can you combine variables with nearby funcs?
-
-//	struct coords b1 = {button1Coords.x, button1Coords.y-fontH};
-//	struct coords b2 = {b1.x+buttonHSpacing, b1.y};
-//	struct coords b3 = {b1.x, b1.y+buttonVSpacing};
-//	struct coords b4 = {b2.x, b3.y};
 
 	struct coords b1 = {0, 0};
 	struct coords b2 = {0, 0};
@@ -949,14 +798,7 @@ void drawButtonText(uint8_t buttonNo, const char *str, SPI_HandleTypeDef *hspi) 
 
 void drawButtonTexts(const char *str1, const char *str2, const char *str3, const char *str4, SPI_HandleTypeDef *hspi) {
 	// using centered x, not upper left x
-//	uint16_t buttonHSpacing = WIDTH/2;
-//	uint16_t buttonYSpacing = 24;
 	uint8_t maxTextLength = buttonHSpacing/fontW;
-
-//	struct coords b1 = {button1Coords.x, button1Coords.y-fontH};
-//	struct coords b2 = {b1.x+buttonHSpacing, b1.y};
-//	struct coords b3 = {b1.x, b1.y+buttonVSpacing};
-//	struct coords b4 = {b2.x, b3.y};
 
 	struct coords b1 = {0, 0};
 	struct coords b2 = {0, 0};
@@ -1003,10 +845,10 @@ void drawTitle(char *str, SPI_HandleTypeDef *hspi) {
 	// drawing title
 	// bounds checking
 	// TODO: use fontsize variable
-	if (12*strSize < WIDTH) {			// about string size = 10 for width = 128
+	if (12*strSize < getDisplayWidth()) {			// about string size = 10 for width = 128
 		setTextSize(2);
 	}
-	else if (6*strSize < WIDTH) {		// about string size = 21 for width = 128
+	else if (6*strSize < getDisplayWidth()) {		// about string size = 21 for getDisplayWidth() = 128
 		setTextSize(1);
 	}
 	else {
@@ -1015,7 +857,7 @@ void drawTitle(char *str, SPI_HandleTypeDef *hspi) {
 	}
 
 	setTextColor(ST77XX_BLACK);
-	drawCenteredText(WIDTH/2, titleY, str, hspi);
+	drawCenteredText(getDisplayWidth()/2, titleY, str, hspi);
 }
 
 // shows when you're setting something or whatever
@@ -1023,14 +865,14 @@ void drawTitle(char *str, SPI_HandleTypeDef *hspi) {
 void drawModeText(uint16_t x, uint16_t y, const char *str, SPI_HandleTypeDef *hspi) {
 	setTextSize(1);
 	setTextColor(ST77XX_BLACK);
-	uint8_t maxLength = WIDTH/fontW;
+	uint8_t maxLength = getDisplayWidth()/fontW;
 	drawTextWithPadding(x, y, maxLength, str, hspi);
 }
 
 void drawCenteredModeText(uint16_t x, uint16_t y, const char *str, SPI_HandleTypeDef *hspi) {
 	setTextSize(1);
 	setTextColor(ST77XX_BLACK);
-	uint8_t maxLength = WIDTH/fontW;
+	uint8_t maxLength = getDisplayWidth()/fontW;
 	drawCenteredTextWithPadding(x, y, maxLength, str, hspi);
 }
 
@@ -1081,7 +923,7 @@ void drawTinyTime(uint16_t x, uint16_t y, RTC_HandleTypeDef *hrtc, SPI_HandleTyp
 // groups the small clock and battery into a horizontal bar on top of the screen
 void drawTopBar(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 	uint16_t barY = 5;
-	struct coords battCoords = {WIDTH-(6+fontW*4)-5, barY};		// TODO: use fontsize variable
+	struct coords battCoords = {getDisplayWidth()-(6+fontW*4)-5, barY};		// TODO: use fontsize variable
 	struct coords clockCoords = {5, barY+4};
 
 	// TODO: if checks to determine whether to redraw or not
@@ -1113,14 +955,6 @@ void drawTime(uint16_t x, uint16_t y, struct times *t, SPI_HandleTypeDef *hspi) 
 	setTextSize(1);
 	if (t->hr < 12) drawTextAt(x+3*fontW*5, y, "AM", hspi);
 	else drawTextAt(x+3*fontW*5, y, "PM", hspi);
-
-//	// drawing date
-//	setTextSize(1);
-//	sprintf(str, "%s %d %04d", monthNames[d->month], d->date, d->yr);
-//	drawCenteredTextWithPadding(WIDTH/2, 84, 12, str, hspi);
-//
-//	// drawing weekday
-//	drawCenteredTextWithPadding(WIDTH/2, 92, 9, weekdayNames[d->weekday], hspi);
 }
 
 // draws both time and date (as it says right there in the function name)
@@ -1161,70 +995,6 @@ void drawBasicTime(uint16_t x, uint16_t y, struct times *t, SPI_HandleTypeDef *h
 	sprintf(str, "%2d:%2d:%2d", t->hr, t->min, t->sec);
 	drawTextAt(x, y, str, hspi);
 }
-
-//// drawing timer on screen
-//void drawTimer(struct times *t, SPI_HandleTypeDef *hspi) {
-//	char str[40];
-//
-//	// only drawing hr:min:sec of timer
-//	setTextSize(2);
-//	setTextColor(ST77XX_BLACK);
-//	sprintf(str, "%2d:%2d:%2d", t->hr, t->min, t->sec);
-//	drawCenteredText(WIDTH/2, HEIGHT/2-12, str, hspi);		// about y=68
-//
-//	// leaving room to draw "timer set!/unset" text
-//}
-//
-//// drawing alarm on screen
-//void drawAlarm(struct alarmTimes *a, SPI_HandleTypeDef *hspi) {
-//	char str[40];
-//
-//	// drawing hr:min:sec
-//	setTextSize(2);
-//	setTextColor(ST77XX_BLACK);
-//	if (a->hr % 12 == 0) sprintf(str, "%2d:%2d:%2d", 12, a->min, a->sec);
-//	else sprintf(str, "%2d:%2d:%2d", a->hr%12, a->min, a->sec);
-//	drawCenteredText(WIDTH/2, 68, str, hspi);
-//
-//	setTextSize(1);
-//	if (a->hr < 12) drawCenteredText(100, 60, "AM", hspi);
-//	else drawCenteredText(100, 60, "PM", hspi);
-//
-//
-//	// drawing weekday
-//	setTextSize(1);
-//	drawCenteredTextWithPadding(WIDTH/2, 84, 9, weekdayNames[a->weekday], hspi);
-//}
-//
-//// drawing stopwatch on screen
-//void drawStopwatch(uint32_t seconds, SPI_HandleTypeDef *hspi) {
-//	struct times t = {0};
-//	char str[40];
-//
-//	secondsToTime(&t, seconds);
-//
-//	// drawing hr:min:sec
-//	setTextSize(2);
-//	setTextColor(ST77XX_BLACK);
-//	sprintf(str, "%2d:%2d:%2d", t.hr, t.min, t.sec);
-//	drawCenteredText(WIDTH/2, 68, str, hspi);
-//
-//	// leaving room for lap text
-//}
-//
-//// drawing lap text
-//void drawStopwatchLap(uint32_t seconds, SPI_HandleTypeDef *hspi) {
-//	struct times t = {0};
-//	char str[40];
-//
-//	secondsToTime(&t, seconds);		// converting
-//
-//	// drawing hr:min:sec
-//	setTextSize(1);
-//	setTextColor(ST77XX_BLACK);
-//	sprintf(str, "lap: %2d:%2d:%2d", t.hr, t.min, t.sec);
-//	drawCenteredText(WIDTH/2, 84, str, hspi);
-//}
 // ---- end of drawing functions ----
 
 // initializes variables. should be called at the start of program

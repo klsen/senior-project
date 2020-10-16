@@ -131,9 +131,6 @@ struct coords {
 	uint16_t y;
 };
 
-uint8_t HEIGHT;
-uint8_t WIDTH;
-
 // ---- Lower level functions ----
 // toggles gpio pins for SPI chip select and data/command pin on ST77XX driver
 void SPI_CS_LOW();
@@ -231,8 +228,10 @@ void setTextColor(uint16_t color);
 uint16_t getBackgroundColor();
 uint16_t getTextColor();
 
+// returns static variable that tracks textsize setting
 uint8_t getTextSize();
 
+// functions involving display orientation and display height/width
 void setDisplayOrientation(uint8_t o, SPI_HandleTypeDef *hspi);
 uint8_t getDisplayOrientation();
 uint16_t getDisplayHeight();
@@ -240,6 +239,7 @@ uint16_t getDisplayWidth();
 // ---- end of setters and getters ----
 
 // ---- helpers ----
+// converters for origin on upper left and centered x
 uint16_t leftToCenteredText(uint16_t x, const char *str);
 uint16_t centeredToLeftText(uint16_t x, const char *str);
 uint16_t leftToCentered(uint16_t x, uint16_t boxW);
