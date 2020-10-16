@@ -134,7 +134,7 @@ void drawStopwatchApp(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
 // ---- graphics functions ----
 // for drawing parts that are reused by different programs
 // draws graphics that represent buttons and what the buttons are supposed to do
-void drawButton(uint8_t x_center, uint8_t y_center, SPI_HandleTypeDef* hspi);
+void drawButton(int x, int y, SPI_HandleTypeDef* hspi);
 void drawButtons(SPI_HandleTypeDef *hspi);
 void drawButtonText(uint8_t buttonNo, const char *str, SPI_HandleTypeDef *hspi);
 void drawButtonTexts(const char *str1, const char *str2, const char *str3, const char *str4, SPI_HandleTypeDef *hspi);
@@ -143,21 +143,21 @@ void drawButtonTexts(const char *str1, const char *str2, const char *str3, const
 void drawTitle(char *str, SPI_HandleTypeDef *hspi);
 
 // draws a graphic for the current battery level
-void drawBattery(uint16_t x, uint16_t y, SPI_HandleTypeDef *hspi);
+void drawBattery(int x, int y, SPI_HandleTypeDef *hspi);
 
 // combines a small clock and a battery indicator to be displayed at the top of the screen
 void drawTopBar(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
 
 // draws text that shows current mode app is in
-void drawModeText(uint16_t x, uint16_t y, const char *str, SPI_HandleTypeDef *hspi);
-void drawCenteredModeText(uint16_t x, uint16_t y, const char *str, SPI_HandleTypeDef *hspi);
+void drawModeText(int x, int y, const char *str, SPI_HandleTypeDef *hspi);
+void drawCenteredModeText(int x, int y, const char *str, SPI_HandleTypeDef *hspi);
 
 // functions for drawing time fields in different ways
-void drawTinyTime(uint16_t x, uint16_t y, RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
-void drawTime(uint16_t x, uint16_t y, struct times *t, SPI_HandleTypeDef *hspi);
-void drawDateTime(uint16_t x, uint16_t y, struct dates *d, struct times *t, SPI_HandleTypeDef *hspi);
-void drawWeekdayTime(uint16_t x, uint16_t y, uint8_t weekday, struct times *t, SPI_HandleTypeDef *hspi);
-void drawBasicTime(uint16_t x, uint16_t y, struct times *t, SPI_HandleTypeDef *hspi);
+void drawTinyTime(int x, int y, RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi);
+void drawTime(int x, int y, struct times *t, SPI_HandleTypeDef *hspi);
+void drawDateTime(int x, int y, struct dates *d, struct times *t, SPI_HandleTypeDef *hspi);
+void drawWeekdayTime(int x, int y, uint8_t weekday, struct times *t, SPI_HandleTypeDef *hspi);
+void drawBasicTime(int x, int y, struct times *t, SPI_HandleTypeDef *hspi);
 // ---- end of helper drawing functions ----
 // ---- end of graphics functions
 

@@ -707,14 +707,14 @@ void drawStopwatchApp(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 // ---- drawing functions related specifically to the user interface ----
 // draws a 10x10 box representing a button onto the screen
 // uses upper left coords
-void drawButton(uint8_t x_center, uint8_t y_center, SPI_HandleTypeDef *hspi) {
+void drawButton(int x, int y, SPI_HandleTypeDef *hspi) {
 	// bounds checking. probably already done in draw/fillRect
-	if (x_center-5 < 0 || x_center+5 > getDisplayWidth() || y_center-5 < 0 || y_center+5 > getDisplayHeight()) return;		// TODO: fix bounds checking
+	if (x < 0 || x+10 > getDisplayWidth() || y < 0 || y+10 > getDisplayHeight()) return;		// TODO: fix bounds checking
 
 	// draw rect size 8 with 1 pixel border
 	// parameters give center position of graphic
-	drawRect(x_center, y_center, 10, 10, ST77XX_BLACK, hspi);
-	fillRect(x_center+1, y_center+1, 8, 8, ST77XX_WHITE, hspi);
+	drawRect(x, y, 10, 10, ST77XX_BLACK, hspi);
+	fillRect(x+1, y+1, 8, 8, ST77XX_WHITE, hspi);
 }
 
 // draws 4 buttons to represent important ui buttons and tell the user their action
@@ -862,14 +862,14 @@ void drawTitle(char *str, SPI_HandleTypeDef *hspi) {
 
 // shows when you're setting something or whatever
 // use centered x
-void drawModeText(uint16_t x, uint16_t y, const char *str, SPI_HandleTypeDef *hspi) {
+void drawModeText(int x, int y, const char *str, SPI_HandleTypeDef *hspi) {
 	setTextSize(1);
 	setTextColor(ST77XX_BLACK);
 	uint8_t maxLength = getDisplayWidth()/fontW;
 	drawTextWithPadding(x, y, maxLength, str, hspi);
 }
 
-void drawCenteredModeText(uint16_t x, uint16_t y, const char *str, SPI_HandleTypeDef *hspi) {
+void drawCenteredModeText(int x, int y, const char *str, SPI_HandleTypeDef *hspi) {
 	setTextSize(1);
 	setTextColor(ST77XX_BLACK);
 	uint8_t maxLength = getDisplayWidth()/fontW;
@@ -877,7 +877,7 @@ void drawCenteredModeText(uint16_t x, uint16_t y, const char *str, SPI_HandleTyp
 }
 
 // draws a battery graphic to represent current battery level
-void drawBattery(uint16_t x, uint16_t y, SPI_HandleTypeDef *hspi) {
+void drawBattery(int x, int y, SPI_HandleTypeDef *hspi) {
 	// doesn't move and is used on an empty screen, so shouldn't need to clear then print
 	char str[5];
 
@@ -905,7 +905,7 @@ void drawBattery(uint16_t x, uint16_t y, SPI_HandleTypeDef *hspi) {
 }
 
 // drawing current time on top of screen when other faces are displayed
-void drawTinyTime(uint16_t x, uint16_t y, RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
+void drawTinyTime(int x, int y, RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 	char str[10];
 	struct times currentTime = {0};
 	getTime(&currentTime, hrtc);
@@ -934,7 +934,7 @@ void drawTopBar(RTC_HandleTypeDef *hrtc, SPI_HandleTypeDef *hspi) {
 // 114x24. draws time only
 // use upper left coords pls ty
 // originally on (7, 60)
-void drawTime(uint16_t x, uint16_t y, struct times *t, SPI_HandleTypeDef *hspi) {
+void drawTime(int x, int y, struct times *t, SPI_HandleTypeDef *hspi) {
 	// notes on paper.
 	char str[24];
 
@@ -959,7 +959,7 @@ void drawTime(uint16_t x, uint16_t y, struct times *t, SPI_HandleTypeDef *hspi) 
 
 // draws both time and date (as it says right there in the function name)
 // uses upper left coords
-void drawDateTime(uint16_t x, uint16_t y, struct dates *d, struct times *t, SPI_HandleTypeDef *hspi) {
+void drawDateTime(int x, int y, struct dates *d, struct times *t, SPI_HandleTypeDef *hspi) {
 	char str[24];
 	uint16_t xc = leftToCentered(x, 114);
 
@@ -977,7 +977,7 @@ void drawDateTime(uint16_t x, uint16_t y, struct dates *d, struct times *t, SPI_
 // used for alarms, but like...what if...you dont use it for alarms
 // uses upper left coords.
 // callee's responsibility to unpack alarm struct ty
-void drawWeekdayTime(uint16_t x, uint16_t y, uint8_t weekday, struct times *t, SPI_HandleTypeDef *hspi) {
+void drawWeekdayTime(int x, int y, uint8_t weekday, struct times *t, SPI_HandleTypeDef *hspi) {
 	drawTime(x, y, t, hspi);
 
 	setTextSize(1);
@@ -988,7 +988,7 @@ void drawWeekdayTime(uint16_t x, uint16_t y, uint8_t weekday, struct times *t, S
 // 96x16
 // upper left coords (use helpers if you want to center uwu)
 // originally on (16, 68)
-void drawBasicTime(uint16_t x, uint16_t y, struct times *t, SPI_HandleTypeDef *hspi) {
+void drawBasicTime(int x, int y, struct times *t, SPI_HandleTypeDef *hspi) {
 	char str[24];
 	setTextSize(2);
 	setTextColor(ST77XX_BLACK);

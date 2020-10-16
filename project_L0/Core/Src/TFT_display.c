@@ -218,7 +218,7 @@ uint16_t colorFixer(uint16_t color) {
 }
 
 // draw a pixel on specified coordinates
-void drawPixel(uint8_t x, uint8_t y, uint16_t color, SPI_HandleTypeDef *hspi) {
+void drawPixel(int x, int y, uint16_t color, SPI_HandleTypeDef *hspi) {
 	// bounds checking
 	// just don't draw if pixel is out of bounds
 	if ((x > displayWidth) || (x < 0) || (y > displayHeight) || (y < 0)) return;
@@ -228,24 +228,32 @@ void drawPixel(uint8_t x, uint8_t y, uint16_t color, SPI_HandleTypeDef *hspi) {
 }
 
 // draw a horizontal line. coordinates are for left point
-void drawHLine(uint8_t x, uint8_t y, uint8_t size, uint16_t color, SPI_HandleTypeDef *hspi) {
-	// bounds checking
-	if (x < 0) x = 0;						// don't set x out of bounds
+void drawHLine(int x, int y, int size, uint16_t color, SPI_HandleTypeDef *hspi) {
+	if (size < 0) abs(size);		// no x adjustments for intended size
+
+	// bounds checking. draw as much of the line as you can
+	// constrain x so it's not out of bounds
+	if (x < 0) x = 0;
 	if (x > displayWidth) x = displayWidth;
-	if (x+size > displayWidth) size = displayWidth-x;		// don't set size so line draws out of bounds
+	// constrain size so it doesn't go out of bounds
+	if (x+size > displayWidth) size = displayWidth-x;
 	if (x+size < 0) size = 0-x;
-	if ((y > displayHeight) || (y < 0)) return;	// don't draw if y is out of bounds
+	if ((y > displayHeight) || (y < 0)) return;		// don't draw if y is out of bounds
 
 	setAddrWindow(x, y, size, 1, hspi);
 	sendColor(color, size, hspi);
 }
 
 // draws a vertical line. coordinates are for top point
-void drawVLine(uint8_t x, uint8_t y, uint8_t size, uint16_t color, SPI_HandleTypeDef *hspi) {
+void drawVLine(int x, int y, int size, uint16_t color, SPI_HandleTypeDef *hspi) {
+	if (size < 0) abs(size);		// no y adjustments for intended size
+
 	// bounds checking
-	if (y < 0) y = 0;						// don't set y out of bounds
+	// constrain y so it's not out of bounds
+	if (y < 0) y = 0;
 	if (y > displayHeight) y = displayHeight;
-	if (y+size > displayHeight) size = displayHeight-y;	// don't set size so line draws out of bounds
+	// constrain size so it doesn't go out of bounds
+	if (y+size > displayHeight) size = displayHeight-y;
 	if (y+size < 0) size = 0-y;
 	if ((x > displayWidth) || (x < 0)) return;		// don't draw if x is out of bounds
 
@@ -254,9 +262,11 @@ void drawVLine(uint8_t x, uint8_t y, uint8_t size, uint16_t color, SPI_HandleTyp
 }
 
 // draws on a specific region with input 16-bit buffer
-void drawBuffer(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t *buffer, uint16_t bufferSize, SPI_HandleTypeDef *hspi) {
+void drawBuffer(int x, int y, int w, int h, uint16_t *buffer, uint16_t bufferSize, SPI_HandleTypeDef *hspi) {
 	// also don't call this with buffer size too big bc there's not enough ram for all pixels of display
-	if (x+w > displayWidth || y+h > displayHeight) return;
+	// no checking just don't do it pls thx. i don't know the number so i'm not doing it. you can just watch it crash
+	if (x < 0 || y < 0 || w < 0 || h < 0) return;				// not dealing with negative numbers
+	if (x+w > displayWidth || y+h > displayHeight) return;		// not dealing with out of bounds
 	if (bufferSize == 0) return;
 
 	setAddrWindow(x, y, w, h, hspi);
@@ -265,7 +275,7 @@ void drawBuffer(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t *buffer, ui
 // ---- end of base graphics functions
 
 // ---- basic shapes and lines ----
-void drawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint16_t color, SPI_HandleTypeDef *hspi) {
+void drawLine(int x0, int y0, int x1, int y1, uint16_t color, SPI_HandleTypeDef *hspi) {
 	// based on Bresenham's line drawing algorithm (thx Adafruit and Wikipedia)
 	if (x0 == x1) {
 		drawVLine(x0, y0, abs(y0-y1), color, hspi);
@@ -308,7 +318,7 @@ void drawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint16_t color, SP
 }
 
 // draw an empty rectangle
-void drawRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t color, SPI_HandleTypeDef *hspi) {
+void drawRect(int x, int y, int w, int h, uint16_t color, SPI_HandleTypeDef *hspi) {
 	drawHLine(x, y, w, color, hspi);
 	drawHLine(x, y+h-1, w, color, hspi);
 	drawVLine(x, y, h, color, hspi);
@@ -316,18 +326,21 @@ void drawRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t color, SPI_Ha
 }
 
 // draw a filled rectangle
-void fillRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t color, SPI_HandleTypeDef *hspi) {
+void fillRect(int x, int y, int w, int h, uint16_t color, SPI_HandleTypeDef *hspi) {
+	// bounds checking. this is so annoying
+	// the intention is to draw it as if coordinates could be off screen and it'd draw the portion that ends up on screen
+	// with some adjustments. idk how to do it.
+//	if (w < 0) abs(w);
+//	if (h < 0) abs(h);
+//	if (x < 0) x = 0;
+//	if (y < 0) y = 0;
+//	if (x > displayWidth) x = displayWidth;
+//	if (y > displayHeight) y = displayHeight;
+//	if (x+w > displayWidth) w = displayWidth-x;
+//	if (y+h > displayHeight) h = displayHeight-y;
+
 	setAddrWindow(x, y, w, h, hspi);
 	sendColor(color, w*h, hspi);
-//	for (int i = 0; i < h; i++) {
-//		drawHLine(x, y+i, w, color, hspi);
-//	}
-//	int i, j;
-//	for (i = x; i < w; i++) {
-//		for (j = y; j < h; j++) {
-//			drawPixel(i, j, ST77XX_BLUE, hspi);
-//		}
-//	}
 }
 
 // a big rectangle, but for the whole screen

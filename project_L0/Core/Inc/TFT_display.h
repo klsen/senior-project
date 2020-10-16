@@ -166,20 +166,20 @@ uint16_t colorFixer(uint16_t);		// helper function involved with 16-bit pixel da
 // draws pixels, lines, and an input 16-bit buffer
 // coordinates are for upper left corner. screen is oriented vertically with pins on bottom by default
 // hline x and y are for left point, vline x and y are for top point
-void drawPixel(uint8_t x, uint8_t y, uint16_t color, SPI_HandleTypeDef* hspi);
-void drawHLine(uint8_t x, uint8_t y, uint8_t size, uint16_t color, SPI_HandleTypeDef* hspi);
-void drawVLine(uint8_t x, uint8_t y, uint8_t size, uint16_t color, SPI_HandleTypeDef* hspi);
-void drawBuffer(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t *buffer, uint16_t bufferSize, SPI_HandleTypeDef *hspi);
+void drawPixel(int x, int y, uint16_t color, SPI_HandleTypeDef* hspi);
+void drawHLine(int x, int y, int size, uint16_t color, SPI_HandleTypeDef* hspi);
+void drawVLine(int x, int y, int size, uint16_t color, SPI_HandleTypeDef* hspi);
+void drawBuffer(int x, int y, int w, int h, uint16_t *buffer, uint16_t bufferSize, SPI_HandleTypeDef *hspi);
 // ---- end of base functions ----
 
 // ---- basic shapes and lines ----
 // these functions are based completely on above functions
 // draws lines and rectangles
-void drawRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t color, SPI_HandleTypeDef* hspi);
-void fillRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t color, SPI_HandleTypeDef* hspi);
+void drawRect(int x, int y, int w, int h, uint16_t color, SPI_HandleTypeDef* hspi);
+void fillRect(int x, int y, int w, int h, uint16_t color, SPI_HandleTypeDef* hspi);
 
 // draws a line from point to point
-void drawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint16_t color, SPI_HandleTypeDef* hspi);
+void drawLine(int x0, int y0, int x1, int y1, uint16_t color, SPI_HandleTypeDef* hspi);
 
 // completely fills screen with 1 color
 void fillScreen(uint16_t color, SPI_HandleTypeDef* hspi);
