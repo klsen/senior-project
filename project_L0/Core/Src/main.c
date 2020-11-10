@@ -180,13 +180,13 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-		updateState(&hrtc, &htim21, &htim2, &htim6, &hspi2);
+		updateState(&hrtc, &htim21, &htim3, &htim6, &hspi2);
 		updateDisplay(&hrtc, &hspi2);
 
 		batteryManager(&hadc, &hspi2, &htim21, &htim3);
 
 		if (isTimerDone || isAlarmDone) {
-			runMotor(&htim2);
+			runMotor(&htim6);		// pls fix
 			updateDisplay(&hrtc, &hspi2);
 			isTimerDone = isAlarmDone = 0;
 		}
@@ -569,10 +569,10 @@ static void MX_TIM6_Init(void)
 
   /* USER CODE END TIM6_Init 1 */
   htim6.Instance = TIM6;
-  htim6.Init.Prescaler = 0x40;
+  htim6.Init.Prescaler = 320;
   htim6.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim6.Init.Period = 65535;
-  htim6.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  htim6.Init.Period = 50000;
+  htim6.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_Base_Init(&htim6) != HAL_OK)
   {
     Error_Handler();

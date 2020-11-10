@@ -12,18 +12,34 @@ static uint8_t motorStateCounter = 0;
 // called for a bunch of timers when timer has to circle back (arr->0, 0->arr)
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 	// button's timer
+//	if (htim->Instance == TIM6) {
+//		// stop timer, renable button interrupts, and clear pending
+//		HAL_TIM_Base_Stop_IT(htim);
+//		HAL_NVIC_ClearPendingIRQ(EXTI2_3_IRQn);
+//		HAL_NVIC_ClearPendingIRQ(EXTI4_15_IRQn);
+//		__HAL_GPIO_EXTI_CLEAR_IT(BUTTON1);
+//		__HAL_GPIO_EXTI_CLEAR_IT(BUTTON2);
+//		__HAL_GPIO_EXTI_CLEAR_IT(BUTTON3);
+//		__HAL_GPIO_EXTI_CLEAR_IT(BUTTON4);
+//
+//		HAL_NVIC_EnableIRQ(EXTI2_3_IRQn);
+//		HAL_NVIC_EnableIRQ(EXTI4_15_IRQn);
+//	}
 	if (htim->Instance == TIM6) {
-		// stop timer, renable button interrupts, and clear pending
-		HAL_TIM_Base_Stop_IT(htim);
-		HAL_NVIC_ClearPendingIRQ(EXTI2_3_IRQn);
-		HAL_NVIC_ClearPendingIRQ(EXTI4_15_IRQn);
-		__HAL_GPIO_EXTI_CLEAR_IT(BUTTON1);
-		__HAL_GPIO_EXTI_CLEAR_IT(BUTTON2);
-		__HAL_GPIO_EXTI_CLEAR_IT(BUTTON3);
-		__HAL_GPIO_EXTI_CLEAR_IT(BUTTON4);
-
-		HAL_NVIC_EnableIRQ(EXTI2_3_IRQn);
-		HAL_NVIC_EnableIRQ(EXTI4_15_IRQn);
+		// just pulsing 3x
+		++motorStateCounter;
+		switch(motorStateCounter) {
+			case 1: HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_PIN, GPIO_PIN_SET); break;
+			case 2: HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_PIN, GPIO_PIN_RESET); break;
+			case 3: HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_PIN, GPIO_PIN_SET); break;
+			case 4: HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_PIN, GPIO_PIN_RESET); break;
+			case 5: HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_PIN, GPIO_PIN_SET); break;
+			case 6:
+				HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_PIN, GPIO_PIN_RESET);
+				stopMotor(htim);
+				break;
+			default: break;
+		}
 	}
 	// sampler's timer
 	else if (htim->Instance == TIM22) {
@@ -58,22 +74,22 @@ void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
 		}
 	}
 	// motor's timer
-	else if (htim->Instance == TIM2) {
-		// just pulsing 3x
-		++motorStateCounter;
-		switch(motorStateCounter) {
-			case 1: HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_PIN, GPIO_PIN_SET); break;
-			case 2: HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_PIN, GPIO_PIN_RESET); break;
-			case 3: HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_PIN, GPIO_PIN_SET); break;
-			case 4: HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_PIN, GPIO_PIN_RESET); break;
-			case 5: HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_PIN, GPIO_PIN_SET); break;
-			case 6:
-				HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_PIN, GPIO_PIN_RESET);
-				stopMotor(htim);
-				break;
-			default: break;
-		}
-	}
+//	else if (htim->Instance == TIM6) {
+//		// just pulsing 3x
+//		++motorStateCounter;
+//		switch(motorStateCounter) {
+//			case 1: HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_PIN, GPIO_PIN_SET); break;
+//			case 2: HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_PIN, GPIO_PIN_RESET); break;
+//			case 3: HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_PIN, GPIO_PIN_SET); break;
+//			case 4: HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_PIN, GPIO_PIN_RESET); break;
+//			case 5: HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_PIN, GPIO_PIN_SET); break;
+//			case 6:
+//				HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_PIN, GPIO_PIN_RESET);
+//				stopMotor(htim);
+//				break;
+//			default: break;
+//		}
+//	}
 }
 
 // ---- important timer functions  ----
@@ -170,27 +186,31 @@ void runADCSampler(TIM_HandleTypeDef *htim) {
 // running motor for vibration. runs for a finite amount of time
 // uses LSE timer TIM2 CH2
 void runMotor(TIM_HandleTypeDef *htim) {
-	TIM_OC_InitTypeDef sConfig = {0};
-	sConfig.OCMode = TIM_OCMODE_TIMING;
-	sConfig.OCPolarity = TIM_OCPOLARITY_HIGH;
-	sConfig.OCFastMode = TIM_OCFAST_DISABLE;
-	sConfig.Pulse = htim->Instance->CNT;
+//	TIM_OC_InitTypeDef sConfig = {0};
+//	sConfig.OCMode = TIM_OCMODE_TIMING;
+//	sConfig.OCPolarity = TIM_OCPOLARITY_HIGH;
+//	sConfig.OCFastMode = TIM_OCFAST_DISABLE;
+//	sConfig.Pulse = htim->Instance->CNT;
+//
+//	HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_PIN, GPIO_PIN_SET);
+//	HAL_TIM_OC_ConfigChannel(htim, &sConfig, TIM_CHANNEL_1);
+//	HAL_TIM_OC_Start_IT(htim, TIM_CHANNEL_1);
 
 	HAL_GPIO_WritePin(MOTOR_PORT, MOTOR_PIN, GPIO_PIN_SET);
-	HAL_TIM_OC_ConfigChannel(htim, &sConfig, TIM_CHANNEL_2);
-	HAL_TIM_OC_Start_IT(htim, TIM_CHANNEL_2);
-
+	HAL_TIM_Base_Start_IT(htim);
 	motorStateCounter = 0;
 }
 
 void stopMotor(TIM_HandleTypeDef *htim) {
-	HAL_TIM_OC_Stop_IT(htim, TIM_CHANNEL_2);
+//	HAL_TIM_OC_Stop_IT(htim, TIM_CHANNEL_1);
+	HAL_TIM_Base_Stop_IT(htim);
 	motorStateCounter = 0;
 }
 
-// should use TIM2
-void runMotorBase(TIM_HandleTypeDef *htim) {HAL_TIM_Base_Start(htim);}
-void stopMotorBase(TIM_HandleTypeDef *htim) {HAL_TIM_Base_Stop(htim);}
+// should use TIM6
+// TODO: change old comments (11/10/2020)
+//void runMotorBase(TIM_HandleTypeDef *htim) {HAL_TIM_Base_Start(htim);}
+//void stopMotorBase(TIM_HandleTypeDef *htim) {HAL_TIM_Base_Stop(htim);}
 
 // should change display brightness by changing PWM pulse width. input should be from 0-100
 // uses 32MHz timer TIM3 CH1

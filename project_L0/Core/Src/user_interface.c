@@ -68,7 +68,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 }
 
 //
-void updateState(RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *timerStopwatchTim, TIM_HandleTypeDef *motorBacklightTim, TIM_HandleTypeDef *buttonTim, SPI_HandleTypeDef *hspi) {
+void updateState(RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *timerStopwatchTim, TIM_HandleTypeDef *backlightTim, TIM_HandleTypeDef *motorTim, SPI_HandleTypeDef *hspi) {
 	if (buttons.is1Pressed || buttons.is2Pressed || buttons.is3Pressed || buttons.is4Pressed) {
 		// button 1 changes the face on screen.
 		if (buttons.is1Pressed) {
@@ -109,8 +109,8 @@ void updateState(RTC_HandleTypeDef *hrtc, TIM_HandleTypeDef *timerStopwatchTim, 
 
 		// run helper functions when their face is on screen
 		if (faceOnDisplay == faceClock) updateClockState(hrtc);
-		else if (faceOnDisplay == faceTimer) updateTimerState(timerStopwatchTim, motorBacklightTim);
-		else if (faceOnDisplay == faceAlarm) updateAlarmState(hrtc, motorBacklightTim);
+		else if (faceOnDisplay == faceTimer) updateTimerState(timerStopwatchTim, motorTim);
+		else if (faceOnDisplay == faceAlarm) updateAlarmState(hrtc, motorTim);
 		else if (faceOnDisplay == faceStopwatch) updateStopwatchState(timerStopwatchTim);
 
 		// flags cleared only when state code has finished executing once
