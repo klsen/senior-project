@@ -118,17 +118,9 @@
 // ---- End of function macros ----
 
 // custom structs
-struct textField {
-	uint16_t xPos;
-	uint16_t yPos;
-	uint16_t textSize;
-	uint8_t maxLength;
-	char str[24];
-};
-
 struct coords {
-	uint16_t x;
-	uint16_t y;
+	int x;
+	int y;
 };
 
 // ---- Lower level functions ----
