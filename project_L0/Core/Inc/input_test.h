@@ -2,7 +2,8 @@
 #define INPUT_TEST_H
 
 #include "stm32l0xx_hal.h"
-#include "TFT_display_h"
+#include "TFT_display.h"
+#include "user_interface.h"
 
 void input_test(SPI_HandleTypeDef *hspi);
 void layout(SPI_HandleTypeDef *hspi);

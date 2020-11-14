@@ -175,22 +175,23 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-	while (1)
-	{
-    /* USER CODE END WHILE */
-
-    /* USER CODE BEGIN 3 */
-		updateState(&hrtc, &htim21, &htim3, &htim6, &hspi2);
-		updateDisplay(&hrtc, &hspi2);
-
-		batteryManager(&hadc, &hspi2, &htim21, &htim3);
-
-		if (isTimerDone || isAlarmDone) {
-			runMotor(&htim6);		// pls fix
-			updateDisplay(&hrtc, &hspi2);
-			isTimerDone = isAlarmDone = 0;
-		}
-	}
+//	while (1)
+//	{
+//    /* USER CODE END WHILE */
+//
+//    /* USER CODE BEGIN 3 */
+//		updateState(&hrtc, &htim21, &htim3, &htim6, &hspi2);
+//		updateDisplay(&hrtc, &hspi2);
+//
+//		batteryManager(&hadc, &hspi2, &htim21, &htim3);
+//
+//		if (isTimerDone || isAlarmDone) {
+//			runMotor(&htim6);		// pls fix
+//			updateDisplay(&hrtc, &hspi2);
+//			isTimerDone = isAlarmDone = 0;
+//		}
+//	}
+	input_test(&hspi2);
   /* USER CODE END 3 */
 }
 

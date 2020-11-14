@@ -38,6 +38,7 @@ extern "C" {
 #include "clocks.h"
 #include "timers.h"
 #include "battery.h"
+#include "input_test.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
